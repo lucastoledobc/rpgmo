@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+### RPGMO
 
-## Getting Started
+Um site para jogar um MMO com amigos e uma IA ser o mestre.
 
-First, run the development server:
+## Tecnologias
+- **Framework:** Next.js (React)
+- **Estilização:** CSS Modules (Pixel Art estético)
+- **Lógica:** JavaScript/TypeScript
+- **IA:** Integração via API para narração e gestão de mundo.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Mapa do Site
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `Home (/ )`: Acesso à sala ou navegação para criação.
+- `Criar Sala (/create)`: Configuração do cenário e regras da partida.
+- `Sala (/room/[id])`: O tabuleiro principal do jogo.
+- `Personagem (/room/[id]/[char])`: Criação e edição de fichas de personagem.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Learn More
+## Home
 
-To learn more about Next.js, take a look at the following resources:
+Página simples com botão login e criar sala
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Criar sala
 
-## Deploy on Vercel
+O menu é composto por:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Nome da sala: Escolha um.
+- Mundo: label select com opções genéricas tipo "fantasia, mediaval, cyberpunk, personalizado' com um botão do lado de upload.
+- Personalização do mundo (opicional): Uma caixa chamada para personalizar o mundo escolhido.
+- Senha: a senha que será usada para os jogadores entrarem.
+- Botão Criar Sala: um código único será gerado (usado para o login).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Sala
+
+Ambiente com:
+- Header: nome da sala.
+- 3 colunas: personagens, ChatIAventura, ChatAmigos
+
+# Personagens:
+
+- 3 funções: 
+1. Criar personagem: leva a próxima página "Personagem".
+2. Selecionar personagem disponível: Uma label select que mostra os personagens disponíveis.
+3. Stats dos personagens escolhidos. Tem o HP, Mana, etc. Se clicar em expandir, vai para a tela de "Personagem", mas com campos 'nome', 'idade', etc já preenchidos e podendo ser modificados.
+
+# ChatIAventura:
+
+A IA vai receber o mundo escolhido, ler os personagens e começar a aventura.
+Há perguntas para as ações dos jogadores que vão descrever o que fazer um de cada vez.
+
+Estado de pausa: para evitar atropelamentos, a IA entra em estado de pausa sempre que fizer perguntas, ela só vai continuar quando apertar o botão "Continuar".
+
+
+# ChatAmigos:
+
+Um chat simples com texto ou voz. A IA não vai receber nada daqui.
+
+
+## Personagem
+
+Uma tela para criação ou edição de personagem.
+
+# Campos:
+- imagem: 32x32 pixels (editavel)
+- nome:
+- idade:
+- classe:
+- raça:
+- status: com label para distrubuição (editaveis)
+- pertences:
+- história:
+
+Botões: Salvar e X (cancelar)
