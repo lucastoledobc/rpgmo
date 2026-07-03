@@ -35,6 +35,7 @@ export default function Create() {
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(payload),
       });
+      // console.log(response)
 
       if (response.ok) {
         setSalaCriada(novoId);
@@ -68,7 +69,7 @@ export default function Create() {
         const dadosCarregados = {
           nomeSala: json.nomeSala || '',
           senha: json.senha || '',
-          mundo: json.mundo || 'Fantasia Medieval',
+          mundo: 'personalizado',
           personalizacao: json.personalizacao || ''
         };
         // Já enviamos direto para o servidor
@@ -106,7 +107,7 @@ export default function Create() {
   // html da tela
   return (
     <main className={styles.container}>
-      <h1 className={styles.title}>CRIAR TAVERNA</h1>
+      <h1 className={styles.title}>CRIAR AVENTURA</h1>
       
       <div className={styles.rpgBox}>
         <input 

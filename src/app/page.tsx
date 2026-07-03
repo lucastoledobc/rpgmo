@@ -31,10 +31,10 @@ export default function Home() {
   }
 
   return (
-    <main className={styles.container}>
+    <section className={styles.container}>
       <h1 className={styles.title}>RPG MO</h1>
       
-      <div className={styles.rpgBox}>
+      <main className={styles.rpgBox}>
         <form onSubmit={handleEntrar}>
           <div className={styles.formGroup}>
             <label className={styles.label} htmlFor="sala">SALA</label>
@@ -80,7 +80,7 @@ export default function Home() {
             </div>
           )}
         </form>
-      </div>
-    </main>
+      </main>
+    </section>
   );
 }

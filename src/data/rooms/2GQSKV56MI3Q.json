@@ -1,7 +1,129 @@
 {
   "id": "2GQSKV56MI3Q",
-  "nome": "asd",
-  "senha": "",
-  "mundo": "Fantasia Medieval",
-  "personalizacao": "qwer"
+  "nome": "Jornada do Ouro",
+  "senha": "123",
+  "criadoEm": "2026-07-02T18:30:00Z",
+  "mestre": {
+    "sistemaIA": "gpt-4o",
+    "chaveAPI": "",
+    "personalidade": "Mestre clássico de RPG, descritivo e justo."
+  },
+  "mundo": {
+    "nome": "Fantasia Medieval",
+    "historia": "Senhor dos aneis",
+    "regras": "Sistema d20 simplificado, foco em interpretação.",
+    "personalizacao": "O mundo é um deserto de vidro onde a água é a moeda de troca.",
+    "estadoAtual": "Dia 1 da expedição ano 1990"
+  },
+  "personagens": [
+    {
+      "id": "char_01",
+      "nome": "Grog",
+      "idade": 32,
+      "raca": "Ogro",
+      "classe": "Mago",
+      "status": [
+        {
+          "nome": "Força",
+          "valor": 18,
+          "tipo": "atributo"
+        },
+        {
+          "nome": "Inteligência",
+          "valor": 14,
+          "tipo": "atributo"
+        },
+        {
+          "nome": "HP",
+          "valor": 25,
+          "maximo": 25,
+          "tipo": "recurso"
+        },
+        {
+          "nome": "Sanidade",
+          "valor": 10,
+          "maximo": 20,
+          "tipo": "recurso"
+        }
+      ],
+      "equipado": [
+        "Cajado de Madeira",
+        "Túnica de Couro"
+      ],
+      "mochila": [
+        "Poção de Cura",
+        "Pão mofado",
+        "Mapa"
+      ],
+      "historia": "Grog foi expulso do seu clã por tentar ler um livro proibido."
+    },
+    {
+      "id": "char_02",
+      "nome": "Grog2",
+      "idade": 3,
+      "raca": "Anao",
+      "classe": "Guerreiro",
+      "status": [
+        {
+          "nome": "Força",
+          "valor": 18,
+          "tipo": "atributo"
+        },
+        {
+          "nome": "Inteligência",
+          "valor": 14,
+          "tipo": "atributo"
+        },
+        {
+          "nome": "HP",
+          "valor": 25,
+          "maximo": 25,
+          "tipo": "recurso"
+        },
+        {
+          "nome": "Sanidade",
+          "valor": 10,
+          "maximo": 20,
+          "tipo": "recurso"
+        }
+      ],
+      "equipado": [
+        "Cajado de Madeira",
+        "Túnica de Couro"
+      ],
+      "mochila": [
+        "Poção de Cura",
+        "Pão mofado",
+        "Mapa"
+      ],
+      "historia": "Grog2 Assumiu o lugar de Grog."
+    },
+    {
+      "id": "char_1783035621834",
+      "nome": "asd",
+      "idade": "",
+      "raca": "",
+      "classe": "",
+      "status": [
+        {
+          "nome": "Força",
+          "valor": 10,
+          "tipo": "atributo"
+        },
+        {
+          "nome": "HP",
+          "valor": 20,
+          "maximo": 20,
+          "tipo": "recurso"
+        }
+      ],
+      "historia": ""
+    }
+  ],
+  "logAventura": [
+    {
+      "turno": 1,
+      "texto": "Vocês chegam à entrada da caverna sombria."
+    }
+  ]
 }

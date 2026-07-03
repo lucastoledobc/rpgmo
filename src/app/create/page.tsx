@@ -7,8 +7,8 @@ export const metadata = {
 
 export default function CreatePage() {
   return (
-    <main>
+    <section>
       <Create />
-    </main>
+    </section>
   );
 }
