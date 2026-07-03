@@ -1,6 +1,6 @@
 ### RPGMO
 
-Um site para jogar um MMO com amigos e uma IA ser o mestre.
+Um site para jogar RPG com amigos e uma IA ser o mestre.
 
 ## Tecnologias
 - **Framework:** Next.js (React)
@@ -13,6 +13,7 @@ Um site para jogar um MMO com amigos e uma IA ser o mestre.
 
 - `Home (/ )`: Acesso à sala ou navegação para criação.
 - `Criar Sala (/create)`: Configuração do cenário e regras da partida.
+- `Configurar Mestre (/master)`: Configuração do Mestre (IA).
 - `Sala (/room/[id])`: O tabuleiro principal do jogo.
 - `Personagem (/room/[id]/[char])`: Criação e edição de fichas de personagem.
 
@@ -27,17 +28,31 @@ Página simples com botão login e criar sala
 O menu é composto por:
 
 - Nome da sala: Escolha um.
-- Mundo: label select com opções genéricas tipo "fantasia, mediaval, cyberpunk, personalizado' com um botão do lado de upload.
-- Personalização do mundo (opicional): Uma caixa chamada para personalizar o mundo escolhido.
 - Senha: a senha que será usada para os jogadores entrarem.
+- Mundo: Escolha o modelo do jogo.
+    - label select com opções genéricas prontas tipo "fantasia medieval, cyberpunk".
+    ou
+    - selecione "personalizado" e suba seu livro D&D ou Tormenta.
+- Personalização do mundo (opicional): Uma caixa chamada para personalizar o mundo escolhido ou criar um do zero.
 - Botão Criar Sala: um código único será gerado (usado para o login).
+
+
+# Configurar Mestre
+
+Formulário para configurar o Mestre.
+Campos:
+- IA (gpt, gemini, claude).
+- chave API.
+- Personalidade do Mestre.
 
 
 ## Sala
 
 Ambiente com:
-- Header: nome da sala.
+- Header: nome da sala. 
+    Expandível para mostrar os detalhes: id da sala, mundo, personagens e botão Salvar Aventura.
 - 3 colunas: personagens, ChatIAventura, ChatAmigos
+
 
 # Personagens:
 
@@ -48,10 +63,21 @@ Ambiente com:
 
 # ChatIAventura:
 
-A IA vai receber o mundo escolhido, ler os personagens e começar a aventura.
-Há perguntas para as ações dos jogadores que vão descrever o que fazer um de cada vez.
+A IA vai receber as configurações do Mestre, o mundo (história, regras e personalização), os personagens, log da Aventura (se houver) e começar a aventura.
 
-Estado de pausa: para evitar atropelamentos, a IA entra em estado de pausa sempre que fizer perguntas, ela só vai continuar quando apertar o botão "Continuar".
+Interface:
+- Engrenagem (configurações): Alterar as configurações do mestre.
+- Botão play/pause: ativa/desativa o estado de pausa.
+
+Estado de pausa: neste momento todos os jogadores podem fazer perguntas, interagir entre si e com o mundo e até modificar a aventura. O Mestre só vai continuar quando apertar o botão "Play".
+
+Barra de mensagem:
+- label personagem: escolha qual dos personagens vai realizar a ação.
+- campo de texto: área de comunicação com o Mestre.
+
+Comandos:
+- @fulano -> direciona sua ação à personagem 'fulano'.
+- #GM -> o que for escrito vai ser considerado como verdade. Função para jogadores personalizarem a aventura.
 
 
 # ChatAmigos:
@@ -69,8 +95,9 @@ Uma tela para criação ou edição de personagem.
 - idade:
 - classe:
 - raça:
-- status: com label para distrubuição (editaveis)
+- status: label para distrubuição (editaveis)
+- equipamento: 
 - pertences:
 - história:
 
-Botões: Salvar e X (cancelar)
+Botões: Cancelar e Salvar
