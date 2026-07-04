@@ -1,7 +1,6 @@
 'use client';
 import {useState, useEffect} from 'react';
 import {useRouter} from 'next/navigation';
-import styles from '@/css/home.module.css';
 
 export default function Char({roomId, charId}) {
   const router = useRouter();
@@ -43,11 +42,11 @@ export default function Char({roomId, charId}) {
   if(charId=='new'){h1="Criar Personagem"}else{h1="Editar Personagem"}
 
   return (
-    <form className={styles.rpgBox} onSubmit={handleSubmit}>
+    <form className="rpgBox" onSubmit={handleSubmit}>
       <h1>{h1}</h1>
       
-      <input name="nome" placeholder="Nome" value={charData.nome} onChange={handleChange} className={styles.input} />
-      <input name="raca" placeholder="Raça" value={charData.raca} onChange={handleChange} className={styles.input} />
+      <input name="nome" placeholder="Nome" value={charData.nome} onChange={handleChange} className="input" />
+      <input name="raca" placeholder="Raça" value={charData.raca} onChange={handleChange} className="input" />
       
       <h3>Status</h3>
       {charData.status.map((st, index) => (
@@ -57,16 +56,16 @@ export default function Char({roomId, charId}) {
             type="number" 
             value={st.valor} 
             onChange={(e) => handleStatusChange(index, 'valor', parseInt(e.target.value))} 
-            className={styles.input}
+            className="input"
           />
         </div>
       ))}
 
       
-      <input name="historia" placeholder="Escreva a história do personagem..." value={charData.historia} onChange={handleChange} className={styles.input} />
+      <input name="historia" placeholder="Escreva a história do personagem..." value={charData.historia} onChange={handleChange} className="input" />
 
-      <button type="submit" className={styles.button}>SALVAR</button>
-      <button type="button" className={styles.button} onClick={() => router.back()}>CANCELAR</button>
+      <button type="submit" className="button">SALVAR</button>
+      <button type="button" className="button" onClick={() => router.back()}>CANCELAR</button>
     </form>
   );
 }

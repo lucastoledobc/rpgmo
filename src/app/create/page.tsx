@@ -7,8 +7,6 @@ export const metadata = {
 
 export default function CreatePage() {
   return (
-    <section>
       <Create />
-    </section>
   );
 }

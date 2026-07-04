@@ -1,0 +1,20 @@
+{
+  "info": {
+    "id": "36W0L1PBW0WY",
+    "name": "2GQSKV56MI3Q",
+    "pass": "123",
+    "date": "2026-07-04T17:06:23.256Z"
+  },
+  "world": {
+    "id": "Fantasia Medieval",
+    "history": "Num reino de magia esquecida, dragões despertam sob montanhas de ferro.",
+    "rules": "Sistema D20: Role 1d20 + atributo. Acima de 12 é sucesso. Combate baseado em turnos."
+  },
+  "master": {
+    "system": "gpt-4o",
+    "apikey": "",
+    "personality": "Classic RPG Master, descriptive and fair."
+  },
+  "chars": [],
+  "logAdventure": []
+}

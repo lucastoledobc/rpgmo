@@ -4,9 +4,8 @@ import RoomHeader from '@/components/RoomHeader.js';
 import RoomPlayer from '@/components/RoomPlayer.js';
 import RoomChatAI from '@/components/RoomChatAI.js';
 import RoomChatF from '@/components/RoomChatF.js';
-import styles from '@/css/home.module.css';
 
-export default function RoomPage({params}: {params: Promise<{id: string }>}) {
+export default function RoomPage({params}: {params: Promise<{id: string}>}) {
   const {id} = use(params);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -23,26 +22,21 @@ export default function RoomPage({params}: {params: Promise<{id: string }>}) {
   if (loading) return <div>Carregando sala...</div>;
 
   return (
-    <section>
-      {/* Header Fixo no topo */}
-      <RoomHeader roomId={id} />
-    
+    <div>
+      <RoomHeader roomInfo={data.info}/>
+
       {/* Conteúdo Principal */}
-      <main className={styles.layout}>
+      <main className="layout">
 
         {/* Coluna 1: Personagens */}
-        <RoomPlayer personagens={data.personagens} roomId={id} />
-    
+          <RoomPlayer roomId={id} chars={data.chars}/>
+
         {/* Coluna 2: Mestre IA */}
-        <RoomChatAI 
-            roomId={id} 
-            logAventura={data.logAventura} 
-            nomeSala={data.nome} 
-          />
+          <RoomChatAI  roomId={id} mestreInfo={data}/>
 
         {/* Coluna 3: Chat Amigos */}
-        <RoomChatF roomId={id} />
+          <RoomChatF roomId={id}/>
       </main>
-    </section>
+    </div>
   );
 }

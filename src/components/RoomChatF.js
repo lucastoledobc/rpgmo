@@ -1,11 +1,10 @@
 'use client';
-import styles from '@/css/home.module.css';
 
-export default function Room() {
+export default function RoomC({roomId}) {
   return (
-    <aside className={styles.rightColumn}>
+    <aside className="rightColumn">
       <h3>CHAT</h3>
-      <div className={styles.friendChat}>
+      <div className="friendChat">
           {/* Lista de mensagens */}
       </div>
     </aside>

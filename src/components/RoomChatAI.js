@@ -1,27 +1,10 @@
 'use client';
 import {useState, useEffect} from 'react';
-import styles from '@/css/home.module.css';
 
-export default function Room({roomId}) {
+export default function Room({roomId, mestreInfo}) {
   const [data, setData] = useState(null);
-  const [isExpanded, setIsExpanded] = useState(false);
-  
-  // Coluna 2: IA
   const [chatLog, setChatLog] = useState([]);
   const [input, setInput] = useState('');
-
-  useEffect(() => {
-    fetch(`/api/room/${roomId}`)
-      .then((res) => res.json())
-      .then((json) => {
-        setData(json);
-        setLoading(false);
-        if (json && json.logAventura) {
-          setChatLog(json.logAventura);
-        }
-        setLoading(false);
-      });
-  }, [roomId]);
 
   // Coluna 2: IA
   const handleSend = async (e) => {
@@ -42,12 +25,12 @@ export default function Room({roomId}) {
   };
 
   return (
-    <section className={styles.centerColumn}>
-        <div className={styles.aiChatContainer}>
+    <section className="centerColumn">
+        <div className="aiChatContainer">
         {/* Log de mensagens */}
-        <div className={styles.chatLog}>
+        <div className="chatLog">
             {chatLog.map((msg, index) => (
-            <p key={index} className={msg.texto.startsWith('Mestre') ? styles.aiResponse : styles.userResponse}>
+            <p key={index} className={msg.texto.startsWith('Mestre') ? aiResponse : userResponse}>
                 {msg.texto}
             </p>
             ))}
@@ -55,7 +38,7 @@ export default function Room({roomId}) {
 
         {/* Input de Ação */}
         <input 
-            className={styles.aiInput} 
+            className="aiInput" 
             placeholder="Digite sua ação..." 
             value={input}
             onChange={(e) => setInput(e.target.value)}

@@ -1,15 +1,11 @@
-import { NextResponse } from 'next/server';
+import {NextResponse} from 'next/server';
 import fs from 'fs/promises';
 import path from 'path';
 
 // O Next.js 15 exige que os params sejam await
-export async function GET(
-  request: Request, 
-  { params }: { params: Promise<{ id: string }> }
-) {
-  // Precisamos fazer o await de params para acessar o id
-  const { id } = await params;
-  
+export async function GET(request: Request, {params}: {params: Promise<{id: string}>}) {
+  const {id} = await params;
+  console.log(id);
   const filePath = path.join(process.cwd(), 'src', 'data', 'rooms', `${id}.json`);
 
   try {

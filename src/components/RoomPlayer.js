@@ -1,9 +1,8 @@
 'use client';
 import {useRouter} from 'next/navigation';
 import {useState, useEffect} from 'react';
-import styles from '@/css/home.module.css';
 
-export default function Room({personagens, roomId}) {
+export default function Room({roomId, chars}) {
   const router = useRouter();
 
   const handleEditChar = (charId) => {
@@ -11,13 +10,13 @@ export default function Room({personagens, roomId}) {
   };
 
   return (
-    <aside className={styles.leftColumn}>
+    <aside className="leftColumn">
         <h3>PERSONAGEM</h3>
-        <div className={styles.personagenstatus}>
-        {personagens?.length === 0 ? (
+        <div className="">
+        {chars?.length === 0 ? (
             <p>Nenhum personagem.</p>
         ) : (
-            personagens.map((char) => (
+            chars.map((char) => (
             <div key={char.id} onClick={() => handleEditChar(char.id)} style={{cursor: 'pointer'}}>
                 <p>👤 {char.nome}</p>
             </div>
@@ -26,12 +25,7 @@ export default function Room({personagens, roomId}) {
         </div>
         
         {/* Botão para criar novo */}
-        <button 
-        className={styles.button} 
-        onClick={() => handleEditChar('new')}
-        >
-        + CRIAR
-        </button>
+        <button className="button" onClick={() => handleEditChar('new')}>+ CRIAR</button>
     </aside>
   );
 }

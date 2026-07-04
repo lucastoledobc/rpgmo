@@ -33,7 +33,7 @@ export async function POST(request: Request, {params}: {params: {id: string}}) {
     },
     body: JSON.stringify({
       model: "gpt-4o",
-      messages: [{ role: "system", content: prompt }]
+      messages: [{role: "system", content: prompt}]
     })
   });
 
