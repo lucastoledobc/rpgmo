@@ -1,9 +1,23 @@
 {
-  "info": {
+  "room": {
     "id": "36W0L1PBW0WY",
     "name": "2GQSKV56MI3Q",
     "pass": "123",
-    "date": "2026-07-04T17:06:23.256Z"
+    "date": "2026-07-04T17:06:23.256Z",
+    "players": [
+      "player_433135103145300443303",
+      "player_20304352220141454201",
+      "player_32354421120001501431",
+      "player_45141045432150305233",
+      "player_0334325431404431325542",
+      "player_0541002344320141024004",
+      "player_235231221223125110105",
+      "player_24125451053545234235",
+      "player_242552530511455023204",
+      "player_403122014432043035202",
+      "player_34502444530125310052",
+      "player_543320113020104255105"
+    ]
   },
   "world": {
     "id": "Fantasia Medieval",
@@ -15,6 +29,221 @@
     "apikey": "",
     "personality": "Classic RPG Master, descriptive and fair."
   },
-  "chars": [],
-  "logAdventure": []
+  "chars": [
+    {
+      "id": "Grog_01",
+      "nome": "Grog",
+      "idade": 32,
+      "raca": "Ogr",
+      "classe": "Mago",
+      "status": [
+        {
+          "name": "Força",
+          "value": 18,
+          "type": "attribute"
+        },
+        {
+          "name": "Inteligência",
+          "value": 14,
+          "type": "attribute"
+        },
+        {
+          "name": "HP",
+          "value": 25,
+          "max": 25,
+          "type": "resource"
+        },
+        {
+          "name": "Sanidade",
+          "value": 10,
+          "max": 20,
+          "type": "resource"
+        }
+      ],
+      "historia": "Grog foi expulso do seu clã por tentar ler um livro proibido."
+    },
+    {
+      "id": "Grog_02",
+      "player": "",
+      "name": "Grog",
+      "age": 3,
+      "race": "Anao",
+      "class": "Guerreiro",
+      "status": [
+        {
+          "name": "Força",
+          "value": 18,
+          "type": "attribute"
+        },
+        {
+          "name": "Inteligência",
+          "value": 14,
+          "type": "attribute"
+        },
+        {
+          "name": "HP",
+          "value": 25,
+          "max": 25,
+          "type": "resource"
+        },
+        {
+          "name": "Sanidade",
+          "value": 10,
+          "max": 20,
+          "type": "resource"
+        }
+      ],
+      "equip": [
+        "Cajado de Madeira",
+        "Túnica de Couro"
+      ],
+      "backpack": [
+        "Poção de Cura",
+        "Pão mofado",
+        "Mapa"
+      ],
+      "history": "Grog2 Assumiu o lugar de Grog."
+    }
+  ],
+  "logAdventure": [],
+  "chat": [
+    {
+      "sender": "abacaxi",
+      "text": "oi"
+    },
+    {
+      "sender": "dasd",
+      "text": "asd"
+    },
+    {
+      "sender": "dasd",
+      "text": "asd"
+    },
+    {
+      "sender": "dasd",
+      "text": "asdr"
+    },
+    {
+      "sender": "dasd",
+      "text": "asdra"
+    },
+    {
+      "sender": "dasd",
+      "text": "asdraas"
+    },
+    {
+      "sender": "dasd",
+      "text": "asdraasda"
+    },
+    {
+      "sender": "dasd",
+      "text": "asdraasdasd"
+    },
+    {
+      "sender": "dasd",
+      "text": "asdraasdasd"
+    },
+    {
+      "sender": "dasd",
+      "text": "asdraasdasdd"
+    },
+    {
+      "sender": "dasd",
+      "text": "asdraasdasddd"
+    },
+    {
+      "sender": "dasd",
+      "text": "asdraasdasdddd"
+    },
+    {
+      "sender": "dasd",
+      "text": "asdraasdasdddd"
+    },
+    {
+      "sender": "dasd",
+      "text": "asdraasdasdddd"
+    },
+    {
+      "sender": "dasd",
+      "text": "asdraasdasdddd"
+    },
+    {
+      "sender": "dasd",
+      "text": "asdraasdasdddd"
+    },
+    {
+      "sender": "dasd",
+      "text": "asdraasdasdddd"
+    },
+    {
+      "sender": "dasd",
+      "text": "asd"
+    },
+    {
+      "sender": "dasd",
+      "text": "asd"
+    },
+    {
+      "sender": "dasd",
+      "text": "asddd"
+    },
+    {
+      "sender": "dasd",
+      "text": "asddd"
+    },
+    {
+      "sender": "dasd",
+      "text": "asddd"
+    },
+    {
+      "sender": "payer",
+      "text": "asdd"
+    },
+    {
+      "sender": "payer",
+      "text": "asdd"
+    },
+    {
+      "sender": "payer",
+      "text": "asdd"
+    },
+    {
+      "sender": "payer",
+      "text": "teste"
+    },
+    {
+      "sender": "payer",
+      "text": "   ..."
+    },
+    {
+      "sender": "payer",
+      "text": "asd"
+    },
+    {
+      "sender": "tete",
+      "text": "ttt"
+    }
+  ],
+  "adventure": [
+    {
+      "sender": "tete",
+      "text": "oi",
+      "type": "player"
+    },
+    {
+      "sender": "Mestre IA",
+      "text": "Mestre Narrador: \"Oi\" eco",
+      "type": "master"
+    },
+    {
+      "sender": "tete",
+      "text": "comece",
+      "type": "player"
+    },
+    {
+      "sender": "Mestre IA",
+      "text": "Mestre Narrador: A escuridão é densa, o ar pesado com um cheiro acre de mofo e algo indefinível, metálico. Você pisca, sentindo a aspereza da pedra fria sob suas costas. Uma dor lateja na sua cabeça, e o eco de uma voz distante, gutural, ainda ressoa em seus ouvidos. Grog e Grog, vocês se encontram em uma cela de pedra, sem janelas, apenas uma pesada porta de madeira reforçada com ferro na parede oposta. Uma tocha",
+      "type": "master"
+    }
+  ]
 }

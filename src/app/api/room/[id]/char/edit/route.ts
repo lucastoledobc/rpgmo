@@ -20,14 +20,14 @@ export async function POST(request: Request, {params}: {params: {id: string}}) {
     const roomData = JSON.parse(fileContent);
 
     // Verifica se o personagem já existe para atualizar
-    const charIndex = roomData.personagens.findIndex((p: any) => p.id === charData.id);
+    const charIndex = roomData.chars.findIndex((p: any) => p.id === charData.id);
 
     if (charIndex !== -1) {
       // Atualiza personagem existente
-      roomData.personagens[charIndex] = charData;
+      roomData.chars[charIndex] = charData;
     } else {
       // Adiciona novo personagem
-      roomData.personagens.push(charData);
+      roomData.chars.push(charData);
     }
 
     // Salvar o arquivo atualizado

@@ -6,12 +6,10 @@ export default function Room({roomInfo}) {
 
   return (
     <header className="roomHeader">
-      <div>
-          <h1>SALA: {roomInfo.name}</h1>
-          <button onClick={() => setIsExpanded(!isExpanded)}>
-              {isExpanded ? '▲ FECHAR' : '▼ INFO'}
-          </button>
-      </div>
+      <h1 className='title2'>SALA: {roomInfo.name}</h1>
+      <button onClick={() => setIsExpanded(!isExpanded)}>
+          {isExpanded ? '▲ FECHAR' : '▼ INFO'}
+      </button>
       
       {/* Informações detalhadas */}
       {isExpanded && (

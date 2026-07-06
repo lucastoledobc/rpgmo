@@ -5,10 +5,11 @@ import {useRouter} from 'next/navigation';
 export default function Home() {
   const [room, setRoom] = useState('');
   const [pass, setPass] = useState('');
+  const [name, setName] = useState('');
   const [mensagem, setMensagem] = useState({text: '', type: ''});
   const router = useRouter();
 
-  const handleEntrar = async (e: React.SubmitEvent) => {
+  const login = async (e: React.SubmitEvent) => {
     e.preventDefault();
     console.log("Valor da room:", room);
     setMensagem({text: 'Verificando...', type: 'info'});
@@ -16,13 +17,15 @@ export default function Home() {
     const response = await fetch('/api/auth', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({id: room.trim().toLocaleUpperCase(), pass}),
+      body: JSON.stringify({id: room, pass}),
     });
 
     const data = await response.json();
 
     if (response.ok) {
-      router.push(`/room/${room.trim()}`);
+      sessionStorage.setItem('playerId', data.playerId);
+      sessionStorage.setItem('playerName', name);
+      router.push(`/room/${room}`);
     }
     else {
       setMensagem({text: data.error, type: 'error'});
@@ -34,15 +37,15 @@ export default function Home() {
       <h1 className="title">RPG MO</h1>
       
       <main className="rpgBox">
-        <form onSubmit={handleEntrar}>
+        <form onSubmit={login}>
           <div className="formGroup">
-            <label className="label" htmlFor="room">room</label>
+            <label className="label" htmlFor="room">Sala</label>
             <input 
               type="text" 
               id="room" 
               className="input"
               value={room}
-              onChange={(e) => setRoom(e.target.value)}
+              onChange={(e) => setRoom(e.target.value.trim().toLocaleUpperCase())}
               placeholder="Código da sala"
               autoComplete="off"
               required
@@ -50,7 +53,7 @@ export default function Home() {
           </div>
 
           <div className="formGroup">
-            <label className="label" htmlFor="pass">pass</label>
+            <label className="label" htmlFor="pass">Senha</label>
             <input 
               type="password" 
               id="pass" 
@@ -58,6 +61,20 @@ export default function Home() {
               value={pass}
               onChange={(e) => setPass(e.target.value)}
               placeholder="******"
+            />
+          </div>
+          
+          <div className="formGroup">
+            <label className="label" htmlFor="name">Jogador</label>
+            <input 
+              type="text" 
+              id="name" 
+              className="input"
+              value={name}
+              onChange={(e) => setName(e.target.value.trim())}
+              placeholder="Seu nome"
+              autoComplete="off"
+              required
             />
           </div>
 

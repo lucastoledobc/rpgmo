@@ -35,6 +35,7 @@ export async function POST(request: Request) {
         name: formData.name,
         pass: formData.pass,
         date: new Date().toISOString(),
+        payers: []
       };
       
       const roomWorld = {
@@ -62,11 +63,12 @@ export async function POST(request: Request) {
       };
 
       roomData = {
-        info: roomInfo,
+        room: roomInfo,
         world: roomWorld,
         master: roomMaster,
         chars: [],
-        logAdventure: []
+        logAdventure: [],
+        chat: []
       }
     }    
 

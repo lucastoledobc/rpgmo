@@ -1,9 +1,9 @@
 'use client';
 import {use, useEffect, useState} from 'react';
 import RoomHeader from '@/components/RoomHeader.js';
-import RoomPlayer from '@/components/RoomPlayer.js';
-import RoomChatAI from '@/components/RoomChatAI.js';
-import RoomChatF from '@/components/RoomChatF.js';
+import RoomChars from '@/components/RoomChars.js';
+import RoomAdventure from '@/components/RoomAdventure.js';
+import RoomChat from '@/components/RoomChat.js';
 
 export default function RoomPage({params}: {params: Promise<{id: string}>}) {
   const {id} = use(params);
@@ -22,20 +22,20 @@ export default function RoomPage({params}: {params: Promise<{id: string}>}) {
   if (loading) return <div>Carregando sala...</div>;
 
   return (
-    <div>
-      <RoomHeader roomInfo={data.info}/>
+    <div className='room'>
+      <RoomHeader roomInfo={data.room}/>
 
       {/* Conteúdo Principal */}
-      <main className="layout">
+      <main className="roomMain">
 
         {/* Coluna 1: Personagens */}
-          <RoomPlayer roomId={id} chars={data.chars}/>
+          <RoomChars roomId={id} chars={data.chars}/>
 
         {/* Coluna 2: Mestre IA */}
-          <RoomChatAI  roomId={id} mestreInfo={data}/>
+          <RoomAdventure  roomId={id} roomData={data}/>
 
         {/* Coluna 3: Chat Amigos */}
-          <RoomChatF roomId={id}/>
+          <RoomChat roomId={id}/>
       </main>
     </div>
   );

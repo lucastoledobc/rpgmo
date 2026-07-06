@@ -99,13 +99,13 @@ export default function Create() {
       if (response.ok) {
         setRoom(newId);
         sucesso = true;
-        setAlert({text: result.success, type: 'success'});
+        setAlert({text: "Sala criada!", type: 'success'});
       }
       else if (response.status == 409) {
         newId = gerarId(); // Gera novo ID e tenta o loop de novo
       }
       else {
-        setAlert({text: result.error, type: 'error'});
+        setAlert({text: "Erro ao criar a sala!", type: 'error'});
         break;
       }
     }
@@ -205,16 +205,16 @@ export default function Create() {
           </div>
         </form>
         {alert.text && (
-          <div className="">
-            {alert.text}
+          <div className="alertBox">
+            <h3 className='subTile'>{alert.text}</h3>
             {alert.type=="success" && (
             <>
             <p>ID da sala: <strong>{room}</strong></p>
             <div className="buttonContainer">
               <button className="button" onClick={() => navigator.clipboard.writeText(room)}>COPIAR ID</button>
-              <button className="button" onClick={() => router.push(`/`)}>VOLTAR</button>
-              <p>Boa Aventura!</p>
+              <button className="button" onClick={() => router.push(`/`)}>VOLTAR</button>              
             </div>
+            <h3 className='subTile'>Boa Aventura!</h3>
             </>
           )}
           </div>
