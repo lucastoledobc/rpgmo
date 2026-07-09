@@ -4,14 +4,14 @@ import {useState, useEffect} from 'react';
 export default function Char({roomId, chars, charId, onClose}) {
   const [charData, setCharData] = useState({
     id: charId,
-    nome: '',
-    idade: '',
-    raca: '',
-    classe: '',
+    name: '',
+    age: '',
+    race: '',
+    class: '',
     status: [
-      { nome: 'FOR', valor: 10 },
-      { nome: 'DES', valor: 10 },
-      { nome: 'CON', valor: 10 }
+      {name: 'FOR', value: 10},
+      {name: 'DES', value: 10},
+      {name: 'CON', value: 10}
     ],
     historia: ''
   });
@@ -29,9 +29,9 @@ export default function Char({roomId, chars, charId, onClose}) {
           raca: foundChar.race || '',
           classe: foundChar.class || '',
           status: foundChar.status || [
-            { nome: 'FOR', valor: 10 },
-            { nome: 'DES', valor: 10 },
-            { nome: 'CON', valor: 10 }
+            {name: 'FOR', value: 10},
+            {name: 'DES', value: 10},
+            {name: 'CON', value: 10}
           ],
           historia: foundChar.history || ''
         });
@@ -66,26 +66,27 @@ export default function Char({roomId, chars, charId, onClose}) {
   return (
     <section className='editBox'>
       <form className="roomBox" onSubmit={handleSubmit}>
-        <h1>{h1}</h1>
+        <h1 className='title2'>{h1}</h1>
         
         {/* Note o 'name' batendo exatamente com as chaves do seu charData */}
-        <input name="nome" placeholder="Nome" value={charData.nome} onChange={handleChange} className="input" required />
-        <input name="raca" placeholder="Raça" value={charData.raca} onChange={handleChange} className="input" />
-        <input name="classe" placeholder="Classe" value={charData.classe} onChange={handleChange} className="input" />
+        <input name="nome" placeholder="Nome" value={charData.name} onChange={handleChange} className="input" required />
+        <input name="raca" placeholder="Raça" value={charData.race} onChange={handleChange} className="input" />
+        <input name="classe" placeholder="Classe" value={charData.class} onChange={handleChange} className="input" />
         
-        <h3>Status</h3>
+        <h3 className='title3'>Status</h3>
         {charData.status.map((st, index) => (
-          <div key={index} style={{ display: 'flex', gap: '5px', alignItems: 'center', marginBottom: '5px' }}>
-            <label style={{ width: '50px' }}>{st.nome}:</label>
+          <div key={index}>
+            <label>{st.name}:</label>
             <input 
               type="number" 
-              value={st.valor} 
-              onChange={(e) => handleStatusChange(index, 'valor', parseInt(e.target.value) || 0)} 
+              value={st.value} 
+              onChange={(e) => handleStatusChange(index, 'value', parseInt(e.target.value) || 0)} 
               className="input"
             />
           </div>
         ))}
         
+        <h3 className='title3'>Escreva a história do personagem</h3>
         <input name="historia" placeholder="Escreva a história do personagem..." value={charData.historia} onChange={handleChange} className="input" />
 
         <div className='buttonContainer'>

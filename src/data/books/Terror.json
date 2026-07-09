@@ -1,0 +1,24 @@
+{
+  "metadados": {
+    "versao": "1.0",
+    "titulo": "Sussurros na Névoa",
+    "tema": "Terror Gótico",
+    "tom_narrativo": "Sombrio, melancólico, de alta mortalidade"
+  },
+  "motor_de_regras": {
+    "sistema_base": "d20-simplificado",
+    "mecanica_de_resolucao": "Teste de atributo <= valor da habilidade",
+    "regras_especiais": ["Sanidade reduzida ao ver mortos", "Magia consome pontos de vida"]
+  },
+  "mundo": {
+    "lore_geral": "...",
+    "locais_chave": [
+      { "nome": "Vilarejo de Oakhaven", "descricao": "...", "NPCs": ["Prefeito Silas", "Irmã Helena"] }
+    ],
+    "flags_globais": {
+      "sol_eclipse": false,
+      "guerra_civil": true
+    }
+  },
+  "personagens": []
+}

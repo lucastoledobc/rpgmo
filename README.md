@@ -101,3 +101,33 @@ Uma tela para criação ou edição de personagem.
 - história:
 
 Botões: Cancelar e Salvar
+
+
+## Mapa do código:
+
+/src
+  - /app
+    - /api (routes)
+    - /create
+      - page.tsx (página para criação de sala)
+    - /room 
+      - [id]
+        - page.tsx (página da sala)
+    - layout.tsx
+    - page.tsx (página de login)
+  - /components
+    - Char.js (Modal para criação/edição de char)
+    - Create.js (Componente para criação de sala)
+    - Master (Modal para edição da IA_Mestre)
+    - RoomAdventure.js (Componente para coluna central da sala)
+    - RoomChars.js (Componente para coluna esquerda da sala)
+    - RoomChat.js (Componente para coluna direita da sala)
+    - RoomHEader.js (Componente para o Header da sala)
+  - /css
+    - /fonts (fontes utilizadas)
+    - globals.css
+  - /data
+    - /livros (json's com história prontas para jogar)
+    - /rooms  (json's com dados das salas criadas)
+    - rooms.json (lista das salas criadas)
+

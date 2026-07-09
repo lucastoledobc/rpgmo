@@ -1,26 +1,13 @@
 {
   "room": {
     "id": "36W0L1PBW0WY",
-    "name": "2GQSKV56MI3Q",
+    "name": "Padrão",
     "pass": "123",
-    "date": "2026-07-04T17:06:23.256Z",
-    "players": [
-      "player_433135103145300443303",
-      "player_20304352220141454201",
-      "player_32354421120001501431",
-      "player_45141045432150305233",
-      "player_0334325431404431325542",
-      "player_0541002344320141024004",
-      "player_235231221223125110105",
-      "player_24125451053545234235",
-      "player_242552530511455023204",
-      "player_403122014432043035202",
-      "player_34502444530125310052",
-      "player_543320113020104255105"
-    ]
+    "date": "2026-07-04T17:06:23.256Z"
   },
   "world": {
     "id": "Fantasia Medieval",
+    "book": "FantasiaMedieval",
     "history": "Num reino de magia esquecida, dragões despertam sob montanhas de ferro.",
     "rules": "Sistema D20: Role 1d20 + atributo. Acima de 12 é sucesso. Combate baseado em turnos."
   },
@@ -32,10 +19,10 @@
   "chars": [
     {
       "id": "Grog_01",
-      "nome": "Grog",
-      "idade": 32,
-      "raca": "Ogr",
-      "classe": "Mago",
+      "name": "Grog",
+      "age": 32,
+      "race": "Ogr",
+      "class": "Mago",
       "status": [
         {
           "name": "Força",
@@ -64,8 +51,7 @@
     },
     {
       "id": "Grog_02",
-      "player": "",
-      "name": "Grog",
+      "name": "Groguinho",
       "age": 3,
       "race": "Anao",
       "class": "Guerreiro",
@@ -105,7 +91,176 @@
       "history": "Grog2 Assumiu o lugar de Grog."
     }
   ],
-  "logAdventure": [],
+  "log": [
+    {
+      "sender": "Lucas",
+      "charId": "Grog_02",
+      "charName": "Groguinho",
+      "text": "teste",
+      "type": "player"
+    },
+    {
+      "sender": "Mestre IA",
+      "text": "Ah, \"teste\", você diz. Um comando intrigante, aventureiro. Contudo, para que a narrativa possa fluir e a fortuna de Groguinho possa ser moldada, preciso de mais detalhes. O que exatamente Groguinho está a testar? É sua força contra uma rocha? Sua inteligência para resolver um enigma? Ou talvez sua sanidade frente a alguma visão macabra?\n\nDescreva a ação de Groguinho com mais clareza, e então o destino poderá se manifestar. O que o pequeno Groguinho tenta fazer?",
+      "type": "master"
+    },
+    {
+      "sender": "Lucas",
+      "charId": "Grog_02",
+      "charName": "Groguinho",
+      "text": "Onde estou?",
+      "type": "player"
+    },
+    {
+      "sender": "Mestre IA",
+      "text": "A escuridão é a primeira coisa que atinge seus olhos, uma massa densa e quase tangível que parece sugar qualquer luz. Você sente o frio cortante do chão de pedra sob seu corpo e o cheiro úmido e mofado, com um toque estranho de terra e algo ferroso, preenche suas narinas. Um som constante de água pingando ecoa de algum lugar, pontuando o silêncio pesado.\n\nAo piscar, seus olhos começam a se ajustar levemente, revelando apenas vultos e sombras dançantes, mas não uma fonte clara de luz. As paredes, que você percebe ao tatear, são de rocha áspera e fria. Você parece estar em algum tipo de câmara subterrânea, sem memória clara de como chegou ali.\n\nO que Groguinho faz em meio a esta escuridão opressora? Você tenta se levantar, procura por uma tocha, ou talvez chama por Grog?",
+      "type": "master"
+    },
+    {
+      "sender": "Lucas",
+      "charId": "Grog_01",
+      "charName": "Grog",
+      "text": "Quero entrar na briga",
+      "type": "player"
+    },
+    {
+      "sender": "Mestre IA",
+      "text": "Grog, sua sede por combate é palpável, um instinto primordial que o impulsiona. No entanto, a escuridão densa que o cerca é, por enquanto, sua única adversária visível. Não há gritos de batalha, nem o clangor de armas ecoando nesta câmara úmida e fria. Você sente o mesmo chão de pedra gelado sob seu corpo e o cheiro metálico misturado ao mofo que preenche o ar.\n\nSua percepção de uma briga iminente é forte, mas o ambiente não revela o motivo. O que Grog faz nesse vácuo de confronto? Ele se levanta, tentando tatear em busca de uma arma ou de uma saída, ou talvez tenta chamar por Groguinho, que você presume estar nas proximidades?",
+      "type": "master"
+    },
+    {
+      "sender": "Lucas",
+      "charId": "Grog_01",
+      "charName": "Grog",
+      "text": "Quero lutar contra o Groguinho",
+      "type": "player"
+    },
+    {
+      "sender": "Mestre IA",
+      "text": "Grog, sua intenção de confrontar Groguinho é um eco estranho e perturbador nesta escuridão opressora. A ânsia de batalha pulsa em suas veias, mas seus olhos não conseguem perfurar o manto de breu que os envolve. Groguinho está, de fato, em algum lugar próximo, talvez a poucos passos, mas sua forma é indistinguível. O único som constante é o gotejar da água, e o cheiro úmido e ferroso permanece.\n\nO desejo de lutar é forte, mas a realidade da cegueira é um obstáculo imediato. Como Grog, você tenta iniciar este embate singular contra seu companheiro que está na mesma situação? Você solta um grito de guerra, esperando uma resposta, ou talvez tenta se mover e tatear na escuridão, buscando por Groguinho para o confronto?",
+      "type": "master"
+    },
+    {
+      "sender": "Lucas",
+      "charId": "Grog_02",
+      "charName": "Groguinho",
+      "text": "Eu quero me defender",
+      "type": "player"
+    },
+    {
+      "sender": "Mestre IA",
+      "text": "Em meio à escuridão gélida, Groguinho, seus músculos se contraem. Você se coloca em uma postura defensiva, os joelhos ligeiramente dobrados, os braços erguidos para proteger o corpo, mesmo sem poder ver a ameaça. Seu coração dispara, e a cada pingo d'água, um sobressalto de adrenalina percorre suas veias.\n\nVocê tenta concentrar sua audição, esperando o menor ruído de Grog se aproximando, o arrastar de um pé, o farfalhar de roupas. O ar úmido parece pesar mais, e o cheiro metálico agora evoca uma sensação de perigo iminente.\n\nVocê está pronto para o que vier, mas o silêncio, quebrado apenas pelo gotejar monótono, persiste. O que Groguinho faz a seguir, aguardando o ataque, ou tenta alguma outra ação neste impasse cego?",
+      "type": "master"
+    },
+    {
+      "sender": "Lucas",
+      "charId": "Grog_02",
+      "charName": "Groguinho",
+      "text": "Qeuro contra atacar",
+      "type": "player"
+    },
+    {
+      "sender": "Mestre IA",
+      "text": "Groguinho, a ânsia de contra-atacar pulsa em suas veias, mas a escuridão densa e implacável o cega. Sem uma ameaça visível ou um ataque real para revidar, seu corpo reage por puro instinto e adrenalina.\n\nVocê lança um golpe cego no ar, talvez um soco para frente ou um chute na direção onde supõe que Grog esteja. Seu punho rasga o ar úmido, e o eco fraco do movimento de seu corpo se dissipa rapidamente no silêncio da câmara. O golpe não encontra carne, osso ou metal, apenas o vazio opressor. O som do gotejar da água parece intensificar-se por um instante, pontuando seu esforço.\n\nSeu \"contra-ataque\" não atinge um alvo, mas o movimento alerta seus sentidos, deixando-o ainda mais em prontidão. A escuridão não cede, e a ausência de Grog permanece.\n\nO que Groguinho faz agora, após este esforço infrutífero no breu, ouve algum som, ou tenta uma nova abordagem neste confronto às cegas?",
+      "type": "master"
+    },
+    {
+      "sender": "Lucas",
+      "charId": "Grog_01",
+      "charName": "Grog",
+      "text": "Agora eu quero aproveitar para cortar o groguinho",
+      "type": "player"
+    },
+    {
+      "sender": "Mestre IA",
+      "text": "Grog, sua intenção de atacar Groguinho com uma lâmina é um ímpeto violento que surge do breu. Sua mão agarra o que parece ser um punhal ou uma faca curta, fria e familiar, embora a memória de como ela chegou ali ainda seja nebulosa.\n\nNo entanto, a escuridão é um véu impenetável. Você não pode ver Groguinho, não pode discernir sua forma ou sua posição exata. Confiando puramente no instinto e na última direção onde ouviu um movimento, você balança a arma.\n\nO corte de sua lâmina rasga o ar úmido, um chiado metálico quase inaudível que se perde instantaneamente no silêncio opressor da câmara e no gotejar persistente da água. Não há impacto, nem a sensação de carne ou pano. Seu golpe encontra apenas o vazio, e Groguinho permanece em silêncio e invisível, talvez tendo se movido ou simplesmente estando fora do alcance de seu ataque cego.\n\nA escuridão permanece absoluta, e o cheiro ferroso no ar parece intensificar-se, misturado ao suor frio de seu próprio esforço. O que Grog faz agora, após este golpe no escuro que não encontrou alvo?",
+      "type": "master"
+    },
+    {
+      "sender": "Lucas",
+      "charId": "Grog_02",
+      "charName": "Groguinho",
+      "text": "Consigo ver agora, quero atacar e fugir",
+      "type": "player"
+    },
+    {
+      "sender": "Mestre IA",
+      "text": "Groguinho, a escuridão que o envolve é tão densa quanto antes, um manto impenetrável que não cedeu. Sua visão permanece comprometida, sem qualquer raio de luz que penetre o breu absoluto desta câmara.\n\nImpulsionado pela urgência e pela frustração da cegueira, você lança-se em um ataque desesperado. Um golpe cego, talvez um soco ou um chute, rasga o ar úmido na direção onde supõe que Grog esteja. Seus músculos se contraem, mas novamente, o ataque não encontra alvo, apenas o vazio opressor que ecoa seu esforço.\n\nSimultaneamente, o desejo de fugir toma conta. Você se vira abruptamente, tropeçando ligeiramente em seus próprios pés na escuridão. Seus braços se estendem, tateando o ar frio em busca de uma parede, uma passagem, qualquer coisa que o guie para longe deste confronto invisível. Seus passos são desordenados e apressados, afastando-se do ponto original, mas sem uma direção clara. Você não sente nada além de ar e o chão de pedra gelado sob seus pés.\n\nA escuridão continua a ser sua única companheira. Para onde Groguinho tenta fugir no breu total, e o que Grog, que acaba de desferir um golpe cego e agora ouve os movimentos erráticos do seu companheiro, faz em resposta?",
+      "type": "master"
+    },
+    {
+      "sender": "lucas",
+      "charId": "Grog_02",
+      "charName": "Groguinho",
+      "text": "ME conte a historia do mundo que estamos",
+      "type": "player"
+    },
+    {
+      "sender": "Mestre IA",
+      "text": "Groguinho, a escuridão morde seus olhos, o eco do gotejar perfura sua mente. Em meio à urgência e ao desespero deste confronto invisível, sua mente se lança em uma busca por significado. \"Qual é a história deste mundo?\", você pensa, uma pergunta que ecoa no vazio, tentando preencher o silêncio opressor com contexto.\n\nMas o mundo, para você agora, é este breu absoluto. É o ar pesado e úmido que entra em seus pulmões, o frio cortante do chão de pedra, e o cheiro metálico que impregna tudo. É a incerteza da posição de Grog, o som de seus próprios passos desordenados enquanto tenta se afastar.\n\nEssa busca por uma história maior o distrai apenas por um instante, uma fração de segundo na qual seus sentidos são puxados para longe da ameaça imediata. Grog, ouvindo seus movimentos erráticos e agora talvez o murmúrio de sua própria mente perturbada, como ele reage a essa súbita pausa ou hesitação de Groguinho?",
+      "type": "master"
+    },
+    {
+      "sender": "lucas",
+      "charId": "Grog_02",
+      "charName": "Groguinho",
+      "text": "QUero ir para casa",
+      "type": "player"
+    },
+    {
+      "sender": "Mestre IA",
+      "text": "Groguinho, a frase \"Quero ir para casa",
+      "type": "master"
+    },
+    {
+      "sender": "lucas",
+      "charId": "Grog_02",
+      "charName": "Groguinho",
+      "text": "nós dois estamos em paz, vamos para casa",
+      "type": "player"
+    },
+    {
+      "sender": "Mestre IA",
+      "text": "Groguinho, suas palavras ecoam na es",
+      "type": "master"
+    },
+    {
+      "sender": "lucas",
+      "charId": "Grog_02",
+      "charName": "Groguinho",
+      "text": "Repita, mestre",
+      "type": "player"
+    },
+    {
+      "sender": "Mestre IA",
+      "text": "Compreendido, Groguinho. As sombras desta câmara são traiçoeiras, e por vezes, até as palavras do Mestre se perdem em seu abraço gélido. Permitam-me reintroduzir o fio da narrativa.\n\nGroguinho, suas palavras: \"nós dois estamos em paz, vamos para casa\", ecoam na escuridão, uma súplica que parece se dissolver no ar pesado e úmido. O anseio por paz e pela familiaridade do lar é palpável em sua voz, mas a realidade da câmara é inflexível. A escuridão *não* cedeu; não há sinais de uma saída visível, nenhuma fresta de luz que indique um caminho para casa ou para",
+      "type": "master"
+    },
+    {
+      "sender": "lucas",
+      "charId": "Grog_02",
+      "charName": "Groguinho",
+      "text": "O que vemos a nossa volta?",
+      "type": "player"
+    },
+    {
+      "sender": "Mestre IA",
+      "text": "Groguinho, Grog, a escuridão é a única coisa que vossos olhos podem captar. Não há luz, nem contornos, apenas o breu total que rou",
+      "type": "master"
+    },
+    {
+      "sender": "lucas",
+      "charId": "Grog_02",
+      "charName": "Groguinho",
+      "text": "Há algo que possamos fazer?",
+      "type": "player"
+    },
+    {
+      "sender": "Mestre IA",
+      "text": "Groguinho, Grog, a escuridão é um véu impenetrável que rouba vossa visão. Contudo, o mundo não é feito apenas de luz. Vossos outros sentidos permanecem, aguçados pela privação.\n\nO ar é frio e úmido, e aquele cheiro metálico, que agora parece ainda mais forte, invade vossas narinas. O chão sob vossos pés é de pedra, mas quão vasto é? Há paredes próximas, ou um abismo? E o que dizer do silêncio, ou dos sons que a escuridão amplifica?\n\nEmbora vossos olhos não possam ajudar, vossas mãos podem tatear, vossos ouvidos podem se esforçar para captar o menor ruído, vosso olfato pode tentar discernir a fonte do cheiro.\n\nDizei-me, o que fazeis agora? Tentais tatear as paredes, vos mover em alguma direção, ou vos concentrais em algum som ou cheiro específico?",
+      "type": "master"
+    }
+  ],
   "chat": [
     {
       "sender": "abacaxi",
@@ -222,6 +377,38 @@
     {
       "sender": "tete",
       "text": "ttt"
+    },
+    {
+      "sender": "Lucas",
+      "text": "oi"
+    },
+    {
+      "sender": "Lucas",
+      "text": "teste"
+    },
+    {
+      "sender": "Lucas",
+      "text": "teste2"
+    },
+    {
+      "sender": "lucas",
+      "text": "oie"
+    },
+    {
+      "sender": "lucas",
+      "text": "e aew rapaze"
+    },
+    {
+      "sender": "lucas",
+      "text": "aushdiuahsidhaiushdiuahsdihalisd"
+    },
+    {
+      "sender": "lucas",
+      "text": "testando"
+    },
+    {
+      "sender": "lucas",
+      "text": "hahha"
     }
   ],
   "adventure": [
@@ -243,6 +430,18 @@
     {
       "sender": "Mestre IA",
       "text": "Mestre Narrador: A escuridão é densa, o ar pesado com um cheiro acre de mofo e algo indefinível, metálico. Você pisca, sentindo a aspereza da pedra fria sob suas costas. Uma dor lateja na sua cabeça, e o eco de uma voz distante, gutural, ainda ressoa em seus ouvidos. Grog e Grog, vocês se encontram em uma cela de pedra, sem janelas, apenas uma pesada porta de madeira reforçada com ferro na parede oposta. Uma tocha",
+      "type": "master"
+    },
+    {
+      "sender": "Lucas",
+      "charId": null,
+      "charName": null,
+      "text": "jogar",
+      "type": "player"
+    },
+    {
+      "sender": "Mestre IA",
+      "text": "Mestre Narrador: \"Jogar?\" A",
       "type": "master"
     }
   ]

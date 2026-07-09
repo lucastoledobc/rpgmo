@@ -11,7 +11,8 @@ export async function GET(request: Request, {params}: {params: Promise<{id: stri
   try {
     const fileContent = await fs.readFile(filePath, 'utf-8');
     return NextResponse.json(JSON.parse(fileContent));
-  } catch (e) {
-    return NextResponse.json({ error: 'Sala não encontrada' }, { status: 404 });
+  }
+  catch (e) {
+    return NextResponse.json({error: 'Sala não encontrada'}, {status: 404});
   }
 }

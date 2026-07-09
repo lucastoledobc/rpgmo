@@ -32,7 +32,7 @@ export default function RoomPage({params}: {params: Promise<{id: string}>}) {
           <RoomChars roomId={id} chars={data.chars}/>
 
         {/* Coluna 2: Mestre IA */}
-          <RoomAdventure  roomId={id} roomData={data}/>
+          <RoomAdventure roomData={data}/>
 
         {/* Coluna 3: Chat Amigos */}
           <RoomChat roomId={id}/>

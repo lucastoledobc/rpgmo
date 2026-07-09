@@ -16,9 +16,9 @@ export async function POST(request: Request) {
     
     // cria um id para o jogador
     const playerId = `player_${Math.random().toString(6).replace('0.', '')}`;
-    if (!roomData.room.players.includes(playerId)) {
-      roomData.room.players.push(playerId);
-    }
+    // if (!roomData.room.players.includes(playerId)) {
+    //   roomData.room.players.push(playerId);
+    // }
     await fs.writeFile(filePath, JSON.stringify(roomData, null, 2));
 
     return NextResponse.json({success: true, playerId});

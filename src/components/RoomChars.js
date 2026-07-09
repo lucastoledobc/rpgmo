@@ -25,12 +25,6 @@ export default function RoomChars({roomId, chars: initialChars}) {
       char.id === selectedId ? { ...char, player: playerId } : char
     ));
 
-    await fetch(`/api/room/${roomId}/select`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ charId: selectedId, playerId })
-    });
-
     setSelectedId('');
   };
 

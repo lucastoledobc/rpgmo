@@ -15,7 +15,7 @@ export default function Room({roomInfo}) {
       {isExpanded && (
         <div className="headerDetails">
           <p><strong>ID da Sala:</strong> {roomInfo.id}</p>
-          <p><strong>Criado em:</strong> {new Date(roomInfo.create).toLocaleString()}</p>
+          <p><strong>Criado em:</strong> {new Date(roomInfo.date).toLocaleString()}</p>
         </div>
       )}
     </header>

@@ -29,7 +29,7 @@ export default function RoomChat({roomId}) {
     fetchMessages();
 
     // 2. POLLING: Busca novas mensagens a cada 2 segundos
-    const interval = setInterval(fetchMessages, 1000);
+    const interval = setInterval(fetchMessages, 300000);
     return () => clearInterval(interval);
   }, [roomId]);
 
@@ -64,36 +64,42 @@ export default function RoomChat({roomId}) {
       </header>
       
       <div className="chat">
-        {messages.map((msg, index) => (
-          <div key={index} style={{marginBottom: '10px', textAlign: msg.sender === playerName ? 'right' : 'left'}}>
-            <span className="sender">
-              {msg.sender}
-            </span>
-            <div style={{
-              display: 'inline-block',
-              padding: '8px 12px',
-              borderRadius: '8px',
-              backgroundColor: msg.sender === playerName ? '#0070f3' : '#333',
-              color: '#fff',
-              marginTop: '2px'
-            }}>
-              {msg.text}
+        <div className="chatLog">
+          {messages.map((msg, index) => (
+            <div key={index} className={msg.sender === playerName ? 'myChat' : 'yourChat'}>
+              <span className="chatSender">{msg.sender}</span>
+              <div className='chatText'>{msg.text}</div>
             </div>
-          </div>
-        ))}
-        <div ref={chatEndRef} />
+          ))}
+          <div ref={chatEndRef} />
+        </div>
 
-      <form onSubmit={handleSend} className="message">
-        <input
-          type="text"
-          className="input"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Digite sua mensagem..."
-          autoComplete="off"
-        />
-        <button type="submit" className="button">ENVIAR</button>
-      </form>
+        <form onSubmit={handleSend} className="messageBox">          
+          <span className="charLabel">
+            @{playerName}
+          </span>
+
+          <textarea
+            className="message"
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value);
+              e.target.style.height = 'auto';
+              e.target.style.height = e.target.scrollHeight + 'px';
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                handleSend(e); 
+              }
+            }}
+            placeholder="Digite sua mensagem"
+            rows={1}
+            autoComplete="off"
+          />
+
+          <button type="submit" className="enter"></button>
+        </form>
       </div>
     </aside>
   );
