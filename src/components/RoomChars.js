@@ -91,7 +91,7 @@ export default function RoomChars({roomId, chars: initialChars}) {
               >
                 <option>-- Selecione --</option>
                 {availableChars.map((char) => (
-                  <option key={char.id} value={char.id}>{char.name} ({char.id})</option>              
+                  <option key={char.id} value={char.id}>{char.name} ({char.id})</option>
                 ))}
               </select>
               <button type='submit' className="button">Vincular</button>

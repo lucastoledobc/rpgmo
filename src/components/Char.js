@@ -69,9 +69,10 @@ export default function Char({roomId, chars, charId, onClose}) {
         <h1 className='title2'>{h1}</h1>
         
         {/* Note o 'name' batendo exatamente com as chaves do seu charData */}
-        <input name="nome" placeholder="Nome" value={charData.name} onChange={handleChange} className="input" required />
-        <input name="raca" placeholder="Raça" value={charData.race} onChange={handleChange} className="input" />
-        <input name="classe" placeholder="Classe" value={charData.class} onChange={handleChange} className="input" />
+        <input name="name" placeholder="Nome" value={charData.name} onChange={handleChange} className="input" required />
+        <input name="age" placeholder="Idade" value={charData.age} onChange={handleChange} className="input" required />
+        <input name="race" placeholder="Raça" value={charData.race} onChange={handleChange} className="input" />
+        <input name="class" placeholder="Classe" value={charData.class} onChange={handleChange} className="input" />
         
         <h3 className='title3'>Status</h3>
         {charData.status.map((st, index) => (

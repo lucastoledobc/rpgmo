@@ -66,7 +66,7 @@
   "chars": [
     {
       "id": "npc_001",
-      "nome": "Kaelen, o Náufrago",
+      "nome": "Kaelen",
       "idade": 42,
       "raca": "Humano",
       "classe": "Guerreiro",
@@ -170,6 +170,12 @@
       "ataque": "Sopro de Fogo (4d10) e Garras (2d10 + 6)",
       "pericias": ["Intimidação +8", "História +6"],
       "comportamento": "Arrogante e tático. Usa o ambiente a seu favor e subestima inimigos fracos."
+    }
+  ],
+  "items":[
+    {
+      "tipo": "arma",
+      "nome": "adaga"
     }
   ],
   "gods": [

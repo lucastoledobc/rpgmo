@@ -108,6 +108,7 @@ textarea {box-sizing: border-box;}
 }
 .title2 {
   padding: 0.5rem;
+  margin-bottom: 1rem;
   font-size: 1.5rem;
   text-shadow: 4px 4px 0px var(--accent-color);
 }
@@ -275,7 +276,7 @@ textarea {box-sizing: border-box;}
   color: var(--text-color);
   font-size: 0.7rem;
 }
-.editBox {
+.modelBox {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0, 0, 0, 0.8);
@@ -296,6 +297,7 @@ textarea {box-sizing: border-box;}
   min-height: 0;
 }
 .messageRow {
+  padding: 1rem;
   font-size: 0.8rem;
   line-height: 1.4;
   word-wrap: break-word;
@@ -410,7 +412,7 @@ textarea {box-sizing: border-box;}
                 
 
 /* Botões */
-.arroba {
+.at {
   appearance: none;
   background-image: url('/img/icons/at-outline.svg');
   width: 2rem;
@@ -420,6 +422,13 @@ textarea {box-sizing: border-box;}
 }
 .enter {
   background-image: url('/img/icons/enter-outline.svg');
+  width: 2rem;
+  height: 2rem;
+  background-repeat: no-repeat;
+  filter: invert(1);
+}
+.settings {
+  background-image: url('/img/icons/settings-outline.svg');
   width: 2rem;
   height: 2rem;
   background-repeat: no-repeat;

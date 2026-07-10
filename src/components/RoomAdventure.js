@@ -1,7 +1,9 @@
 'use client';
 import {useState, useEffect, useRef} from 'react';
+import Master from './Master.js';
 
 export default function RoomAdventure({roomData}) {
+  const [showMasterConfig, setShowMasterConfig] = useState(false);
   const [adventureLog, setAdventureLog] = useState([]);
   const [selectedCharId, setSelectedCharId] = useState('');
   const [action, setAction] = useState('');
@@ -26,31 +28,32 @@ export default function RoomAdventure({roomData}) {
     }
   };
 
-  // Executa uma vez logo ao montar
-  fetchAdventure();
-  
-  // Intervalo para atualizar a cada 3 segundos
-  const interval = setInterval(fetchAdventure, 3000);
-  
-  return () => clearInterval(interval);
-}, [roomData.room.id]);
+    // Executa uma vez logo ao montar
+    fetchAdventure();
+    
+    // Intervalo para atualizar a cada 3 segundos
+    const interval = setInterval(fetchAdventure, 10000);
+    
+    return () => clearInterval(interval);
+  }, [roomData.room.id]);
 
-  // useEffect(() => {
-  //   advEndRef.current?.scrollIntoView({behavior: 'smooth'});
-  // }, [adventureLog]);
+  useEffect(() => {
+    advEndRef.current?.scrollIntoView({behavior: 'smooth'});
+  }, [adventureLog]);
 
 
   const handleSendAction = async (e) => {
     e.preventDefault();
-    
+    if (!selectedCharId || action.trim() == '') {setAction(''); return;}
     const selectedChar = roomData.chars.find(c => c.id === selectedCharId);
 
-    const payload = { 
-      action: action.trim(), 
+    const payload = {
       playerName: sessionStorage.getItem('playerName') || 'Jogador',
-      char: selectedChar
+      char: selectedChar,
+      action: action.trim()
     };
 
+    setAction('');
     setLoadingIA(true);
     try {
       const res = await fetch(`/api/room/${roomData.room.id}/adventure`, {
@@ -64,7 +67,6 @@ export default function RoomAdventure({roomData}) {
         throw new Error(errorData.details || "Erro no servidor");
       }
       
-      setAction('');
     } 
     catch (err) {
       console.error("Falha ao enviar ação:", err.message);
@@ -79,6 +81,15 @@ export default function RoomAdventure({roomData}) {
     <aside className="roomBox">
       <header className="header">
         <h3 className='title3'>AVENTURA</h3>
+        <button className='settings' onClick={() => setShowMasterConfig(true)}></button>
+
+        {showMasterConfig && (
+          <Master 
+            roomId={roomData.room.id} 
+            config={roomData.master} 
+            onClose={() => setShowMasterConfig(false)} 
+          />
+        )}
       </header>
       
       {/* Corpo do texto da história */}
@@ -86,7 +97,7 @@ export default function RoomAdventure({roomData}) {
         <div className="adventureLog">
           {adventureLog.map((log, index) => (
             <div key={index} className="messageRow">
-              <span className="senderName">{log.sender == "Mestre IA"? "Mestre" : log.charName}:</span>
+              <span className="senderName">{log.charName}:</span>
               <span className="messageText">{log.text}</span>
             </div>
           ))}

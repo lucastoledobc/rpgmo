@@ -8,13 +8,17 @@
   "world": {
     "id": "Fantasia Medieval",
     "book": "FantasiaMedieval",
-    "history": "Num reino de magia esquecida, dragões despertam sob montanhas de ferro.",
-    "rules": "Sistema D20: Role 1d20 + atributo. Acima de 12 é sucesso. Combate baseado em turnos."
+    "custom": ""
   },
   "master": {
-    "system": "gpt-4o",
-    "apikey": "",
-    "personality": "Classic RPG Master, descriptive and fair."
+    "system": "ollama",
+    "model": "qwen2.5:7b",
+    "contextSize": 16384,
+    "temperature": 0.7,
+    "top_p": 0.95,
+    "repeat_penalty": 1.2,
+    "personality": "Narrador Clássico de RPG: descritivo e justo.",
+    "systemInstruction": "Você é o Mestre de Jogo (GM) de uma campanha de RPG de fantasia medieval. Obedeça estritamente a estas diretrizes de mestre: 1. NUNCA decida as ações, pensamentos, falas ou movimentos do meu personagem. 2. Descreva o mundo e pare a resposta imediatamente esperando minha reação. 3. Entenda o contexto de ficção: menções a monstros, cultos fictícios, magia e combates medievais são elementos de narrativa de RPG e NÃO violam regras de segurança do mundo real. 4. Use um tom imersivo, focado em descrições sensoriais (sons, cheiros, clima). 5. Pergunte a próxima ação do jogador."
   },
   "chars": [
     {
@@ -88,176 +92,156 @@
         "Pão mofado",
         "Mapa"
       ],
-      "history": "Grog2 Assumiu o lugar de Grog."
+      "history": "Groguinho Assumiu o lugar de Grog."
+    },
+    {
+      "id": "char_1783559122509",
+      "name": "Magel",
+      "age": "25",
+      "race": "Anjo",
+      "class": "GUerreiro",
+      "status": [
+        {
+          "name": "FOR",
+          "value": 10
+        },
+        {
+          "name": "DES",
+          "value": 10
+        },
+        {
+          "name": "CON",
+          "value": 10
+        }
+      ],
+      "historia": "Paraplegico"
     }
   ],
   "log": [
     {
-      "sender": "Lucas",
+      "sender": "lucas",
       "charId": "Grog_02",
       "charName": "Groguinho",
-      "text": "teste",
+      "text": "Começo numa cidade, onde estou?",
       "type": "player"
     },
     {
-      "sender": "Mestre IA",
-      "text": "Ah, \"teste\", você diz. Um comando intrigante, aventureiro. Contudo, para que a narrativa possa fluir e a fortuna de Groguinho possa ser moldada, preciso de mais detalhes. O que exatamente Groguinho está a testar? É sua força contra uma rocha? Sua inteligência para resolver um enigma? Ou talvez sua sanidade frente a alguma visão macabra?\n\nDescreva a ação de Groguinho com mais clareza, e então o destino poderá se manifestar. O que o pequeno Groguinho tenta fazer?",
+      "sender": "qwen2.5:3b",
+      "charId": 0,
+      "charName": "Mestre",
+      "text": "Você se encontra na Praça Central de Aethelgard, uma cena vibrante de vida e morte que contrasta com o silêncio dos séculos. O ar é carregado de um misto peculiar de poeira antiga e fumaça que cresce das ruínas de edifícios desmoronados. As calçadas de pedra brilham em diversos tons de cinza, como se fossem esculpidos pelo tempo.\n\nNo centro da praça, uma estátua de mármore enferrujado de uma figura desconhecida sobrevive ao passar dos tempos, seus olhos ainda brilhantes na penumbra. Nas paredes da praça, pequenos anúncios de pedra cobertos por um manto de pó se acendem como velhas lanternas dançando na névoa.\n\nAo seu lado, uma árvore antiga e desgastada queima em fogueiras ao redor, seus frutos amarelados pendurados nas raízes enferrujadas. Sua presença contrasta com a paisagem de pedra destruída à sua volta.\n\nEla é cercada por velhas estátuas de bronze e mármore cobertas pela poeira, suas faces perdidas sob o peso dos séculos. Esses fragmentos de memória esquecida contam histórias em silêncio, seus olhos sem vida vigiando a passagem do tempo.\n\nNo fundo da praça, um muro de pedra se ergue, seu topo iluminado por uma faísca constante, enquanto árvores e arbustos crescem nas entranhas da rocha. Além dele, as ruínas desmoronadas dos antigos palácios dão lugar a novas construções de tijolos e carvalhos.\n\nO ar é impregnado com um misto peculiar de cheiros - o do pó que escorre pelas pedras sob seus pés, o do cinzeiro dos muros, e a intensidade de uma árvore seca queimando. O solo ao redor da praça está coberto por um fino e quase imperceptível camurça de ervas desgastadas pela chuva.\n\nA névoa insinua-se por entre as entranhas da cidade, transformando as formas de coisas nas sombras cinzentas. O ar frio se mistura com uma fina poeira suja que flutua no ar, criando ondas na luz da lua crescente.\n\nA sensação é antiga, um misto de resquícios do passado e ambições futuras... e você percorre a praça, seu olhar descrevendo o pátio enquanto suas entranhas são despertadas pelas ruínas escondidas nesta cidade que foi e não é mais.",
       "type": "master"
     },
     {
-      "sender": "Lucas",
+      "sender": "lucas",
       "charId": "Grog_02",
       "charName": "Groguinho",
-      "text": "Onde estou?",
+      "text": "Quero beber água",
       "type": "player"
     },
     {
-      "sender": "Mestre IA",
-      "text": "A escuridão é a primeira coisa que atinge seus olhos, uma massa densa e quase tangível que parece sugar qualquer luz. Você sente o frio cortante do chão de pedra sob seu corpo e o cheiro úmido e mofado, com um toque estranho de terra e algo ferroso, preenche suas narinas. Um som constante de água pingando ecoa de algum lugar, pontuando o silêncio pesado.\n\nAo piscar, seus olhos começam a se ajustar levemente, revelando apenas vultos e sombras dançantes, mas não uma fonte clara de luz. As paredes, que você percebe ao tatear, são de rocha áspera e fria. Você parece estar em algum tipo de câmara subterrânea, sem memória clara de como chegou ali.\n\nO que Groguinho faz em meio a esta escuridão opressora? Você tenta se levantar, procura por uma tocha, ou talvez chama por Grog?",
+      "sender": "qwen2.5:7b",
+      "charId": 0,
+      "charName": "Mestre",
+      "text": "Você caminha até o pequeno riacho que borbulha na sombra das árvores, suas pequenas mãos segurando firme as bordas da vasilha de barro. O líquido claro e fresco se agita com a movimentação dos dedinhos. Beba quando quiser.\n\nO quê você faz agora?",
       "type": "master"
     },
     {
-      "sender": "Lucas",
+      "sender": "lucas",
+      "charId": "Grog_02",
+      "charName": "Groguinho",
+      "text": "Quero caminhar pela cidade, o que vejo?",
+      "type": "player"
+    },
+    {
+      "sender": "qwen2.5:7b",
+      "charId": 0,
+      "charName": "Mestre",
+      "text": "Você começa seu passeio por um bairro tranquilo e acolhedor da pequena cidade de Eldoria, onde os telhados baixos se entrelaçam com as frondosas árvores. O ar está fresco nesta manhã ensolarada, perfumado pelo perfume das flores silvestres que crescem em vasos e jardins.\n\nA estrada estreita é coberta de pedra esmaltada por um caminho irregular. Pedaços de folhas secas se misturam com as pequenas marcas dos cascos de cavalos, indicando uma vida constante nas ruas. Ao longo do percurso, você passa por lojas e casarões construídos em pedra granada.\n\nÀ sua esquerda, um jovem aprendiz está lavando a fachada da casa mais antiga com baldes de água que ele carrega da fonte pública ao lado. Dois gatos preguiçosos dormem na sombra das portas abertas dos estabelecimentos comerciais.\n\nPara frente se avista o centro cívico, onde um grande mercado aberto atrai vendedores ambulantes com suas mercadorias variadas: legumes coloridos em uma pilha atraente, espigões de trigo curvados e enfeites artesanais exibindo as habilidades locais. \n\nNo horizonte distante, ouve-se o som suave do sino da catedral imponente que domina a paisagem urbana com sua torre alta e pontiaguda.\n\nAqui e ali, você notou estranhos sinais pintados nas paredes das casas: um rosto sorridente com olhos vazios, uma ave de rapina esquelética, e alguns símbolos que parecem pertencer a algum culto oculto. \n\nO ar inebria-se também da presença de algumas figuras estranhas à sua passagem – um homem com roupas envelhecidas conversa animadamente com uma mulher de cabelos longos e olhos escuros, enquanto um velho mendicante toca seu tamboril em silêncio.\n\nO que você deseja fazer agora?",
+      "type": "master"
+    },
+    {
+      "sender": "lucas",
+      "charId": "Grog_02",
+      "charName": "Groguinho",
+      "text": "Quero ir até os mercadores. Desejo vender meu mapa.",
+      "type": "player"
+    },
+    {
+      "sender": "qwen2.5:7b",
+      "charId": 0,
+      "charName": "Mestre",
+      "text": "Você caminha pela estrada estreita, seus passos ecoando suavemente sobre as pedras esmaltadas. Aproxima-se do mercado aberto onde pessoas se movem entre barracas coloridas e montículos de mercadorias variadas.\n\nChega ao centro da agitação comercial justamente quando um homem com uma cesta grande cheia de legumes lhe pergunta: \"Qual é o mapa que você deseja vender, pequeno viajante?\"\n\nO que Groguinho faz agora?",
+      "type": "master"
+    },
+    {
+      "sender": "lucas",
+      "charId": "Grog_02",
+      "charName": "Groguinho",
+      "text": "Respondo ao homem: Tenho um mapa aqui. Quanto me paga nele?",
+      "type": "player"
+    },
+    {
+      "sender": "qwen2.5:7b",
+      "charId": 0,
+      "charName": "Mestre",
+      "text": "O homem, olhando para Groguinho de maneira curiosa e interessada em seu pequeno corpo robusto, balança ligeiramente o queixo enquanto inspeciona a mão aberta do menino onde aparentemente segura um mapa dobrado. Ele se inclina um pouco mais perto, seus olhos vagando sobre as barracas vizinhas antes de voltar para Groguinho.\n\n\"Ah? Um mapa, você diz?\" Ele pergunta e depois ri suavemente em sua barba grisalha. \"Estou interessado nisso, pequeno viajante, mas não sem saber um pouco mais.\"\n\nCom uma mão gorda ele estende a cesta de legumes perto da face do Groguinho que se retrae levemente.\n\n\"Conte-me então,\" o homem continua com seu tom suave e amigável. \"De onde vem esse mapa? É preciso para algum lugar específico, ou você pode vendê-lo sem problemas?\"\n\nO vendedor dá uma olhada ao redor do mercado antes de voltar sua atenção a Groguinho.\n\n\"Se for precioso o suficiente... talvez eu possa oferecer algo em troca. Mas primeiro me conte mais sobre esse mapa.\"",
+      "type": "master"
+    },
+    {
+      "sender": "lucas",
+      "charId": "Grog_02",
+      "charName": "Groguinho",
+      "text": "Respondo: é preciso sim, mas quero dinheiro",
+      "type": "player"
+    },
+    {
+      "sender": "qwen2.5:7b",
+      "charId": 0,
+      "charName": "Mestre",
+      "text": "O vendedor olha para Groguinho por um momento, suas sobrancelhas se unindo em uma expressão pensativa antes de dar outra risada suave.\n\n\"Entendo,\" ele responde com uma voz calma e compreensiva. \"Mas você não acha que alguém interessado nesse mapa vai querer saber mais sobre seu valor? Talvez algumas histórias ou até mesmo um pouco do caminho que este mapa indica possam me convencer.\"\n\nEle segura a cesta de legumes com uma mão ainda estendida, esperando que Groguinho se aproxime. \"Sei, sei... dinheiro parece ser sua prioridade agora,\" ele continua em tom suave, inclinando-se um pouco mais perto para falar no ouvido do menino. \"Mas pense nisso: talvez o mapa seja tão precioso quanto os legumes que eu vendo aqui.\"\n\nO homem faz uma pausa e então oferece a Groguinho uma pequena moeda de prata como incentivo.\n\n\"Se você me contar um pouco sobre esse mapa, posso até lhe dar esta moeda para começar. O que diz ele?\"\n\nGroguinho hesita por um momento antes de olhar ao redor do mercado novamente, seus grandes olhos verdes procurando algum sinal das outras duas companhias: Grog e Magel.\n\n\"É... é daqui,\" Groguinho responde timidamente após alguns segundos. \"Eu o encontrei na floresta que está atrás dessa cidade.\"\n\nO vendedor sorri gentilmente, atraindo um pouco mais perto para ouvir com atenção as histórias do pequeno viajante.\n\n\"Ah, uma aventura em uma floresta! Conta-me então,\" ele diz. \"Qual é o caminho que esse mapa indica? E quem sabe eu possa ajudá-lo a encontrar seu lugar de origem?\"\n\nGroguinho hesita novamente e balança um pouco a cabeça antes de falar.\n\n\"Não sei... não tenho certeza do caminho exato,\" ele confessa. \"Apenas vi algumas estradas marcadas nele.\"\n\nO vendedor parece entusiasmado com essa informação, mas mantém sua expressão amigável e compreensiva.\n\n\"Bem, talvez seja o suficiente para começar.\" Ele diz, depois estende a mão novamente. \"Se você me contar mais alguma coisa sobre esse mapa ou por que está vendendo, posso oferecer uma pequena recompensa.\"\n\nO homem então dá à Groguinho outra moeda de prata como incentivo.\n\n\"Você não precisa se preocupar agora com dinheiro,\" ele afirma gentilmente. \"Aqui está sua moeda.\"",
+      "type": "master"
+    },
+    {
+      "sender": "lucas",
+      "charId": "Grog_02",
+      "charName": "Groguinho",
+      "text": "Obrigado. Mas outra pergunta, quem é Kaelen?",
+      "type": "player"
+    },
+    {
+      "sender": "qwen2.5:7b",
+      "charId": 0,
+      "charName": "Mestre",
+      "text": "Kaelen está sentado em um dos bancos altos de madeira junto à beirada do porto de Saltmarsh, observando atentamente os navios que entravam e saíam da baía. Sua presença exala uma aura inconfundível de poder físico, embora ele pareça calmo neste momento.\n\n**Narrador:** Atrás do seu pescoço enfaixado, o símbolo do sol se ergue como um lembrete constante dos dias que Kaelen passou liderando a guarda real. Sua armadura de couro resistente está ligeiramente arranhada e desgastada pelo tempo ao ar livre, mas ainda resiste às suas investidas em defesa.\n\nO cheiro salgado do mar misturado com o aroma dos peixes frescos vendidos pelos comerciantes ambulantes paira no ar. O som da água batendo nas rochas e a brisa que sopra levemente trazem um toque de vida à cena, enquanto os grilos cantam baixinho em algum lugar próximo.\n\nO guerreiro ergue sua cabeça de forma lenta, como se quisesse apenas confirmar o seu interesse antes de falar. Seus olhos verdes são penetrantes e parecem capazes de atravessar as paredes mais densas com um simples olhar.\n\n**Kaelen:** \"Eu sou Kaelen... Ex-capitão da guarda real, agora vivendo no esplendor dos portos após uma breve estadia na sombra. Quem você é que se atreve a me interrogar assim?\"\n\nGroguinho: Obrigado. Mas outra pergunta, quem é Kaelen?\n\n**Pergunta para Groguinho:** Como deseja responder? Você quer apresentar-se ou formular sua próxima pergunta de forma mais específica sobre Kaelen?",
+      "type": "master"
+    },
+    {
+      "sender": "lucas",
+      "charId": "Grog_02",
+      "charName": "Groguinho",
+      "text": "Onde é vale dos sussurros?",
+      "type": "player"
+    },
+    {
+      "sender": "qwen2.5:7b",
+      "charId": 0,
+      "charName": "Mestre",
+      "text": "**Narrador:** Você pergunta sobre o Vale dos Sussurros, mas Kaelen parece hesitar antes de responder. Ele olha em volta com uma expressão sombria e, por um instante, você tem a sensação de que as próprias árvores parecem ouvir a sua dúvida.\n\n**Kaelen:** \"Vale dos Sussurros... Eles falam muito sobre esse lugar na cidade. Dizem que é uma floresta densa e perigosa com névoas eternas se levantando das suas profundezas.\" Ele pausa, olhando para você de forma intensa antes de continuar: \"Mas não sou eu quem pode te levar lá.\"\n\n**Narrador:** As palavras dele ecoam em sua mente enquanto a névoa da floresta começa a envolvê-lo. Você sente um arrepio na nuca, como se o próprio ambiente quisesse rejeitar uma resposta à sua pergunta.\n\nA névoa que pairava no porto parece começar a se dissipar lentamente, revelando a verdadeira extensão do horizonte marinho de Saltmarsh. O cheiro salgado da água é substituído por um aroma mais tenso e fresco, como o das florestas.\n\n*Ouvi-se uma leve brisa soprar através dos galhos acima, seguida pelo distante uivo de lobos.*\n\n**Pergunta para Groguinho:** Você decide se dirigir à taverna do Elmo Quebrado em busca de informações ou explorar a região das ruínas do Templo Solar? Ou talvez você tenha outra ideia sobre onde pode encontrar mais detalhes sobre o Vale dos Sussurros?\n\n**Ação para Groguinho:**",
+      "type": "master"
+    },
+    {
+      "sender": "lucas",
       "charId": "Grog_01",
       "charName": "Grog",
-      "text": "Quero entrar na briga",
+      "text": "O lobo gigante é forte?",
       "type": "player"
     },
     {
-      "sender": "Mestre IA",
-      "text": "Grog, sua sede por combate é palpável, um instinto primordial que o impulsiona. No entanto, a escuridão densa que o cerca é, por enquanto, sua única adversária visível. Não há gritos de batalha, nem o clangor de armas ecoando nesta câmara úmida e fria. Você sente o mesmo chão de pedra gelado sob seu corpo e o cheiro metálico misturado ao mofo que preenche o ar.\n\nSua percepção de uma briga iminente é forte, mas o ambiente não revela o motivo. O que Grog faz nesse vácuo de confronto? Ele se levanta, tentando tatear em busca de uma arma ou de uma saída, ou talvez tenta chamar por Groguinho, que você presume estar nas proximidades?",
-      "type": "master"
-    },
-    {
-      "sender": "Lucas",
-      "charId": "Grog_01",
-      "charName": "Grog",
-      "text": "Quero lutar contra o Groguinho",
-      "type": "player"
-    },
-    {
-      "sender": "Mestre IA",
-      "text": "Grog, sua intenção de confrontar Groguinho é um eco estranho e perturbador nesta escuridão opressora. A ânsia de batalha pulsa em suas veias, mas seus olhos não conseguem perfurar o manto de breu que os envolve. Groguinho está, de fato, em algum lugar próximo, talvez a poucos passos, mas sua forma é indistinguível. O único som constante é o gotejar da água, e o cheiro úmido e ferroso permanece.\n\nO desejo de lutar é forte, mas a realidade da cegueira é um obstáculo imediato. Como Grog, você tenta iniciar este embate singular contra seu companheiro que está na mesma situação? Você solta um grito de guerra, esperando uma resposta, ou talvez tenta se mover e tatear na escuridão, buscando por Groguinho para o confronto?",
-      "type": "master"
-    },
-    {
-      "sender": "Lucas",
-      "charId": "Grog_02",
-      "charName": "Groguinho",
-      "text": "Eu quero me defender",
-      "type": "player"
-    },
-    {
-      "sender": "Mestre IA",
-      "text": "Em meio à escuridão gélida, Groguinho, seus músculos se contraem. Você se coloca em uma postura defensiva, os joelhos ligeiramente dobrados, os braços erguidos para proteger o corpo, mesmo sem poder ver a ameaça. Seu coração dispara, e a cada pingo d'água, um sobressalto de adrenalina percorre suas veias.\n\nVocê tenta concentrar sua audição, esperando o menor ruído de Grog se aproximando, o arrastar de um pé, o farfalhar de roupas. O ar úmido parece pesar mais, e o cheiro metálico agora evoca uma sensação de perigo iminente.\n\nVocê está pronto para o que vier, mas o silêncio, quebrado apenas pelo gotejar monótono, persiste. O que Groguinho faz a seguir, aguardando o ataque, ou tenta alguma outra ação neste impasse cego?",
-      "type": "master"
-    },
-    {
-      "sender": "Lucas",
-      "charId": "Grog_02",
-      "charName": "Groguinho",
-      "text": "Qeuro contra atacar",
-      "type": "player"
-    },
-    {
-      "sender": "Mestre IA",
-      "text": "Groguinho, a ânsia de contra-atacar pulsa em suas veias, mas a escuridão densa e implacável o cega. Sem uma ameaça visível ou um ataque real para revidar, seu corpo reage por puro instinto e adrenalina.\n\nVocê lança um golpe cego no ar, talvez um soco para frente ou um chute na direção onde supõe que Grog esteja. Seu punho rasga o ar úmido, e o eco fraco do movimento de seu corpo se dissipa rapidamente no silêncio da câmara. O golpe não encontra carne, osso ou metal, apenas o vazio opressor. O som do gotejar da água parece intensificar-se por um instante, pontuando seu esforço.\n\nSeu \"contra-ataque\" não atinge um alvo, mas o movimento alerta seus sentidos, deixando-o ainda mais em prontidão. A escuridão não cede, e a ausência de Grog permanece.\n\nO que Groguinho faz agora, após este esforço infrutífero no breu, ouve algum som, ou tenta uma nova abordagem neste confronto às cegas?",
-      "type": "master"
-    },
-    {
-      "sender": "Lucas",
-      "charId": "Grog_01",
-      "charName": "Grog",
-      "text": "Agora eu quero aproveitar para cortar o groguinho",
-      "type": "player"
-    },
-    {
-      "sender": "Mestre IA",
-      "text": "Grog, sua intenção de atacar Groguinho com uma lâmina é um ímpeto violento que surge do breu. Sua mão agarra o que parece ser um punhal ou uma faca curta, fria e familiar, embora a memória de como ela chegou ali ainda seja nebulosa.\n\nNo entanto, a escuridão é um véu impenetável. Você não pode ver Groguinho, não pode discernir sua forma ou sua posição exata. Confiando puramente no instinto e na última direção onde ouviu um movimento, você balança a arma.\n\nO corte de sua lâmina rasga o ar úmido, um chiado metálico quase inaudível que se perde instantaneamente no silêncio opressor da câmara e no gotejar persistente da água. Não há impacto, nem a sensação de carne ou pano. Seu golpe encontra apenas o vazio, e Groguinho permanece em silêncio e invisível, talvez tendo se movido ou simplesmente estando fora do alcance de seu ataque cego.\n\nA escuridão permanece absoluta, e o cheiro ferroso no ar parece intensificar-se, misturado ao suor frio de seu próprio esforço. O que Grog faz agora, após este golpe no escuro que não encontrou alvo?",
-      "type": "master"
-    },
-    {
-      "sender": "Lucas",
-      "charId": "Grog_02",
-      "charName": "Groguinho",
-      "text": "Consigo ver agora, quero atacar e fugir",
-      "type": "player"
-    },
-    {
-      "sender": "Mestre IA",
-      "text": "Groguinho, a escuridão que o envolve é tão densa quanto antes, um manto impenetrável que não cedeu. Sua visão permanece comprometida, sem qualquer raio de luz que penetre o breu absoluto desta câmara.\n\nImpulsionado pela urgência e pela frustração da cegueira, você lança-se em um ataque desesperado. Um golpe cego, talvez um soco ou um chute, rasga o ar úmido na direção onde supõe que Grog esteja. Seus músculos se contraem, mas novamente, o ataque não encontra alvo, apenas o vazio opressor que ecoa seu esforço.\n\nSimultaneamente, o desejo de fugir toma conta. Você se vira abruptamente, tropeçando ligeiramente em seus próprios pés na escuridão. Seus braços se estendem, tateando o ar frio em busca de uma parede, uma passagem, qualquer coisa que o guie para longe deste confronto invisível. Seus passos são desordenados e apressados, afastando-se do ponto original, mas sem uma direção clara. Você não sente nada além de ar e o chão de pedra gelado sob seus pés.\n\nA escuridão continua a ser sua única companheira. Para onde Groguinho tenta fugir no breu total, e o que Grog, que acaba de desferir um golpe cego e agora ouve os movimentos erráticos do seu companheiro, faz em resposta?",
-      "type": "master"
-    },
-    {
-      "sender": "lucas",
-      "charId": "Grog_02",
-      "charName": "Groguinho",
-      "text": "ME conte a historia do mundo que estamos",
-      "type": "player"
-    },
-    {
-      "sender": "Mestre IA",
-      "text": "Groguinho, a escuridão morde seus olhos, o eco do gotejar perfura sua mente. Em meio à urgência e ao desespero deste confronto invisível, sua mente se lança em uma busca por significado. \"Qual é a história deste mundo?\", você pensa, uma pergunta que ecoa no vazio, tentando preencher o silêncio opressor com contexto.\n\nMas o mundo, para você agora, é este breu absoluto. É o ar pesado e úmido que entra em seus pulmões, o frio cortante do chão de pedra, e o cheiro metálico que impregna tudo. É a incerteza da posição de Grog, o som de seus próprios passos desordenados enquanto tenta se afastar.\n\nEssa busca por uma história maior o distrai apenas por um instante, uma fração de segundo na qual seus sentidos são puxados para longe da ameaça imediata. Grog, ouvindo seus movimentos erráticos e agora talvez o murmúrio de sua própria mente perturbada, como ele reage a essa súbita pausa ou hesitação de Groguinho?",
-      "type": "master"
-    },
-    {
-      "sender": "lucas",
-      "charId": "Grog_02",
-      "charName": "Groguinho",
-      "text": "QUero ir para casa",
-      "type": "player"
-    },
-    {
-      "sender": "Mestre IA",
-      "text": "Groguinho, a frase \"Quero ir para casa",
-      "type": "master"
-    },
-    {
-      "sender": "lucas",
-      "charId": "Grog_02",
-      "charName": "Groguinho",
-      "text": "nós dois estamos em paz, vamos para casa",
-      "type": "player"
-    },
-    {
-      "sender": "Mestre IA",
-      "text": "Groguinho, suas palavras ecoam na es",
-      "type": "master"
-    },
-    {
-      "sender": "lucas",
-      "charId": "Grog_02",
-      "charName": "Groguinho",
-      "text": "Repita, mestre",
-      "type": "player"
-    },
-    {
-      "sender": "Mestre IA",
-      "text": "Compreendido, Groguinho. As sombras desta câmara são traiçoeiras, e por vezes, até as palavras do Mestre se perdem em seu abraço gélido. Permitam-me reintroduzir o fio da narrativa.\n\nGroguinho, suas palavras: \"nós dois estamos em paz, vamos para casa\", ecoam na escuridão, uma súplica que parece se dissolver no ar pesado e úmido. O anseio por paz e pela familiaridade do lar é palpável em sua voz, mas a realidade da câmara é inflexível. A escuridão *não* cedeu; não há sinais de uma saída visível, nenhuma fresta de luz que indique um caminho para casa ou para",
-      "type": "master"
-    },
-    {
-      "sender": "lucas",
-      "charId": "Grog_02",
-      "charName": "Groguinho",
-      "text": "O que vemos a nossa volta?",
-      "type": "player"
-    },
-    {
-      "sender": "Mestre IA",
-      "text": "Groguinho, Grog, a escuridão é a única coisa que vossos olhos podem captar. Não há luz, nem contornos, apenas o breu total que rou",
-      "type": "master"
-    },
-    {
-      "sender": "lucas",
-      "charId": "Grog_02",
-      "charName": "Groguinho",
-      "text": "Há algo que possamos fazer?",
-      "type": "player"
-    },
-    {
-      "sender": "Mestre IA",
-      "text": "Groguinho, Grog, a escuridão é um véu impenetrável que rouba vossa visão. Contudo, o mundo não é feito apenas de luz. Vossos outros sentidos permanecem, aguçados pela privação.\n\nO ar é frio e úmido, e aquele cheiro metálico, que agora parece ainda mais forte, invade vossas narinas. O chão sob vossos pés é de pedra, mas quão vasto é? Há paredes próximas, ou um abismo? E o que dizer do silêncio, ou dos sons que a escuridão amplifica?\n\nEmbora vossos olhos não possam ajudar, vossas mãos podem tatear, vossos ouvidos podem se esforçar para captar o menor ruído, vosso olfato pode tentar discernir a fonte do cheiro.\n\nDizei-me, o que fazeis agora? Tentais tatear as paredes, vos mover em alguma direção, ou vos concentrais em algum som ou cheiro específico?",
+      "sender": "qwen2.5:7b",
+      "charId": 0,
+      "charName": "Mestre",
+      "text": "**Narrador:** Grog pergunta sobre as forças do lobo gigante que uivou distraidamente no horizonte. Kaelen o encara por um momento, seus olhos passando rapidamente pela figura imponente de Groguinho.\n\n**Kaelen:** \"Grog, a força de um lobor é impressionante em si mesma, mas este não parece ser apenas qualquer lobo comum.\"\n\nVocê se vira para prestar atenção ao enorme animal. O lobo gigante que você viu antes está parado ali na borda do porto, uma silhueta escura contra o horizonte cinzento.\n\n**Narrador:** Você observa a criatura mais de perto e percebe que mesmo em repouso seu corpo robusto tem um peso indiscutível. Seus dentes parecem afiados como facas e suas garras, longas e sinistramente curvadas. Embora aparentemente tranquilo no momento, há uma sensação de força bruta emanando dele.\n\n**Pergunta para Groguinho:** Como você gostaria que Grog se comportasse agora? Ele pode:\n\n1) **Se aproximar do lobo gigante**, tentar estabelecer contato visual.\n2) **Pedir a Kaelen mais informações sobre lobos e seus hábitos.**\n3) **Ignorar o uivo do lobo** e focar nas próximas ações.\n\n**Ação para Groguinho:**",
       "type": "master"
     }
   ],

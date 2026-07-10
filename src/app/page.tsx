@@ -11,7 +11,6 @@ export default function Home() {
 
   const login = async (e: React.SubmitEvent) => {
     e.preventDefault();
-    console.log("Valor da room:", room);
     setMensagem({text: 'Verificando...', type: 'info'});
 
     const response = await fetch('/api/auth', {
