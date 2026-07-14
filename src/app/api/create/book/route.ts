@@ -1,20 +1,39 @@
-import { NextResponse } from 'next/server';
-import fs from 'fs/promises';
-import path from 'path';
+// arquivo: route para criação de mundo do livro da pessoa
+// local: src\app\api\create\book\route.ts
+
+import {NextResponse} from 'next/server';
+import {db} from '@/db';
+import {worlds} from '@/db/schema';
 
 export async function POST(request: Request) {
   try {
-    const bookData = await request.json();
-    
-    // Sanitização simples para evitar caminhos maliciosos
-    const filename = bookData.name.replace(/\s+/g, '') + '.json';
-    const filePath = path.join(process.cwd(), 'src', 'data', 'livros', filename);
+    const book = await request.json();
 
-    // Salva o arquivo na pasta de livros
-    await fs.writeFile(filePath, JSON.stringify(bookData, null, 2));
+    if (!book?.metadados?.title || !book?.rules) {
+      return NextResponse.json(
+        {error: 'Livro inválido: faltam campos obrigatórios (title e rules).'},
+        {status: 400}
+      );
+    }
 
-    return NextResponse.json({ success: true, filename });
-  } catch (error) {
-    return NextResponse.json({ error: 'Erro ao salvar livro' }, { status: 500 });
+    const [inserted] = await db.insert(worlds).values({
+      title: "custom",
+      version: book.version ?? "1.00",
+      theme: book.theme ?? null,
+      rules: JSON.stringify(book.rules),
+      places: book.places ? JSON.stringify(book.places) : null,
+      history: book.history ? JSON.stringify(book.history) : null,
+      chars: book.chars ? JSON.stringify(book.chars) : null,
+      monsters: book.monsters ? JSON.stringify(book.monsters) : null,
+      items: book.items ? JSON.stringify(book.items) : null,
+      factions: book.factions ? JSON.stringify(book.factions) : null,
+      plots: book.plots ? JSON.stringify(book.plots) : null,
+    }).returning({id: worlds.id});
+
+    return NextResponse.json({success: true, worldId: inserted.id});
+  }
+  catch (error) {
+    console.error('Erro ao converter livro em world:', error);
+    return NextResponse.json({error: 'Erro ao processar o livro.'}, {status: 500});
   }
 }

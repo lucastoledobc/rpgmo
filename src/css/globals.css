@@ -125,7 +125,9 @@ textarea {box-sizing: border-box;}
   border-radius: 0.2rem;
   box-shadow: inset 0 0 0 4px var(--bg-color), 8px 8px 0px rgba(0, 0, 0, 0.6);
 }
-
+.section {
+  padding: 1rem 0;
+}
 /* Formulário */
 .formGroup {
   display: flex;
@@ -276,7 +278,7 @@ textarea {box-sizing: border-box;}
   color: var(--text-color);
   font-size: 0.7rem;
 }
-.modelBox {
+.modalBox {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0, 0, 0, 0.8);
@@ -284,6 +286,23 @@ textarea {box-sizing: border-box;}
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: 3rem;
+}
+.editBox {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+
+  height: 100%;
+  min-height: 0;
+  padding: 0.3rem;
+
+  background: var(--box-color);
+  border: 4px solid var(--text-color);
+  border-radius: 0.2rem;
+  outline: 4px solid var(--bg-color);
+
+  overflow-y: auto;
 }
 
 

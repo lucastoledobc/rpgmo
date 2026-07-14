@@ -1,41 +1,43 @@
-'use client';
-import {use, useEffect, useState} from 'react';
-import RoomHeader from '@/components/RoomHeader.js';
-import RoomChars from '@/components/RoomChars.js';
-import RoomAdventure from '@/components/RoomAdventure.js';
-import RoomChat from '@/components/RoomChat.js';
+// arquivo: sala principal
+// local: src\app\room\[id]\page.tsx
 
-export default function RoomPage({params}: {params: Promise<{id: string}>}) {
-  const {id} = use(params);
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
+import {notFound} from 'next/navigation';
+import {getRoomData} from '@/lib/getRoomData';
+import RoomHeader from '@/components/RoomHeader';
+import RoomChars from '@/components/RoomChars';
+import RoomAdventure from '@/components/RoomAdventure';
+import RoomChat from '@/components/RoomChat';
 
-  useEffect(() => {
-    fetch(`/api/room/${id}`)
-      .then(res => res.json())
-      .then(json => {
-        setData(json);
-        setLoading(false);
-      });
-  }, [id]);
+interface Props {
+  params: Promise<{id: string}>;
+}
 
-  if (loading) return <div>Carregando sala...</div>;
+export async function generateMetadata({params}: Props) {
+  const {id} = await params;
+  const roomDetails = await getRoomData(id);
+
+  return {
+    title: roomDetails ? `RPGMO: ${roomDetails.adventure.title}` : 'RPG: Sala não encontrada',
+    description: 'Se divirta.',
+  };
+}
+
+export default async function RoomPage({params}: Props) {
+  const {id} = await params;
+  const roomDetails = await getRoomData(id);
+
+  if (!roomDetails) {
+    notFound();
+  }
 
   return (
     <div className='room'>
-      <RoomHeader roomInfo={data.room}/>
+      <RoomHeader room={roomDetails.room} adventure={roomDetails.adventure} world={roomDetails.world}/>
 
-      {/* Conteúdo Principal */}
       <main className="roomMain">
-
-        {/* Coluna 1: Personagens */}
-          <RoomChars roomId={id} chars={data.chars}/>
-
-        {/* Coluna 2: Mestre IA */}
-          <RoomAdventure roomData={data}/>
-
-        {/* Coluna 3: Chat Amigos */}
-          <RoomChat roomId={id}/>
+        <RoomChars roomId={id} adveId={roomDetails.adventure.id} characters={roomDetails.characters}/>
+        <RoomAdventure roomId={id} characters={roomDetails.characters} master={roomDetails.master}/>
+        <RoomChat roomId={id}/>
       </main>
     </div>
   );

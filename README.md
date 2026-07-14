@@ -128,6 +128,9 @@ Botões: Cancelar e Salvar
     - globals.css
   - /data
     - /livros (json's com história prontas para jogar)
-    - /rooms  (json's com dados das salas criadas)
+    - /rooms  (json's com dados das salas criadas) - descontinuado
     - rooms.json (lista das salas criadas)
+  - /db
+    - index.ts
+    - schema.ts (estrutura da db)
 

@@ -1,26 +1,63 @@
+// arquivo: route do chat entre jogadores
+// local: src\app\api\room\[id]\chat\route.ts
+
 import {NextResponse} from 'next/server';
-import fs from 'fs/promises';
-import path from 'path';
+import {eq, asc} from 'drizzle-orm';
+import {db} from '@/db';
+import {rooms, adventures, chatMessages} from '@/db/schema';
 
-export async function POST(request: Request) {
+// GET: histórico do chat
+export async function GET(request: Request, {params}: {params: Promise<{id: string}>}) {
   try {
-    const {roomId, newMessage} = await request.json();
-    const filePath = path.join(process.cwd(), 'src', 'data', 'rooms', `${roomId}.json`);
+    const {id: roomId} = await params;
 
-    // Lê o arquivo atual da sala
-    const fileContent = await fs.readFile(filePath, 'utf-8');
-    const roomData = JSON.parse(fileContent);
+    const [adventureRow] = await db.select().from(adventures).where(eq(adventures.roomId, roomId));
+    if (!adventureRow) {
+      return NextResponse.json({error: 'Aventura não encontrada.'}, {status: 404});
+    }
 
-    // Adiciona a nova mensagem ao final do array
-    roomData.chat.push(newMessage);
+    const messages = await db
+      .select()
+      .from(chatMessages)
+      .where(eq(chatMessages.adveId, adventureRow.id))
+      .orderBy(asc(chatMessages.sentAt));
 
-    // Salva o arquivo de volta no disco
-    await fs.writeFile(filePath, JSON.stringify(roomData, null, 2));
+    return NextResponse.json({messages});
+  }
+  catch (error) {
+    console.error('Erro ao buscar chat:', error);
+    return NextResponse.json({error: 'Erro ao buscar chat.'}, {status: 500});
+  }
+}
+
+// POST: nova mensagem
+export async function POST(request: Request, {params}: {params: Promise<{id: string}>}) {
+  try {
+    const {id: roomId} = await params;
+    const {sender, text} = await request.json();
+
+    if (!sender?.trim() || !text?.trim()) {
+      return NextResponse.json({error: 'Remetente e mensagem são obrigatórios.'}, {status: 400});
+    }
+
+    const [adventureRow] = await db.select().from(adventures).where(eq(adventures.roomId, roomId));
+    if (!adventureRow) {
+      return NextResponse.json({error: 'Aventura não encontrada.'}, {status: 404});
+    }
+
+    await db.insert(chatMessages).values({
+      adveId: adventureRow.id,
+      sender: sender.trim(),
+      text: text.trim(),
+      sentAt: new Date(),
+    });
+
+    await db.update(rooms).set({lastActivityAt: new Date()}).where(eq(rooms.id, roomId));
 
     return NextResponse.json({success: true});
-  } 
+  }
   catch (error) {
-    console.error("Erro ao salvar mensagem no chat:", error);
-    return NextResponse.json({error: 'Erro ao enviar mensagem no servidor'}, {status: 500});
+    console.error('Erro ao enviar mensagem:', error);
+    return NextResponse.json({error: 'Erro ao enviar mensagem.'}, {status: 500});
   }
 }

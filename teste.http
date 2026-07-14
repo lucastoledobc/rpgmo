@@ -1,3 +1,6 @@
+POST http://localhost:3000/api/create/world
+Content-Type: application/json
+
 {
   "title": "Fantasia Medieval",
   "version": "1.00",
