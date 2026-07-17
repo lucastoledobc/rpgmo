@@ -227,7 +227,7 @@ export default function Create() {
         </form>
 
         {alert.text && (
-          <div className="alertBox">
+          <div className={`alertBox alertBox--${alert.type}`}>
             <h3 className='subTile'>{alert.text}</h3>
             {alert.type=="success" && (
             <>

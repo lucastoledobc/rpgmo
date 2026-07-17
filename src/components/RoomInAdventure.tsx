@@ -1,4 +1,4 @@
-// arquivo: componente da aventura (mestre IA)
+// arquivo: componente da aventura (chat da aventura)
 // local: src\components\RoomAdventure.tsx
 
 'use client';
@@ -6,7 +6,7 @@ import {useState, useEffect, useRef} from 'react';
 import type {CharacterWithDetails, RoomDetails} from '@/types/room';
 import Master from './Master';
 
-interface RoomAdventureProps {
+interface RoomInAdventureProps {
   roomId: string;
   characters: CharacterWithDetails[];
   master: RoomDetails['master'];
@@ -21,7 +21,7 @@ interface LogEntry {
   sentAt: string;
 }
 
-export default function RoomAdventure({roomId, characters, master}: RoomAdventureProps) {
+export default function RoomInAdventure({roomId, characters, master}: RoomInAdventureProps) {
   const [log, setLog] = useState<LogEntry[]>([]);
   const [action, setAction] = useState('');
   const [selectedCharId, setSelectedCharId] = useState('');
@@ -39,7 +39,7 @@ export default function RoomAdventure({roomId, characters, master}: RoomAdventur
   useEffect(() => {
     const fetchLog = async () => {
       try {
-        const res = await fetch(`/api/room/${roomId}/adventure`);
+        const res = await fetch(`/api/room/${roomId}/adventure?type=ic`);
         const data = await res.json();
         if (data.log) setLog(data.log);
       }
@@ -69,7 +69,7 @@ export default function RoomAdventure({roomId, characters, master}: RoomAdventur
       await fetch(`/api/room/${roomId}/adventure`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({action: playerAction, playerName, char: selectedChar}),
+        body: JSON.stringify({action: playerAction, playerName, char: selectedChar, mode: 'ic'}),
       });
     }
     catch (err) {
@@ -97,19 +97,18 @@ export default function RoomAdventure({roomId, characters, master}: RoomAdventur
             <p>O Mestre está aguardando você iniciar a jornada...</p>
           ) : (
             log.map((entry) => (
-              <div className='messageRow'>
-                <p key={entry.id}>
-                  <span className="charTag">{entry.charName}</span>: {entry.text}
-                </p>
-              </div>
+            <div className='messageRow'>
+              <p key={entry.id}>
+                <span className="charTag">{entry.charName}</span>: {entry.text}
+              </p>
+            </div>
             ))
           )}
           {loadingIA && <p style={{color: '#888'}}>O Mestre está digitando...</p>}
-          <div ref={endRef} />          
+          <div ref={endRef} />
         </div>
 
         <form onSubmit={handleSend} className="messageBox">
-
           <div className='charSelectorWrapper'>
             <select className="hiddenSelect" value={selectedCharId} onChange={(e) => setSelectedCharId(e.target.value)}>
               <option value="">-- Sem personagem --</option>

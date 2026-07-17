@@ -1,7 +1,7 @@
 // arquivo: estrutura das tabelas de dados (schema)
 // local: src\db\schema.ts
 
-import {sqliteTable, text, integer, real, index} from 'drizzle-orm/sqlite-core';
+import {sqliteTable, text, integer, real, index, unique} from 'drizzle-orm/sqlite-core';
 
 // ---------- rooms ----------
 
@@ -19,6 +19,7 @@ export const adventures = sqliteTable('adventures', {
   roomId: text('room_id').notNull().references(() => rooms.id),
   title: text('title').notNull(),
   worldId: integer('world_id').notNull().references(() => worlds.id),
+  currentYear: integer('current_year'),
   timeline: text('timeline'),       // acontecimentos importantes que devem ser anotados
   createdAt: integer('created_at', {mode: 'timestamp'}), // início da aventura
 }, (table) => [
@@ -38,8 +39,8 @@ export const worlds = sqliteTable('worlds', {
   chars: text('chars'),
   monsters: text('monsters'),
   items: text('items'),
-  groups: text('groups'),         // grupos e facções
-  plots: text('plots'),           // algumas aventuras pré-prontas
+  groups: text('groups'),
+  plots: text('plots'),
 });
 
 // ---------- masters ----------
@@ -96,16 +97,17 @@ export const characterItems = sqliteTable('character_items', {
 
 // ---------- adventure_log ----------
 
-export const adventureLogs = sqliteTable('adventure_log', {
+export const adventureLogs = sqliteTable('adventure_logs', {
   id: integer('id').primaryKey({autoIncrement: true}),
   adveId: integer('adve_id').notNull().references(() => adventures.id),
   sender: text('sender').notNull(),
-  charId: text('char_id').references(() => characters.id), // nullable — narração do mestre não tem personagem
+  charId: text('char_id').references(() => characters.id),
   charName: text('char_name'),
+  type: text('type').notNull().default('ic'), // 'ic' | 'oc'
   text: text('text').notNull(),
   sentAt: integer('sent_at', {mode: 'timestamp'}).notNull(),
 }, (table) => [
-  index('adventure_log_adve_idx').on(table.adveId),
+  index('adventure_logs_adve_idx').on(table.adveId),
 ]);
 
 // ---------- chat_messages ----------

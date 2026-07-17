@@ -37,13 +37,13 @@ async function replaceStatusAndItems(charId: string, status: StatusInput[], item
   }
 }
 
-// Criação — nome é opcional (pode ficar null)
+// Criação 
 export async function POST(request: Request) {
   try {
     const {adveId, name, age, race, class: charClass, history, status, items} = await request.json();
 
     if (!adveId) {
-      return NextResponse.json({error: 'Aventura é obrigatória.'}, {status: 400});
+      return NextResponse.json({error: 'Id da Aventura nulo.'}, {status: 400});
     }
 
     const charId = await generateCharId();
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
   }
 }
 
-// Edição — agora permite alterar o nome também
+// Edição 
 export async function PUT(request: Request) {
   try {
     const {charId, name, age, race, class: charClass, history, status, items} = await request.json();

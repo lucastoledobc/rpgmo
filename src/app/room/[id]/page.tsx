@@ -5,7 +5,8 @@ import {notFound} from 'next/navigation';
 import {getRoomData} from '@/lib/getRoomData';
 import RoomHeader from '@/components/RoomHeader';
 import RoomChars from '@/components/RoomChars';
-import RoomAdventure from '@/components/RoomAdventure';
+import RoomInAdventure from '@/components/RoomInAdventure';
+import RoomOutAdventure from '@/components/RoomOutAdventure';
 import RoomChat from '@/components/RoomChat';
 
 interface Props {
@@ -36,8 +37,8 @@ export default async function RoomPage({params}: Props) {
 
       <main className="roomMain">
         <RoomChars roomId={id} adveId={roomDetails.adventure.id} characters={roomDetails.characters}/>
-        <RoomAdventure roomId={id} characters={roomDetails.characters} master={roomDetails.master}/>
-        <RoomChat roomId={id}/>
+        <RoomInAdventure roomId={id} characters={roomDetails.characters} master={roomDetails.master}/>
+        <RoomOutAdventure roomId={id} characters={roomDetails.characters}/>
       </main>
     </div>
   );

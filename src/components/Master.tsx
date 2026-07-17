@@ -19,13 +19,31 @@ export default function Master({roomId, master, onClose}: MasterProps) {
   const [personality, setPersonality] = useState(master.personality ?? '');
   const [contextSize, setContextSize] = useState(master.contextSize?.toString() ?? '4096');
   const [temperature, setTemperature] = useState(master.temperature?.toString() ?? '0.85');
-  const [repeatPenalty, setRepeatPenalty] = useState(master.repeatPenalty?.toString() ?? '1.3');
+  const [repeatPenalty, setRepeatPenalty] = useState(master.repeatPenalty?.toString() ?? '1.1');
   const [numPredict, setNumPredict] = useState(master.numPredict?.toString() ?? '400');
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
+  const getTemperatureLabel = (val: string) => {
+    const num = parseFloat(val);
+    if (num <= 0.2) return "Determinista (Robótico)";
+    if (num <= 0.6) return "Focado e Lógico";
+    if (num <= 0.9) return "Normal";
+    if (num <= 1.2) return "Muito Criativo";
+    return "Criativo até demais (Instável)";
+  };
+
+  const getPenaltyLabel = (val: string) => {
+    const num = parseFloat(val);
+    if (num < 1.0) return "Força Repetição (Ruim)";
+    if (num === 1.0) return "Desativada (Padrão)";
+    if (num <= 1.15) return "Variada / Ideal para RPG";
+    if (num <= 1.3) return "Rígida (Evita clichês)";
+    return "Extrema (Pode quebrar nomes e termos)";
+  };
+
+  const handleSave = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!model.trim()) {
@@ -76,19 +94,12 @@ export default function Master({roomId, master, onClose}: MasterProps) {
         <form onSubmit={handleSave}>
           <div className="formGroup">
             <label className="label">Sistema</label>
-            <input type="text" className="input" value={master.system} disabled />
+            <input type="text" className="input" value={master.system}/>
           </div>
 
           <div className="formGroup">
             <label className="label">Modelo</label>
-            <input
-              type="text"
-              className="input"
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-              placeholder="qwen2.5:3b"
-              required
-            />
+            <input type="text" className="input" value={model} onChange={(e) => setModel(e.target.value)} placeholder="qwen2.5:3b" required/>
           </div>
 
           <div className="formGroup">
@@ -105,26 +116,57 @@ export default function Master({roomId, master, onClose}: MasterProps) {
           <hr />
 
           <div className="formGroup">
-            <label className="label">Tamanho do contexto (num_ctx)</label>
-            <input type="number" className="input" value={contextSize} onChange={(e) => setContextSize(e.target.value)} />
+            <div className="labelContainer">
+              <label className="label">Memória do Mestre</label>
+              <span className="tooltip-icon" data-tooltip="Tamanho do Contexto em Tokens. + Tokens = + Memória = + memória do seu PC."></span>
+            </div>
+            <select className="input" value={contextSize} onChange={(e) => setContextSize(e.target.value)}>
+              <option value={2048}>2048 - Leve</option>
+              <option value={4096}>4096 - Equilibrado</option>
+              <option value={8192}>8192 - Recomendado</option>
+              <option value={16384}>16384 - Ótimo</option>
+              <option value={32768}>32768 - Longo</option>
+              <option value={65536}>65536 - Muito Longo</option>
+              <option value={131072}>131072 - Máximo</option>
+            </select>
+          </div>
+
+
+          <div className="formGroup">
+            <div className="labelContainer">
+              <label className="label">Criatividade (Temperatura)</label>
+              <span className="tooltip-icon" data-tooltip="Valores baixos deixam o mestre lógico e previsível. Valores altos (0.8 - 1.0) trazem mais criatividade e descrições ricas. Acima de 1.2 pode gerar respostas sem sentido."></span>
+            </div>
+
+            <div className="sliderContainer">
+              <input type="range" min="0.0" max="1.5" step="0.05" className="input-range" value={temperature} onChange={(e) => setTemperature(e.target.value)}/>
+              <span className='label'>{temperature+" - "+getTemperatureLabel(temperature)}</span>
+            </div>
           </div>
 
           <div className="formGroup">
-            <label className="label">Criatividade (temperature)</label>
-            <input type="number" step="0.05" min="0" max="2" className="input" value={temperature} onChange={(e) => setTemperature(e.target.value)} />
+            <div className="labelContainer">
+              <label className="label">Penalidade de Repetição</label>
+              <span className="tooltip-icon" data-tooltip="Valores ligeiramente acima de 1.0 (como 1.1) forçam o mestre a usar sinônimos e termos variados, impedindo que a narração fique repetitiva."></span>
+            </div>
+
+            <div className="sliderContainer">
+              <input type="range" min="0.5" max="1.5" step="0.05" className="input-range" 
+                value={repeatPenalty} onChange={(e) => setRepeatPenalty(e.target.value)}/>
+              <span className='label'>{repeatPenalty+" - "+getPenaltyLabel(repeatPenalty)}</span>
+            </div>
           </div>
 
-          <div className="formGroup">
-            <label className="label">Penalidade de repetição</label>
-            <input type="number" step="0.05" min="0" className="input" value={repeatPenalty} onChange={(e) => setRepeatPenalty(e.target.value)} />
-          </div>
 
           <div className="formGroup">
-            <label className="label">Tamanho máximo da resposta (tokens)</label>
+            <div className="labelContainer">
+              <label className="label">Tamanho Máximo da Resposta (num_predict)</label>
+              <span className="tooltip-icon" data-tooltip="Controla o tamanho das falas do mestre. Valores equilibrados (300-400) evitam textos longos cansativos e mantêm o ritmo do jogo dinâmico."></span>
+            </div>
             <input type="number" className="input" value={numPredict} onChange={(e) => setNumPredict(e.target.value)} />
           </div>
 
-          {error && <p className="alertBox">{error}</p>}
+          {error && <p className="alertBox alertBox--error">{error}</p>}
 
           <div className="buttonContainer">
             <button type="button" className="button" onClick={onClose}>Cancelar</button>

@@ -71,7 +71,7 @@ export default function Char({roomId, adveId, charId, existingChar, onClose}: Ch
   const addItem = () => setItems((prev) => [...prev, {name: '', slot: 'backpack', quantity: 1}]);
   const removeItem = (index: number) => setItems((prev) => prev.filter((_, i) => i !== index));
 
-  const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSave = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!isEditing && !name.trim()) {
@@ -193,7 +193,7 @@ export default function Char({roomId, adveId, charId, existingChar, onClose}: Ch
             <button type="button" className="button" onClick={addItem}>+ Adicionar Item</button>
           </div>
 
-          {error && <p className="alertBox">{error}</p>}
+          {error && <p className="alertBox alertBox--error">{error}</p>}
 
           <div className="buttonContainer">
             <button type="button" className="button" onClick={onClose}>Cancelar</button>

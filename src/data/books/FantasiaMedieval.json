@@ -27,6 +27,14 @@
       "locais_interesse": ["Mercado de Peixes", "Guilda dos Navegadores", "Taverna do Bico de Águia"]
     },
     {
+      "tipo": "Região Selvagem",
+      "nome": "Vale dos Sussurros",
+      "descricao": "Uma região florestal densa com névoa perene.",
+      "nivel_dificuldade": "Médio",
+      "perigos": "Lobos gigantes e plantas carnívoras.",
+      "locais_interesse": ["Taverna do Elmo Quebrado", "Ruínas do Templo Solar"]
+    },
+    {
       "tipo": "Calabouço",
       "nome": "Criptas dos Esquecidos",
       "descricao": "Um labirinto subterrâneo abaixo da capital, lar de mortos-vivos antigos.",
@@ -41,14 +49,6 @@
       "nivel_dificuldade": "Extremo",
       "perigos": "Calor sufocante, fumaça tóxica, o próprio Dragão.",
       "locais_interesse": ["Pilha de Ouro", "Altar de Sacrifícios"]
-    },
-    {
-      "tipo": "Região Selvagem",
-      "nome": "Vale dos Sussurros",
-      "descricao": "Uma região florestal densa com névoa perene.",
-      "nivel_dificuldade": "Médio",
-      "perigos": "Lobos gigantes e plantas carnívoras.",
-      "locais_interesse": ["Taverna do Elmo Quebrado", "Ruínas do Templo Solar"]
     }
   ],
   "history": {
@@ -77,8 +77,8 @@
       "historia": "Ex-capitão da guarda real, foi banido após um motim e agora vive observando os navios no porto, esperando vingança.",
       "motivacao": "Recuperar a honra e o comando de um navio.",
       "status": [
-        { "nome": "Força", "valor": 16 },
-        { "nome": "HP", "valor": 30, "maximo": 30 }
+        {"nome": "Força", "valor": 16},
+        {"nome": "HP", "valor": 30, "maximo": 30}
       ]
     },
     {
@@ -91,8 +91,8 @@
       "historia": "Uma guardiã que vive nas ruínas do Templo Solar. Ela consegue ouvir as árvores e sabe quando alguém mal-intencionado entra no vale.",
       "motivacao": "Proteger as plantas carnívoras da ganância dos alquimistas.",
       "status": [
-        { "nome": "Sabedoria", "valor": 18 },
-        { "nome": "HP", "valor": 20, "maximo": 20 }
+        {"nome": "Sabedoria", "valor": 18},
+        {"nome": "HP", "valor": 20, "maximo": 20}
       ]
     },
     {
@@ -105,8 +105,8 @@
       "historia": "Conhecido por forjar as espadas mais afiadas do Reino. Perdeu um olho em um acidente com uma forja mágica.",
       "motivacao": "Criar uma obra-prima que sobreviva ao fogo de um dragão.",
       "status": [
-        { "nome": "Constituição", "valor": 17 },
-        { "nome": "HP", "valor": 25, "maximo": 25 }
+        {"nome": "Constituição", "valor": 17},
+        {"nome": "HP", "valor": 25, "maximo": 25}
       ]
     },
     {
@@ -119,8 +119,8 @@
       "historia": "Um antigo mago que tentou vencer a morte através de rituais proibidos. Agora guarda os arquivos dos magos mortos.",
       "motivacao": "Guardar o conhecimento proibido e impedir que vivos profanem o túmulo.",
       "status": [
-        { "nome": "Inteligência", "valor": 19 },
-        { "nome": "HP", "valor": 40, "maximo": 40 }
+        {"nome": "Inteligência", "valor": 19},
+        {"nome": "HP", "valor": 40, "maximo": 40}
       ]
     },
     {
@@ -133,8 +133,8 @@
       "historia": "Um ser ancestral que desperta a cada século para renovar suas chamas com o ouro dos reinos vizinhos.",
       "motivacao": "Acumular tesouros e manter seu território livre de aventureiros.",
       "status": [
-        { "nome": "Força", "valor": 24 },
-        { "nome": "HP", "valor": 150, "maximo": 150 }
+        {"nome": "Força", "valor": 24},
+        {"nome": "HP", "valor": 150, "maximo": 150}
       ]
     }
   ],
@@ -142,48 +142,95 @@
     {
       "tipo": "Goblin",
       "hp_base": 7,
-      "ataque": "Adaga (1d4 + 1)",
+      "atack": ["Adaga (1d4 + 1)"],
       "pericias": ["Furtividade +4"],
       "comportamento": "Covardes, atacam em bando e tentam cercar o inimigo."
     },
     {
       "tipo": "Lobo Gigante",
       "hp_base": 18,
-      "ataque": "Mordida (1d8 + 2)",
+      "atack": ["Mordida (1d8 + 2)"],
       "pericias": ["Percepção +2"],
       "comportamento": "Predadores instintivos, usam a velocidade para derrubar o alvo."
     },
     {
       "tipo": "Esqueleto Arqueiro",
       "hp_base": 13,
-      "ataque": "Arco Curto (1d6 + 2)",
+      "atack": "Arco Curto (1d6 + 2)",
       "pericias": ["Precisão +3"],
       "comportamento": "Frios e calculistas, mantêm distância e buscam cobertura."
     },
     {
       "tipo": "Planta Carnívora",
       "hp_base": 22,
-      "ataque": "Vinha Chicote (1d6 + 3)",
+      "atack": "Vinha Chicote (1d6 + 3)",
       "pericias": ["Camuflagem +5"],
       "comportamento": "Ficam imóveis até a presa se aproximar, atacam com constrição."
     },
     {
       "tipo": "Dragão Cinzento",
       "hp_base": 150,
-      "ataque": "Sopro de Fogo (4d10) e Garras (2d10 + 6)",
+      "atack": "Sopro de Fogo (4d10) e Garras (2d10 + 6)",
       "pericias": ["Intimidação +8", "História +6"],
       "comportamento": "Arrogante e tático. Usa o ambiente a seu favor e subestima inimigos fracos."
     }
   ],
   "items":[
     {
-      "tipo": "arma",
-      "nome": "adaga"
+      "type": "armor",
+      "name": "adamantine",
+      "description": "Uma armadura dura como diamante",
+      "property": [
+        {
+          "status": "defesa",
+          "value": 6
+        },
+        {
+          "status": "destreza",
+          "value": -2
+        }
+      ],
+      "price": 10
+    },
+    {
+      "type": "weapon",
+      "name": "knife",
+      "description": "Faca comum",
+      "property": [
+        {
+          "status": "ataque",
+          "value": 1
+        }
+      ],
+      "price": 1
+    },
+    {
+      "type": "skill",
+      "name": "energy ball",
+      "description": "Uma bola de energia",
+      "property": [
+        {
+          "status": "ataque",
+          "value": 2
+        },
+        {
+          "status": "mana",
+          "value": 1
+        }
+      ],
+      "price": 1
     }
   ],
-  "groups": {},
+  "groups": [
+    {
+      "type": "raça",
+      "name": "humanos",
+      "leader": "Kaelen",
+      "data": ""
+    }
+  ],
   "plots": {
-    "title": "O ROubo da Arma Divina",
+    "title": "O Roubo da Arma Divina",
     "plot": "A arma de Solara foi roubada e ela está furiosa."
-  }  
+  }
 }

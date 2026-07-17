@@ -98,7 +98,7 @@ export default function Home() {
         </form>
         {/* Caixa de Alertas */}
         {alert.text && (
-          <div className="alertBox">
+          <div className={`alertBox alertBox--${alert.type}`}>
             {alert.text}
           </div>
         )}

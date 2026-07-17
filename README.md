@@ -134,3 +134,17 @@ Botões: Cancelar e Salvar
     - index.ts
     - schema.ts (estrutura da db)
 
+
+## Estrutura
+
+O jogo é feito em duas camadas: sem IA e Com IA
+
+# motor do jogo
+a camada sem IA entra primeiro, funciona como um motor de jogo que vai funcionar como um jogo de rpg em turnos. ELe vai identificar se ta em fase de combate, seleção de dados, narração, etc.
+
+# Mestre
+a segunda camada com IA teria 3 fases: identificação, seleção, narração.
+- a IA recebe a ação do player e um mestre identifica 
+- uma seleção escolhe o tipo de ação "ação simples, combate, conversar, etc" e avisa a outra camada o estado do jogo
+- baseado nesse estado, um prompt específico para essa ação específica. Se for combate, o prompt vai ter as regras do jogo, se for conversa, o prompt vai ter a personalidade do npc
+

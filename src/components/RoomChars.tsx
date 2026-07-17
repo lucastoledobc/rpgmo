@@ -78,7 +78,8 @@ export default function RoomChars({roomId, adveId, characters}: RoomCharsProps) 
           <p>Nenhum personagem sendo acompanhado ainda.</p>
         ) : (
           trackedCharacters.map((char) => (
-            <div key={char.id} className="charCard">
+            <div key={char.id} className="charCard">              
+              <button type="button" className="close" onClick={() => handleUntrack(char.id)}></button>
               <p><strong>{char.name}</strong> {char.class && `(${char.class})`}</p>
               {char.race && <p>{char.race}{char.age ? `, ${char.age} anos` : ''}</p>}
 
@@ -103,7 +104,6 @@ export default function RoomChars({roomId, adveId, characters}: RoomCharsProps) 
 
               <div className="buttonContainer">
                 <button type="button" className="button" onClick={() => handleEdit(char.id)}>Editar</button>
-                <button type="button" className="button" onClick={() => handleUntrack(char.id)}>Remover da vista</button>
               </div>
             </div>
           ))
