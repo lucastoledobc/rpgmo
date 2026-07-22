@@ -2,35 +2,15 @@
 // local: src\app\api\room\[id]\adventure\route.ts
 
 import {NextResponse} from 'next/server';
-import {eq, asc, and} from 'drizzle-orm';
+import {eq, asc, and, inArray} from 'drizzle-orm';
 import {db} from '@/db';
 import {rooms, adventures, worlds, masters, adventureLogs} from '@/db/schema';
 import {classifyAction} from '@/lib/master/classifyAction';
+import {buildHistory} from '@/lib/master/history';
 import {buildInstruction} from '@/lib/master/prompts';
-import {narrateConsequence} from '@/lib/master/narrate';
-import {answerOOC} from '@/lib/master/answerOOC';
-import {buildHistoryByBudget} from '@/lib/master/history';
+import {narrate} from '@/lib/master/narrate';
+import {decrypt} from '@/lib/crypto';
 
-interface ActionPayload {
-  playerName: string;
-  char: {id: string; name: string | null} | null;
-  action: string;
-  mode: 'ic' | 'oc';
-}
-
-function validatePayload(payload: any): payload is ActionPayload {
-  return Boolean(payload?.action && payload?.playerName && (payload?.mode === 'ic' || payload?.mode === 'oc'));
-}
-
-function parseWorldField<T>(value: string | null, fallback: T): T {
-  if (!value) return fallback;
-  try {
-    return JSON.parse(value);
-  }
-  catch {
-    return fallback;
-  }
-}
 
 // ---------- GET: histórico (filtrado por type) ----------
 
@@ -38,7 +18,8 @@ export async function GET(request: Request, {params}: {params: Promise<{id: stri
   try {
     const {id: roomId} = await params;
     const {searchParams} = new URL(request.url);
-    const type = searchParams.get('type') === 'oc' ? 'oc' : 'ic';
+    const requestedType = searchParams.get('type') === 'oc' ? 'oc' : 'ic';
+    const typesToInclude = requestedType === 'ic' ? ['ic', 'error'] : ['oc'];
 
     const [adventureRow] = await db.select().from(adventures).where(eq(adventures.roomId, roomId));
     if (!adventureRow) {
@@ -47,15 +28,11 @@ export async function GET(request: Request, {params}: {params: Promise<{id: stri
 
     const log = await db
       .select({
-        id: adventureLogs.id,
-        sender: adventureLogs.sender,
-        charId: adventureLogs.charId,
         charName: adventureLogs.charName,
         text: adventureLogs.text,
-        sentAt: adventureLogs.sentAt,
       })
       .from(adventureLogs)
-      .where(and(eq(adventureLogs.adveId, adventureRow.id), eq(adventureLogs.type, type)))
+      .where(and(eq(adventureLogs.adveId, adventureRow.id), inArray(adventureLogs.type, typesToInclude)))
       .orderBy(asc(adventureLogs.sentAt));
 
     return NextResponse.json({log});
@@ -70,30 +47,35 @@ export async function GET(request: Request, {params}: {params: Promise<{id: stri
 
 export async function POST(request: Request, {params}: {params: Promise<{id: string}>}) {
   try {
-    const {id: roomId} = await params;
+    // importações e verificadores
+    const {id: roomId} = await params;    
     const payload = await request.json();
-
-    if (!validatePayload(payload)) {
+    if (!(payload?.action && payload?.playerName && (payload?.mode === 'ic' || payload?.mode === 'oc'))) {
       return NextResponse.json({error: 'Ação, nome do jogador ou modo inválido.'}, {status: 400});
     }
-
     const [roomRow] = await db.select().from(rooms).where(eq(rooms.id, roomId));
     if (!roomRow) {
       return NextResponse.json({error: 'Sala não encontrada.'}, {status: 404});
     }
-
     const [adventureRow] = await db.select().from(adventures).where(eq(adventures.roomId, roomId));
     if (!adventureRow) {
       return NextResponse.json({error: 'Aventura não encontrada.'}, {status: 404});
     }
-
     const [worldRow] = await db.select().from(worlds).where(eq(worlds.id, adventureRow.worldId));
+    if (!worldRow) {
+      return NextResponse.json({error: 'Sala sem Livro configurado.'}, {status: 400});
+    }
     const [masterRow] = await db.select().from(masters).where(eq(masters.roomId, roomId));
-
     if (!masterRow) {
       return NextResponse.json({error: 'Sala sem Mestre (IA) configurado.'}, {status: 400});
     }
+    // descriptografa a chave UMA vez aqui
+    const master = {
+      ...masterRow,
+      apiKey: masterRow.apiKey ? decrypt(masterRow.apiKey) : null,
+    };
 
+    // insere a fala do jogador no adventure_logs
     await db.insert(adventureLogs).values({
       adveId: adventureRow.id,
       sender: payload.playerName,
@@ -104,77 +86,47 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
       sentAt: new Date(),
     });
 
-    const world = {
-      rules: worldRow.rules,
-      history: parseWorldField(worldRow.history, {}),
-      places: parseWorldField(worldRow.places, []),
-      chars: parseWorldField(worldRow.chars, []),
-      monsters: parseWorldField(worldRow.monsters, []),
-      items: parseWorldField(worldRow.items, []),
-    };
+    // analisa a mensagem e classifica
+    const actionAnalyzed = await classifyAction(master, payload.action);
+    if (actionAnalyzed.category === 'OUTRO') payload.mode = 'error';
+    console.log(actionAnalyzed)
 
-    let aiResponseText: string;
-    let charName = "Mestre";
-
-    if (payload.mode === 'oc') {
-        const icLog = await db
-          .select({sender: adventureLogs.sender, charName: adventureLogs.charName, text: adventureLogs.text})
-          .from(adventureLogs)
-          .where(and(eq(adventureLogs.adveId, adventureRow.id), eq(adventureLogs.type, 'ic')))
-          .orderBy(asc(adventureLogs.sentAt));
-
-        const history = buildHistoryByBudget(icLog, 4000);
-
-        aiResponseText = await answerOOC({
-          master: masterRow,
-          world,
-          question: payload.action,
-          history,
-          charName: payload.char?.name ?? null,
-          playerName: payload.playerName,
-        });
-      }
-    else {
-      const actionAnalyzed = await classifyAction(masterRow, payload.action);
-      console.log(actionAnalyzed)
-
-      // coloca o nome do npc para aparecer
-      if (actionAnalyzed.object === 'CONVERSA') {
-        charName = actionAnalyzed.object;
-      }
-
-      const instruction = buildInstruction(actionAnalyzed, world);
-      console.log("Instrução final: "+instruction)
-
-      const icLog = await db
-        .select({sender: adventureLogs.sender, charName: adventureLogs.charName, text: adventureLogs.text})
-        .from(adventureLogs)
-        .where(and(eq(adventureLogs.adveId, adventureRow.id), eq(adventureLogs.type, 'ic')))
-        .orderBy(asc(adventureLogs.sentAt));
-
-      const lastMasterLine = [...icLog].reverse().find((l) => l.sender === masterRow.model)?.text ?? 'Nenhuma narração anterior.';
-
-      aiResponseText = await narrateConsequence({
-        master: masterRow,
-        world,
-        instruction,
-        charName: payload.char?.name ?? null,
-        playerName: payload.playerName,
-        action: payload.action,
-        lastMasterLine,
-      });
+    // coloca o nome do npc
+    let masterName = "Mestre";
+    if (actionAnalyzed.category === 'CONVERSA') {
+      masterName = actionAnalyzed.object;
     }
 
+    // pega os últimos acontecimentos
+    const icLog = await db
+      .select({charName: adventureLogs.charName, text: adventureLogs.text})
+      .from(adventureLogs)
+      .where(and(eq(adventureLogs.adveId, adventureRow.id), eq(adventureLogs.type, 'ic')))
+      .orderBy(asc(adventureLogs.sentAt));
+    const history = buildHistory(icLog, 4000);
+
+    // constroi o prompt final
+    const instruction = buildInstruction(actionAnalyzed, payload, history, worldRow);
+    console.log("Instrução final: "+instruction)
+
+    // envia ao mestre
+    let aiResponseText = 'Erro';
+    if (payload.mode !== 'erro') {
+      aiResponseText = await narrate(master, instruction, payload.action);
+    }
+
+    // salva a mensagem
     await db.insert(adventureLogs).values({
       adveId: adventureRow.id,
       sender: masterRow.model,
       charId: null,
-      charName,
+      charName: masterName,
       type: payload.mode,
       text: aiResponseText,
       sentAt: new Date(),
     });
 
+    // atualiza o horario da sala
     await db.update(rooms).set({lastActivityAt: new Date()}).where(eq(rooms.id, roomId));
 
     return NextResponse.json({success: true, masterResponse: aiResponseText});

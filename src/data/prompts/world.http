@@ -1,7 +1,11 @@
-POST http://localhost:3000/api/create/world
+// arquivo: atualiza um mundo
+// local: src\data\prompts\world.http
+
+PUT http://localhost:3000/api/create/world
 Content-Type: application/json
 
 {
+  "id": 1,
   "title": "Fantasia Medieval",
   "version": "1.00",
   "theme": "Fantasia Medieval Clássica",
@@ -10,44 +14,43 @@ Content-Type: application/json
     "status": "d20 + modificador",
     "key_rules": [
       "Sucesso em testes: 10 ou mais no dado",
-      "Magia exige descanso longo para recarga",
       "Morte: 3 falhas em testes de resistência"
     ]
   },
   "places": [
     {
-      "tipo": "Reino",
-      "nome": "Reino de Aethelgard",
+      "type": "Reino",
+      "name": "Reino de Aethelgard",
       "descricao": "O coração da civilização humana, governado pelo Rei Valerius II.",
       "perigos": "Intrigas políticas e espionagem.",
       "locais_interesse": ["Capital Áurea", "Vale dos Sussurros", "Montanhas do Norte"]
     },
     {
-      "tipo": "Cidade",
-      "nome": "Porto de Saltmarsh",
+      "type": "Cidade",
+      "name": "Porto de Saltmarsh",
       "descricao": "Uma cidade costeira agitada, famosa por seu comércio de especiarias e contrabandistas.",
       "perigos": "Gangues locais e guardas corruptos.",
       "locais_interesse": ["Mercado de Peixes", "Guilda dos Navegadores", "Taverna do Bico de Águia"]
     },
     {
-      "tipo": "Região Selvagem",
-      "nome": "Vale dos Sussurros",
+      "type": "Região Selvagem",
+      "name": "Vale dos Sussurros",
       "descricao": "Uma região florestal densa com névoa perene.",
       "nivel_dificuldade": "Médio",
       "perigos": "Lobos gigantes e plantas carnívoras.",
       "locais_interesse": ["Taverna do Elmo Quebrado", "Ruínas do Templo Solar"]
     },
     {
-      "tipo": "Calabouço",
-      "nome": "Criptas dos Esquecidos",
+      "type": "Calabouço",
+      "name": "Criptas dos Esquecidos",
       "descricao": "Um labirinto subterrâneo abaixo da capital, lar de mortos-vivos antigos.",
       "nivel_dificuldade": "Alto",
       "perigos": "Armadilhas de lâminas, esqueletos arqueiros, maldições.",
       "locais_interesse": ["Sala do Trono de Osso", "Arquivo dos Magos Mortos"]
     },
     {
-      "tipo": "Covil",
-      "nome": "Ninho do Dragão Cinzento",
+      "type": "Covil",
+      "name": "Ninho do Dragão Cinzento",
       "descricao": "Uma caverna vulcânica isolada no topo das Montanhas de Fogo.",
       "nivel_dificuldade": "Extremo",
       "perigos": "Calor sufocante, fumaça tóxica, o próprio Dragão.",
@@ -66,112 +69,107 @@ Content-Type: application/json
   "chars": [    
     {
       "id": "god_00",
-      "nome": "Solara",
+      "name": "Solara",
       "dominio": "Luz e Justiça",
       "mandamentos": ["Proteja os fracos", "Nunca minta"]
     },
     {
       "id": "npc_001",
-      "nome": "Kaelen",
-      "idade": 42,
+      "name": "Kaelen",
       "raca": "Humano",
       "classe": "Guerreiro",
       "local_provavel": "Porto de Saltmarsh",
       "historia": "Ex-capitão da guarda real, foi banido após um motim e agora vive observando os navios no porto, esperando vingança.",
       "motivacao": "Recuperar a honra e o comando de um navio.",
       "status": [
-        {"nome": "Força", "valor": 16},
-        {"nome": "HP", "valor": 30, "maximo": 30}
+        {"name": "Força", "valor": 16},
+        {"name": "HP", "valor": 30, "maximo": 30}
       ]
     },
     {
       "id": "npc_002",
-      "nome": "Lyra, a Sussurrante",
-      "idade": 128,
+      "name": "Lyra, a Sussurrante",
       "raca": "Elfa",
       "classe": "Druida",
       "local_provavel": "Vale dos Sussurros",
       "historia": "Uma guardiã que vive nas ruínas do Templo Solar. Ela consegue ouvir as árvores e sabe quando alguém mal-intencionado entra no vale.",
       "motivacao": "Proteger as plantas carnívoras da ganância dos alquimistas.",
       "status": [
-        {"nome": "Sabedoria", "valor": 18},
-        {"nome": "HP", "valor": 20, "maximo": 20}
+        {"name": "Sabedoria", "valor": 18},
+        {"name": "HP", "valor": 20, "maximo": 20}
       ]
     },
     {
       "id": "npc_003",
-      "nome": "Bram, o Ferreiro",
-      "idade": 55,
+      "name": "Bram, o Ferreiro",
       "raca": "Anão",
       "classe": "Artífice",
       "local_provavel": "Capital Áurea",
       "historia": "Conhecido por forjar as espadas mais afiadas do Reino. Perdeu um olho em um acidente com uma forja mágica.",
       "motivacao": "Criar uma obra-prima que sobreviva ao fogo de um dragão.",
       "status": [
-        {"nome": "Constituição", "valor": 17},
-        {"nome": "HP", "valor": 25, "maximo": 25}
+        {"name": "Constituição", "valor": 17},
+        {"name": "HP", "valor": 25, "maximo": 25}
       ]
     },
     {
       "id": "npc_004",
-      "nome": "Sombra de Osso",
-      "idade": 300,
+      "name": "Sombra de Osso",
       "raca": "Morto-vivo",
       "classe": "Necromante",
       "local_provavel": "Criptas dos Esquecidos",
       "historia": "Um antigo mago que tentou vencer a morte através de rituais proibidos. Agora guarda os arquivos dos magos mortos.",
       "motivacao": "Guardar o conhecimento proibido e impedir que vivos profanem o túmulo.",
       "status": [
-        {"nome": "Inteligência", "valor": 19},
-        {"nome": "HP", "valor": 40, "maximo": 40}
+        {"name": "Inteligência", "valor": 19},
+        {"name": "HP", "valor": 40, "maximo": 40}
       ]
     },
     {
       "id": "npc_005",
-      "nome": "Ignis, o Devorador",
-      "idade": 1500,
+      "name": "Ignis, o Devorador",
       "raca": "Dragão",
       "classe": "Boss",
       "local_provavel": "Ninho do Dragão Cinzento",
       "historia": "Um ser ancestral que desperta a cada século para renovar suas chamas com o ouro dos reinos vizinhos.",
       "motivacao": "Acumular tesouros e manter seu território livre de aventureiros.",
       "status": [
-        {"nome": "Força", "valor": 24},
-        {"nome": "HP", "valor": 150, "maximo": 150}
+        {"name": "Força", "valor": 24},
+        {"name": "HP", "valor": 150, "maximo": 150}
       ]
     }
   ],
   "monsters": [
     {
-      "tipo": "Goblin",
+      "type": "Goblin",
       "hp_base": 7,
       "atack": ["Adaga (1d4 + 1)"],
       "pericias": ["Furtividade +4"],
       "comportamento": "Covardes, atacam em bando e tentam cercar o inimigo."
     },
     {
-      "tipo": "Lobo Gigante",
+      "type": "Lobo Gigante",
       "hp_base": 18,
       "atack": ["Mordida (1d8 + 2)"],
       "pericias": ["Percepção +2"],
       "comportamento": "Predadores instintivos, usam a velocidade para derrubar o alvo."
     },
     {
-      "tipo": "Esqueleto Arqueiro",
+      "type": "Esqueleto Arqueiro",
       "hp_base": 13,
       "atack": "Arco Curto (1d6 + 2)",
       "pericias": ["Precisão +3"],
       "comportamento": "Frios e calculistas, mantêm distância e buscam cobertura."
     },
     {
-      "tipo": "Planta Carnívora",
+      "type": "Planta Carnívora",
       "hp_base": 22,
       "atack": "Vinha Chicote (1d6 + 3)",
       "pericias": ["Camuflagem +5"],
       "comportamento": "Ficam imóveis até a presa se aproximar, atacam com constrição."
     },
     {
-      "tipo": "Dragão Cinzento",
+      "type": "Dragão Cinzento",
       "hp_base": 150,
       "atack": "Sopro de Fogo (4d10) e Garras (2d10 + 6)",
       "pericias": ["Intimidação +8", "História +6"],
@@ -232,8 +230,23 @@ Content-Type: application/json
       "data": ""
     }
   ],
-  "plots": {
+  "plots": [
+    {
+    "title": "O Resgate da Princesa",
+    "phase": 0,
+    "phases": [
+      "O rei chama do jogadores para salavar sua filha.",
+      "Vão ao calabouço para derrotar o vilão e libertar a princesa",
+      "Descobrem que ela está no covil e precisam correr",
+      "Salvam a princesa"
+      ]
+    },
+    {
     "title": "O Roubo da Arma Divina",
-    "plot": "A arma de Solara foi roubada e ela está furiosa."
-  }
+    "phase": 0,
+    "phases": [
+      "A arma de Solara foi roubada e ela está furiosa."
+      ]
+    }
+  ]
 }

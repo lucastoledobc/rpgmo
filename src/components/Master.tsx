@@ -15,12 +15,14 @@ interface MasterProps {
 export default function Master({roomId, master, onClose}: MasterProps) {
   const router = useRouter();
 
+  const [system, setSystem] = useState(master.system);
   const [model, setModel] = useState(master.model);
   const [personality, setPersonality] = useState(master.personality ?? '');
   const [contextSize, setContextSize] = useState(master.contextSize?.toString() ?? '4096');
   const [temperature, setTemperature] = useState(master.temperature?.toString() ?? '0.85');
   const [repeatPenalty, setRepeatPenalty] = useState(master.repeatPenalty?.toString() ?? '1.1');
   const [numPredict, setNumPredict] = useState(master.numPredict?.toString() ?? '400');
+  const [apiKey, setApiKey] = useState(''); // sempre começa vazio — nunca pré-preenchemos segredo
 
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -51,6 +53,11 @@ export default function Master({roomId, master, onClose}: MasterProps) {
       return;
     }
 
+    if (system === 'gemini' && !master.hasApiKey && !apiKey.trim()) {
+      setError('Esta sala ainda não tem uma chave de API do Gemini configurada.');
+      return;
+    }
+
     setSaving(true);
     setError('');
 
@@ -59,12 +66,16 @@ export default function Master({roomId, master, onClose}: MasterProps) {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({
+          system,
           model: model.trim(),
           personality: personality || null,
-          contextSize: contextSize ? Number(contextSize) : null,
+          apiKey: apiKey.trim() || undefined, // undefined = "não mexer na chave já salva"
+          ...(system === 'ollama' ? {
+            contextSize: contextSize ? Number(contextSize) : null,
+            repeatPenalty: repeatPenalty ? Number(repeatPenalty) : null,
+            numPredict: numPredict ? Number(numPredict) : null,
+          } : {}),
           temperature: temperature ? Number(temperature) : null,
-          repeatPenalty: repeatPenalty ? Number(repeatPenalty) : null,
-          numPredict: numPredict ? Number(numPredict) : null,
         }),
       });
 
@@ -94,13 +105,36 @@ export default function Master({roomId, master, onClose}: MasterProps) {
         <form onSubmit={handleSave}>
           <div className="formGroup">
             <label className="label">Sistema</label>
-            <input type="text" className="input" value={master.system}/>
+            <select className="input" value={system} onChange={(e) => setSystem(e.target.value)}>
+              <option value="ollama">Ollama (local)</option>
+              <option value="gemini">Gemini</option>
+            </select>
           </div>
 
           <div className="formGroup">
             <label className="label">Modelo</label>
-            <input type="text" className="input" value={model} onChange={(e) => setModel(e.target.value)} placeholder="qwen2.5:3b" required/>
+            <input
+              type="text"
+              className="input"
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              placeholder={system === 'ollama' ? 'qwen2.5:3b' : 'gemini-3.5-flash'}
+              required
+            />
           </div>
+
+          {system === 'gemini' && (
+            <div className="formGroup">
+              <label className="label">Chave de API</label>
+              <input
+                type="password"
+                className="input"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder={master.hasApiKey ? 'Chave já configurada — deixe em branco para manter' : 'Cole sua chave do Gemini'}
+              />
+            </div>
+          )}
 
           <div className="formGroup">
             <label className="label">Personalidade</label>
@@ -115,22 +149,23 @@ export default function Master({roomId, master, onClose}: MasterProps) {
 
           <hr />
 
-          <div className="formGroup">
-            <div className="labelContainer">
-              <label className="label">Memória do Mestre</label>
-              <span className="tooltip-icon" data-tooltip="Tamanho do Contexto em Tokens. + Tokens = + Memória = + memória do seu PC."></span>
+          {system === 'ollama' && (
+            <div className="formGroup">
+              <div className="labelContainer">
+                <label className="label">Memória do Mestre</label>
+                <span className="tooltip-icon" data-tooltip="Tamanho do Contexto em Tokens. + Tokens = + Memória = + memória do seu PC."></span>
+              </div>
+              <select className="input" value={contextSize} onChange={(e) => setContextSize(e.target.value)}>
+                <option value={2048}>2048 - Leve</option>
+                <option value={4096}>4096 - Equilibrado</option>
+                <option value={8192}>8192 - Recomendado</option>
+                <option value={16384}>16384 - Ótimo</option>
+                <option value={32768}>32768 - Longo</option>
+                <option value={65536}>65536 - Muito Longo</option>
+                <option value={131072}>131072 - Máximo</option>
+              </select>
             </div>
-            <select className="input" value={contextSize} onChange={(e) => setContextSize(e.target.value)}>
-              <option value={2048}>2048 - Leve</option>
-              <option value={4096}>4096 - Equilibrado</option>
-              <option value={8192}>8192 - Recomendado</option>
-              <option value={16384}>16384 - Ótimo</option>
-              <option value={32768}>32768 - Longo</option>
-              <option value={65536}>65536 - Muito Longo</option>
-              <option value={131072}>131072 - Máximo</option>
-            </select>
-          </div>
-
+          )}
 
           <div className="formGroup">
             <div className="labelContainer">
@@ -144,27 +179,30 @@ export default function Master({roomId, master, onClose}: MasterProps) {
             </div>
           </div>
 
-          <div className="formGroup">
-            <div className="labelContainer">
-              <label className="label">Penalidade de Repetição</label>
-              <span className="tooltip-icon" data-tooltip="Valores ligeiramente acima de 1.0 (como 1.1) forçam o mestre a usar sinônimos e termos variados, impedindo que a narração fique repetitiva."></span>
-            </div>
+          {system === 'ollama' && (
+            <>
+              <div className="formGroup">
+                <div className="labelContainer">
+                  <label className="label">Penalidade de Repetição</label>
+                  <span className="tooltip-icon" data-tooltip="Valores ligeiramente acima de 1.0 (como 1.1) forçam o mestre a usar sinônimos e termos variados, impedindo que a narração fique repetitiva."></span>
+                </div>
 
-            <div className="sliderContainer">
-              <input type="range" min="0.5" max="1.5" step="0.05" className="input-range" 
-                value={repeatPenalty} onChange={(e) => setRepeatPenalty(e.target.value)}/>
-              <span className='label'>{repeatPenalty+" - "+getPenaltyLabel(repeatPenalty)}</span>
-            </div>
-          </div>
+                <div className="sliderContainer">
+                  <input type="range" min="0.5" max="1.5" step="0.05" className="input-range"
+                    value={repeatPenalty} onChange={(e) => setRepeatPenalty(e.target.value)}/>
+                  <span className='label'>{repeatPenalty+" - "+getPenaltyLabel(repeatPenalty)}</span>
+                </div>
+              </div>
 
-
-          <div className="formGroup">
-            <div className="labelContainer">
-              <label className="label">Tamanho Máximo da Resposta (num_predict)</label>
-              <span className="tooltip-icon" data-tooltip="Controla o tamanho das falas do mestre. Valores equilibrados (300-400) evitam textos longos cansativos e mantêm o ritmo do jogo dinâmico."></span>
-            </div>
-            <input type="number" className="input" value={numPredict} onChange={(e) => setNumPredict(e.target.value)} />
-          </div>
+              <div className="formGroup">
+                <div className="labelContainer">
+                  <label className="label">Tamanho Máximo da Resposta (num_predict)</label>
+                  <span className="tooltip-icon" data-tooltip="Controla o tamanho das falas do mestre. Valores equilibrados (300-400) evitam textos longos cansativos e mantêm o ritmo do jogo dinâmico."></span>
+                </div>
+                <input type="number" className="input" value={numPredict} onChange={(e) => setNumPredict(e.target.value)} />
+              </div>
+            </>
+          )}
 
           {error && <p className="alertBox alertBox--error">{error}</p>}
 

@@ -6,6 +6,10 @@ import {eq, and} from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import {db} from '@/db';
 import {rooms, worlds, masters, adventures, characters, adventureLogs, chatMessages} from '@/db/schema';
+import {pickRandomPlot} from '@/lib/pickRandomPlot';
+import {generateCharId} from '@/lib/generateCharId';
+import {encrypt} from '@/lib/crypto';
+
 export async function POST(request: Request) {
   try {
     let {
@@ -16,6 +20,7 @@ export async function POST(request: Request) {
       worldVersion,
       timeline,
       createdAt,
+      plot,
       masterSystem,
       masterModel,
       masterKey,
@@ -29,7 +34,6 @@ export async function POST(request: Request) {
       return NextResponse.json({error: 'Nome da sala e senha são obrigatórios.'}, {status: 400});
     }
 
-    // gera o id da sala e garante que não existe duplicata
     let roomId = '';
     let sId = false;
     while (!sId) {
@@ -38,26 +42,42 @@ export async function POST(request: Request) {
       if (!exist) sId = true;
     }
 
-    // resolve o mundo: custom usa o worldId já criado por /api/create/book;
-    // caso contrário, busca o mundo pronto correspondente ao slug do select.
+    let sourceWorldId: number;
+
     if (worldTitle !== 'custom') {
       const [world] = await db.select().from(worlds).where(
         and(
-          eq(worlds.title, worldTitle), 
+          eq(worlds.title, worldTitle),
           eq(worlds.version, worldVersion)
         ));
 
       if (!world) {
         return NextResponse.json({error: `Mundo (${worldTitle}) versão(${worldVersion}) não encontrado.`}, {status: 404});
       }
-      worldId = world.id;
+      sourceWorldId = world.id;
+    }
+    else {
+      if (!worldId) {
+        return NextResponse.json({error: 'Nenhum livro foi carregado para o mundo personalizado.'}, {status: 400});
+      }
+      sourceWorldId = Number(worldId);
+    }
+
+    const [sourceWorld] = await db.select().from(worlds).where(eq(worlds.id, sourceWorldId));
+    if (!sourceWorld) {
+      return NextResponse.json({error: 'Mundo de origem não encontrado.'}, {status: 404});
     }
 
     const passHash = await bcrypt.hash(pass, 10);
-    const keyHash = masterKey ? await bcrypt.hash(masterKey, 10) : null;
+    const keyHash = masterKey ? await encrypt(masterKey) : null;
+
+    // Personagens restaurados de uma aventura antiga precisam de ids novos
+    const restoredChars = chars && chars.length > 0
+      ? await Promise.all(chars.map(async (c: any) => ({...c, id: await generateCharId()})))
+      : [];
 
     await db.transaction(async (tx) => {
-      
+
       await tx.insert(rooms).values({
         id: roomId,
         passHash,
@@ -65,13 +85,19 @@ export async function POST(request: Request) {
         lastActivityAt: new Date(),
       });
 
-      await tx.insert(adventures).values({
+      const {id: _templateId, ...worldFields} = sourceWorld;
+      const [worldCopy] = await tx.insert(worlds).values({
+        ...worldFields,
+        plots: plot ? JSON.stringify([plot]) : pickRandomPlot(sourceWorld.plots),
+      }).returning({id: worlds.id});
+
+      const [newAdventure] = await tx.insert(adventures).values({
         roomId,
         title,
-        worldId,
+        worldId: worldCopy.id,
         timeline,
         createdAt: createdAt ? new Date(createdAt) : new Date(),
-      });
+      }).returning({id: adventures.id});
 
       await tx.insert(masters).values({
         roomId,
@@ -85,30 +111,29 @@ export async function POST(request: Request) {
         personality: personality || 'Mestre clássico de RPG, descritivo e justo.',
       });
 
-      // RESTAURAR DADOS ANTIGOS (Upload JSON)      
-      if (chars && chars.length > 0) {
-        const mappedChars = chars.map((c: any) => ({
+      // Restaura dados antigos (Upload JSON) 
+      if (restoredChars.length > 0) {
+        const mappedChars = restoredChars.map((c: any) => ({
           ...c,
-          id: undefined, 
-          roomId: roomId,
+          adveId: newAdventure.id,
         }));
         await tx.insert(characters).values(mappedChars);
       }
 
       if (log && log.length > 0) {
-        const mappedLogs = log.map((log: any) => ({
-          ...log,
+        const mappedLogs = log.map((entry: any) => ({
+          ...entry,
           id: undefined,
-          roomId: roomId,
+          adveId: newAdventure.id,
         }));
         await tx.insert(adventureLogs).values(mappedLogs);
       }
 
       if (chat && chat.length > 0) {
-        const mappedChats = chat.map((chat: any) => ({
-          ...chat,
+        const mappedChats = chat.map((entry: any) => ({
+          ...entry,
           id: undefined,
-          roomId: roomId,
+          adveId: newAdventure.id,
         }));
         await tx.insert(chatMessages).values(mappedChats);
       }

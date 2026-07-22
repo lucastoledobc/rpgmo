@@ -42,6 +42,7 @@ export default function Char({roomId, adveId, charId, existingChar, onClose}: Ch
   const [race, setRace] = useState(existingChar?.race ?? '');
   const [charClass, setCharClass] = useState(existingChar?.class ?? '');
   const [history, setHistory] = useState(existingChar?.history ?? '');
+  const [appearance, setAppearance] = useState(existingChar?.appearance ?? '');
   const [status, setStatus] = useState<StatusRow[]>(existingChar?.status ?? DEFAULT_STATUS);
   const [items, setItems] = useState<ItemRow[]>(existingChar?.items ?? []);
   const [saving, setSaving] = useState(false);
@@ -149,6 +150,11 @@ export default function Char({roomId, adveId, charId, existingChar, onClose}: Ch
           <div className="formGroup">
             <label className="label">Classe</label>
             <input type="text" className="input" value={charClass} onChange={(e) => setCharClass(e.target.value)} />
+          </div>
+
+          <div className="formGroup">
+            <label className="label">Aparência</label>
+            <textarea className="input" rows={3} value={appearance} onChange={(e) => setAppearance(e.target.value)} />
           </div>
 
           <div className="formGroup">

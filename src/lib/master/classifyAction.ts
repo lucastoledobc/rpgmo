@@ -1,9 +1,13 @@
-import {callOllama, type OllamaMaster} from './ollamaClient';
+// arquivo: seleciona o tipo da ação do jogador
+// local: src\lib\master\classifyAction.ts
+
+import {callOllama} from './masterOllama';
+import {callGemini} from './masterGemini';
 
 export interface ActionType {
   category: string;
   object: string;
-  objectType: 'monster' | 'item' | 'place' | 'person' | 'none';
+  objectType: 'rules' | 'place' | 'person' | 'monster' | 'item' | 'none';
 }
 
 const CLASSIFICATION_PROMPT = `Você é um classificador de ações de RPG. Analise a ação do jogador e retorne APENAS um JSON.
@@ -28,33 +32,73 @@ Ação: "bebo a poção vermelha do meu inventário" -> {"category": "USO_ITEM",
 Ação: "entro na caverna escura" -> {"category": "APRESENTAÇÃO", "object": "caverna escura", "objectType": "place"}
 Ação: "o que é aquela estátua?" -> {"category": "DESCRIÇÃO", "object": "estátua", "objectType": "none"}
 Ação: "ataco o goblin" -> {"category": "COMBATE", "object": "goblin", "objectType": "monster"}
+Ação: "quero dormir" -> {"category": "PASSAGEM_DE_TEMPO", "object": "", "objectType": "none"}
 
-Retorne EXCLUSIVAMENTE o JSON, sem texto adicional, com as chaves "category" (string), "object" (string), "objectType" (string: place|person|monster|item|none).`;
+Retorne EXCLUSIVAMENTE o JSON, sem texto adicional, com as chaves "category" (string), "object" (string), "objectType" (string: rules|place|person|monster|item|none).`;
 
-export async function classifyAction(master: OllamaMaster, action: string): Promise<ActionType> {
+export async function classifyAction(master: any, action: string): Promise<ActionType> {
   const fallback: ActionType = {category: "OUTRO", object: "", objectType: "none"};
 
-  if (master.system !== 'ollama') return fallback;
+  if (master.system === 'ollama') {
+    master.repeatPenalty = 1;
+    master.temperature = 0.1;
+    try {
+      const intentJsonStr = await callOllama({
+        master,
+        prompt: {
+          system: CLASSIFICATION_PROMPT,
+          user: `Ação: "${action}"`
+        },
+        format: "json",
+      });
 
-  try {
-    const intentJsonStr = await callOllama({
-      master,
-      prompt: {
-        system: CLASSIFICATION_PROMPT,
-        user: `Ação: "${action}"`
-      },
-      format: "json",
-      temperature: 0.15 // classificação precisa ser consistente, não criativa
-    });
+      const parsed = JSON.parse(intentJsonStr);
+      const validTypes = ['rules','place','person','monster','item','none'];
+      if (!validTypes.includes(parsed.objectType)) parsed.objectType = 'none';
 
-    const parsed = JSON.parse(intentJsonStr);
-    const validTypes = ['monster', 'item', 'place', 'person', 'none'];
-    if (!validTypes.includes(parsed.objectType)) parsed.objectType = 'none';
+      if (parsed.category === 'CONVERSA' && parsed.object === '') {parsed.category = 'OUTRO';}
 
-    return parsed;
+      return parsed;
+    }
+    catch (error) {
+      console.error("Erro na classificação de intenção. Assumindo OUTRO.", error);
+      return fallback;
+    }
   }
-  catch (error) {
-    console.error("Erro na classificação de intenção. Assumindo OUTRO.", error);
+  if (master.system === 'gemini') {
+    master.temperature = 0.1;
+    try {
+      const intentJsonStr = await callGemini({
+        master,
+        prompt: {
+          system: CLASSIFICATION_PROMPT,
+          user: `Ação: "${action}"`
+        },
+        format: {
+          type: "object",
+          properties: {
+            category: {type: "string"},
+            object: {type: "string"},
+            objectType: {type: "string"},
+          }
+        }
+      });
+
+      const parsed = JSON.parse(intentJsonStr);
+      const validTypes = ['rules','place','person','monster','item','none'];
+      if (!validTypes.includes(parsed.objectType)) parsed.objectType = 'none';
+
+      if (parsed.category === 'CONVERSA' && parsed.object === '') {parsed.category = 'OUTRO';}
+
+      return parsed;
+    }
+    catch (error) {
+      console.error("Erro na classificação de intenção. Assumindo OUTRO.", error);
+      return fallback;
+    }
+  }
+  else {
+    console.warn(`Master system "${master.system}" ainda não implementado. Assumindo OUTRO.`);
     return fallback;
   }
 }

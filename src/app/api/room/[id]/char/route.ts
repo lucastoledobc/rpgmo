@@ -40,7 +40,7 @@ async function replaceStatusAndItems(charId: string, status: StatusInput[], item
 // Criação 
 export async function POST(request: Request) {
   try {
-    const {adveId, name, age, race, class: charClass, history, status, items} = await request.json();
+    const {adveId, name, age, race, class: charClass, history, appearance, status, items} = await request.json();
 
     if (!adveId) {
       return NextResponse.json({error: 'Id da Aventura nulo.'}, {status: 400});
@@ -56,6 +56,7 @@ export async function POST(request: Request) {
       race: race ?? null,
       class: charClass ?? null,
       history: history ?? null,
+      appearance: appearance ?? null,
     });
 
     await replaceStatusAndItems(charId, status ?? [], items ?? []);
@@ -71,7 +72,7 @@ export async function POST(request: Request) {
 // Edição 
 export async function PUT(request: Request) {
   try {
-    const {charId, name, age, race, class: charClass, history, status, items} = await request.json();
+    const {charId, name, age, race, class: charClass, history, appearance, status, items} = await request.json();
 
     if (!charId) {
       return NextResponse.json({error: 'charId é obrigatório para edição.'}, {status: 400});
@@ -89,6 +90,7 @@ export async function PUT(request: Request) {
         race: race ?? null,
         class: charClass ?? null,
         history: history ?? null,
+        appearance: appearance ?? null,
       })
       .where(eq(characters.id, charId));
 

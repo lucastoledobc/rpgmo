@@ -13,6 +13,7 @@ interface FormDataState {
   worldVersion: string;
   timeline: string;
   createdAt: string | null;
+  plot: {title: string; phase: number; phases: string[]} | null;
   masterSystem: string;
   masterModel: string;
   masterKey: string;
@@ -36,6 +37,7 @@ export default function Create() {
     worldVersion: '1.00',
     timeline: '',
     createdAt: null,
+    plot: null,
     masterSystem: 'ollama',
     masterModel: 'qwen2.5:3b',
     masterKey: '',
@@ -108,6 +110,7 @@ export default function Create() {
           worldVersion: json.worldVersion,
           timeline: json.timeline,
           createdAt: json.createdAt,
+          plot: json.plot,
           chars: json.chars,
           log: json.log,
           chat: json.chat

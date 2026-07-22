@@ -1,10 +1,13 @@
+// arquivo: chamada para Ollama
+// local: src\lib\master\masterOllama.ts
+
 export interface OllamaMaster {
   system: string;
   model: string;
   contextSize: number | null;
-  temperature: number | null;
-  repeatPenalty: number | null;
   numPredict: number | null;
+  repeatPenalty: number | null;
+  temperature: number | null;
   personality: string | null;
 }
 
@@ -27,7 +30,7 @@ interface OllamaRequestBody {
   };
 }
 
-export async function callOllama({master, prompt, format, temperature}: {master: OllamaMaster; prompt: OllamaPrompt; format?: string | null; temperature?: number}): Promise<string> {
+export async function callOllama({master, prompt, format}: {master: OllamaMaster; prompt: OllamaPrompt; format: string | null;}): Promise<string> {
   const body: OllamaRequestBody = {
     model: master.model,
     system: prompt.system,
@@ -37,7 +40,7 @@ export async function callOllama({master, prompt, format, temperature}: {master:
       num_ctx: master.contextSize ?? 4096,
       num_predict: master.numPredict ?? 400,
       repeat_penalty: master.repeatPenalty ?? 1.3,
-      temperature: temperature ?? master.temperature ?? 0.85,
+      temperature: master.temperature ?? 0.7,
     }
   };
 

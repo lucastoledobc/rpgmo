@@ -1,10 +1,10 @@
-export function buildHistoryByBudget(log: {sender: string; charName: string | null; text: string}[], charBudget: number = 2000): string {
+export function buildHistory(log: {charName: string | null; text: string}[], charBudget: number = 2000): string {
   const entries: string[] = [];
   let usedChars = 0;
 
   for (let i = log.length - 1; i >= 0; i--) {
     const entry = log[i];
-    const line = `${entry.charName ?? entry.sender}: ${entry.text}`;
+    const line = `${entry.charName}: ${entry.text}`;
     if (usedChars + line.length > charBudget) break;
     entries.unshift(line);
     usedChars += line.length;

@@ -69,6 +69,7 @@ export const characters = sqliteTable('characters', {
   age: integer('age'),
   race: text('race'),
   class: text('class'),
+  appearance: text('appearance'),
   history: text('history'),
 }, (table) => [
   index('characters_adve_idx').on(table.adveId),

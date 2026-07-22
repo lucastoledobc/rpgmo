@@ -37,6 +37,7 @@ export async function getRoomData(roomId: string): Promise<RoomDetails | null> {
     race: char.race,
     class: char.class,
     history: char.history,
+    appearance: char.appearance,
     status: statusRows.filter((s) => s.charId === char.id) as any,
     items: itemRows.filter((i) => i.charId === char.id) as any,
   }));
@@ -68,6 +69,7 @@ export async function getRoomData(roomId: string): Promise<RoomDetails | null> {
       repeatPenalty: masterRow.repeatPenalty,
       numPredict: masterRow.numPredict,
       personality: masterRow.personality,
+      hasApiKey: Boolean(masterRow.apiKey),
     },
     characters: charactersWithDetails,
   };

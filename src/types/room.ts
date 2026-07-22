@@ -23,6 +23,7 @@ export interface CharacterWithDetails {
   race: string | null;
   class: string | null;
   history: string | null;
+  appearance: string | null;
   status: CharacterStatus[];
   items: CharacterItem[];
 }
@@ -54,6 +55,7 @@ export interface RoomDetails {
     repeatPenalty: number | null;
     numPredict: number | null;
     personality: string | null;
+    hasApiKey: boolean;
   };
   characters: CharacterWithDetails[];
 }
