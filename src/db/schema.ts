@@ -106,7 +106,7 @@ export const adventureLogs = sqliteTable('adventure_logs', {
   sender: text('sender').notNull(),
   charId: text('char_id'),
   charName: text('char_name'),
-  type: text('type').notNull().default('ic'), // 'ic' | 'oc'
+  type: text('type').notNull(),
   text: text('text').notNull(),
   sentAt: integer('sent_at', {mode: 'timestamp'}).notNull(),
 }, (table) => [

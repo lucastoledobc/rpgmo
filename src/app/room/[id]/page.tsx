@@ -8,6 +8,7 @@ import RoomChars from '@/components/RoomChars';
 import RoomInAdventure from '@/components/RoomInAdventure';
 import RoomOutAdventure from '@/components/RoomOutAdventure';
 import RoomChat from '@/components/RoomChat';
+import RoomLog from '@/components/RoomLog';
 
 interface Props {
   params: Promise<{id: string}>;
@@ -40,7 +41,7 @@ export default async function RoomPage({params}: Props) {
         <RoomInAdventure roomId={id} characters={roomDetails.characters} master={roomDetails.master}/>
         {/* <RoomOutAdventure roomId={id} characters={roomDetails.characters}/> */}
         {/* <RoomChars roomId={id} adveId={roomDetails.adventure.id} characters={roomDetails.characters}/> */}
-        {/* <RoomChat roomId={id}/> */}
+        <RoomLog roomId={id}/>
       </main>
     </div>
   );

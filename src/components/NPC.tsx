@@ -52,7 +52,6 @@ export default function NPC({roomId, npcName, playerName, characters, onClose}: 
         setMessages((prev) => [...prev, {from: 'npc', text: `[Erro: ${data.error}]`}]);
         return;
       }
-
       setMessages((prev) => [...prev, {from: 'npc', text: data.text}]);
     }
     catch {
