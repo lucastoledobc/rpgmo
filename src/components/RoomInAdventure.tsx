@@ -28,8 +28,9 @@ export default function RoomInAdventure({roomId, characters, master}: RoomInAdve
   const [selectedCharId, setSelectedCharId] = useState('');
   const [playerName, setPlayerName] = useState('');
   const [loading, setLoading] = useState(0);
-  const [isMasterModalOpen, setIsMasterModalOpen] = useState(false);
-  const [activeNpc, setActiveNpc] = useState<{npcName: string;} | null>(null);
+  const [masterModal, setMasterModal] = useState(false);
+  const [npcModal, setNPCModal] = useState<{npcName: string;} | null>(null);
+  const [diceModal, setDiceModal] = useState<{npcName: string;} | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
   const selectedChar = characters.find((c) => c.id === selectedCharId) ?? null;
@@ -47,11 +48,15 @@ export default function RoomInAdventure({roomId, characters, master}: RoomInAdve
         setLoading(data.loading);
         if (data.state) {
           if (data.state.id && data.state.category == 'CONVERSA') {
-            setActiveNpc({
+            setNPCModal({
               npcName: data.state.object || 'NPC'
             });
-          } 
-          else {setActiveNpc(null)}
+          }
+          if (data.state.dice) {
+
+          }
+          
+          else {setNPCModal(null)}
         }
       }
       catch (err) {
@@ -84,7 +89,7 @@ export default function RoomInAdventure({roomId, characters, master}: RoomInAdve
       });
       const data = await res.json();
       if (data.state.category === 'CONVERSA') {
-        setActiveNpc({
+        setNPCModal({
           npcName: data.state.object || 'NPC'
         });
       }
@@ -101,7 +106,7 @@ export default function RoomInAdventure({roomId, characters, master}: RoomInAdve
     <aside className="roomBox">
       <header className="header">
         <h3 className='title3'>AVENTURA</h3>
-        <button type="button" className="settings" onClick={() => setIsMasterModalOpen(true)}></button>
+        <button type="button" className="settings" onClick={() => setMasterModal(true)}></button>
       </header>
 
       <div className='adventure'>
@@ -147,12 +152,12 @@ export default function RoomInAdventure({roomId, characters, master}: RoomInAdve
           <button type="submit" className="enter" disabled={loading>0}></button>
         </form>        
 
-        {isMasterModalOpen && (
-          <Master roomId={roomId} master={master} onClose={() => setIsMasterModalOpen(false)} />
+        {masterModal && (
+          <Master roomId={roomId} master={master} onClose={() => setMasterModal(false)} />
         )}
 
-        {activeNpc && (
-          <NPC roomId={roomId} npcName={activeNpc.npcName} playerName={playerName} characters={characters} onClose={() => setActiveNpc(null)}
+        {npcModal && (
+          <NPC roomId={roomId} npcName={npcModal.npcName} playerName={playerName} characters={characters} onClose={() => setNPCModal(null)}
       />
     )}
       </div>

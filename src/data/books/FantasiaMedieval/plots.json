@@ -1,0 +1,21 @@
+{
+  "plots": [
+    {
+    "title": "O Resgate da Princesa",
+    "phase": 0,
+    "phases": [
+      "O rei chama do jogadores para salavar sua filha.",
+      "Vão ao calabouço para derrotar o vilão e libertar a princesa",
+      "Descobrem que ela está no covil e precisam correr",
+      "Salvam a princesa"
+      ]
+    },
+    {
+    "title": "O Roubo da Arma Divina",
+    "phase": 0,
+    "phases": [
+      "A arma de Solara foi roubada e ela está furiosa."
+      ]
+    }
+  ]
+}

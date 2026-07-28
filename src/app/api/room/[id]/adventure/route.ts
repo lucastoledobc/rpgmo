@@ -56,7 +56,7 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
   try {
     loading = 1
     // importações e verificadores
-    const {id: roomId} = await params;    
+    const {id: roomId} = await params;
     const payload: ActionPayload = await request.json();
     if (!(payload?.action && payload?.playerName && (payload?.mode === 'ic' || payload?.mode === 'oc'))) {
       return NextResponse.json({error: 'Ação, nome do jogador ou modo inválido.'}, {status: 400});

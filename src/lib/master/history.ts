@@ -3,37 +3,35 @@
 
 import type {ChatMessage} from '@/types/master';
 
-// Reconstrói o histórico da conversa ATUAL com o NPC — necessário pro Ollama,
-// que não tem memória própria entre chamadas (diferente do Gemini, que usa
-// interactionId do lado do servidor).
-export function buildChatHistory(
-  fullLogDesc: {type: string; text: string}[], // já ordenado do mais recente pro mais antigo
+// Reconstrói o histórico da conversa ATUAL com o NPC — necessário pro Ollama
+export function buildNPCChatHistory(
+  fullLogDesc: {charId: string, charName: string, type: string; text: string}[], // já ordenado
   charBudget: number = 2000
 ): ChatMessage[] {
-  // 1. isola só o bloco mais recente de mensagens 'npc' — pára no primeiro
-  //    tipo diferente, que marca onde essa conversa começou
-  const sessionDesc: {text: string}[] = [];
+
+  // isola só o bloco mais recente de mensagens 'npc' e adiciona as roles
+  const sessionDesc: {role: 'player' | 'master', text: string}[] = [];
   for (const entry of fullLogDesc) {
     if (entry.type !== 'npc') break;
-    sessionDesc.push(entry);
+    sessionDesc.push({
+      role: entry.charId ? 'player' : 'master',
+      text: entry.charName+": "+entry.text,
+    });
   }
 
-  // 2. corta por orçamento de caracteres, mantendo as mensagens mais recentes
-  const trimmedDesc: {text: string}[] = [];
+  // corta por orçamento de caracteres, mantendo as mensagens mais recentes
+  const trimmedDesc: {role: 'player' | 'master', text: string}[] = [];
   let used = 0;
   for (const entry of sessionDesc) {
-    if (used + entry.text.length > charBudget) break;
+    if (used + entry.text.length + entry.role.length > charBudget) break;
     trimmedDesc.push(entry);
     used += entry.text.length;
   }
 
-  // 3. volta pra ordem cronológica e atribui o papel por posição alternada
-  //    (jogador sempre grava antes do mestre, par a par)
-  return trimmedDesc.reverse().map((entry, i) => ({
-    role: i % 2 === 0 ? 'player' : 'master',
-    text: entry.text,
-  }));
+  // volta pra ordem cronológica
+  return trimmedDesc.reverse().map((entry) => (entry));
 }
+
 
 export function buildHistory(log: {charName: string | null; text: string}[], charBudget: number = 2000): string {
   const entries: string[] = [];

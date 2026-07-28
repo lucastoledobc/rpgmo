@@ -94,6 +94,14 @@ export async function callMaster({payload, state, master, worldRow, history}: {p
 
   const chatHistory = {role: 'player', text: payload.action}
 
+  if ((state.category === 'AÇÃO_COMPLEXA'
+    || state.category === 'COMBATE'
+    || state.category === 'USO_ITEM')
+    && typeof(state.dice) == 'string') {
+      
+      return 'Dados necessários';
+  }
+
   console.log(`Chamando Mestre ${master.system}, tipo ${state.category}`)
   if (state.category == 'CONVERSA') {
     type = 'chat';

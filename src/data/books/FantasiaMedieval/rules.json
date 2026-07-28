@@ -1,0 +1,8 @@
+{
+  "name": "d20-lite",
+  "status": "d20 + modificador",
+  "key_rules": [
+    "Sucesso em testes: 10 ou mais no dado",
+    "Morte: 3 falhas em testes de resistência"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "era_atual": "Era da Cinza",
+  "mito_criacao": "O mundo foi forjado pelo martelo de Aethel em um mar de estrelas.",
+  "eventos_chave": [
+    { "ano": "102", "evento": "A Grande Queda da Capital Áurea", "impacto": "O reino perdeu 50% de sua população e magia." },
+    { "ano": "450", "evento": "O Despertar do Dragão Cinzento", "impacto": "A região vulcânica tornou-se um território proibido." }
+  ],
+  "cronica": "Aethelgard vive um período de reconstrução após séculos de guerra, onde antigas ruínas escondem segredos que podem mudar o destino dos reinos novamente."
+}

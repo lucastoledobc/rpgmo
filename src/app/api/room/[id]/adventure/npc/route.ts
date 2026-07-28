@@ -10,7 +10,7 @@ import {decrypt} from '@/lib/crypto';
 import type {ActionPayload, State} from '@/types/adventure';
 import type {Master} from '@/types/master';
 
-import {buildChatHistory} from '@/lib/master/history';
+import {buildNPCChatHistory} from '@/lib/master/history';
 import {narrate} from '@/lib/master/narrate';
 import {deleteGeminiChat} from '@/lib/master/masterGemini';
 
@@ -45,12 +45,12 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
     });
 
     const fullLogDesc = await db
-      .select({type: adventureLogs.type, text: adventureLogs.text})
+      .select({charId: adventureLogs.charId, charName: adventureLogs.charName, type: adventureLogs.type, text: adventureLogs.text})
       .from(adventureLogs)
       .where(eq(adventureLogs.adveId, adventureRow.id))
       .orderBy(desc(adventureLogs.sentAt));
 
-    const chatHistory = buildChatHistory(fullLogDesc, 2000);
+    const chatHistory = buildNPCChatHistory(fullLogDesc, 2000);
     
     console.log(chatHistory)
 
