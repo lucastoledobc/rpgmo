@@ -16,8 +16,8 @@ export async function POST(request: Request) {
       title,
       pass,
       worldId,
-      worldTitle,
-      worldVersion,
+      state,
+      context,
       timeline,
       createdAt,
       plot,
@@ -42,28 +42,7 @@ export async function POST(request: Request) {
       if (!exist) sId = true;
     }
 
-    let sourceWorldId: number;
-
-    if (worldTitle !== 'custom') {
-      const [world] = await db.select().from(worlds).where(
-        and(
-          eq(worlds.title, worldTitle),
-          eq(worlds.version, worldVersion)
-        ));
-
-      if (!world) {
-        return NextResponse.json({error: `Mundo (${worldTitle}) versão(${worldVersion}) não encontrado.`}, {status: 404});
-      }
-      sourceWorldId = world.id;
-    }
-    else {
-      if (!worldId) {
-        return NextResponse.json({error: 'Nenhum livro foi carregado para o mundo personalizado.'}, {status: 400});
-      }
-      sourceWorldId = Number(worldId);
-    }
-
-    const [sourceWorld] = await db.select().from(worlds).where(eq(worlds.id, sourceWorldId));
+    const [sourceWorld] = await db.select().from(worlds).where(eq(worlds.id, worldId));
     if (!sourceWorld) {
       return NextResponse.json({error: 'Mundo de origem não encontrado.'}, {status: 404});
     }
@@ -95,6 +74,8 @@ export async function POST(request: Request) {
         roomId,
         title,
         worldId: worldCopy.id,
+        state,
+        context,
         timeline,
         createdAt: createdAt ? new Date(createdAt) : new Date(),
       }).returning({id: adventures.id});

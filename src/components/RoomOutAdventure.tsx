@@ -23,7 +23,7 @@ export default function RoomOutAdventure({roomId, characters}: RoomOutAdventureP
   const [question, setQuestion] = useState('');
   const [selectedCharId, setSelectedCharId] = useState('');
   const [playerName, setPlayerName] = useState('');
-  const [loadingIA, setLoadingIA] = useState(false);
+  const [loading, setLoading] = useState(0);
   const endRef = useRef<HTMLDivElement>(null);
 
   const selectedChar = characters.find((c) => c.id === selectedCharId) ?? null;
@@ -38,6 +38,7 @@ export default function RoomOutAdventure({roomId, characters}: RoomOutAdventureP
         const res = await fetch(`/api/room/${roomId}/adventure?type=oc`);
         const data = await res.json();
         if (data.log) setLog(data.log);
+        setLoading(data.loading);
       }
       catch (err) {
         console.error("Erro ao buscar chat de bastidor:", err);
@@ -55,11 +56,11 @@ export default function RoomOutAdventure({roomId, characters}: RoomOutAdventureP
 
   const handleSend = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!question.trim() || loadingIA) return;
+    if (!question.trim() || loading) return;
 
     const playerQuestion = question.trim();
     setQuestion('');
-    setLoadingIA(true);
+    setLoading(1);
 
     try {
       await fetch(`/api/room/${roomId}/adventure`, {
@@ -72,7 +73,7 @@ export default function RoomOutAdventure({roomId, characters}: RoomOutAdventureP
       console.error("Erro ao perguntar ao Mestre:", err);
     }
     finally {
-      setLoadingIA(false);
+      setLoading(0);
     }
   };
 
@@ -88,12 +89,15 @@ export default function RoomOutAdventure({roomId, characters}: RoomOutAdventureP
             <p>Pergunte algo de bastidor ao Mestre, sem afetar a narrativa.</p>
           ) : (
             log.map((entry) => (
-              <p key={entry.id}>
-                <strong>{entry.charName ?? entry.sender}:</strong> {entry.text}
+            <div className='messageRow' key={entry.id}>
+              <p>
+                <span className="charTag">{entry.charName}</span>: {entry.text}
               </p>
+            </div>
             ))
           )}
-          {loadingIA && <p style={{color: '#888'}}>O Mestre está verificando...</p>}
+          {loading == 1 && <p style={{color: '#888'}}>Enviando mensagem...</p>}
+          {loading == 2 && <p style={{color: '#888'}}>O Mestre está digitando...</p>}
           <div ref={endRef} />
         </div>
 
@@ -114,12 +118,12 @@ export default function RoomOutAdventure({roomId, characters}: RoomOutAdventureP
             className="message"
             value={question}
             onChange={(e) => setQuestion(e.target.value)}
-            placeholder={loadingIA ? "Aguardando..." : "Pergunte algo fora da cena..."}
+            placeholder={loading ? "Aguardando..." : "Pergunte algo fora da cena..."}
             rows={1}
             autoComplete="off"
-            disabled={loadingIA}
+            disabled={loading>0}
           />
-          <button type="submit" className="enter" disabled={loadingIA}></button>
+          <button type="submit" className="enter" disabled={loading>0}></button>
         </form>
       </div>
     </aside>

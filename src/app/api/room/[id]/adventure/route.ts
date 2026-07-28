@@ -5,12 +5,17 @@ import {NextResponse} from 'next/server';
 import {eq, asc, and, inArray} from 'drizzle-orm';
 import {db} from '@/db';
 import {rooms, adventures, worlds, masters, adventureLogs} from '@/db/schema';
-import {classifyAction} from '@/lib/master/classifyAction';
-import {buildHistory} from '@/lib/master/history';
-import {buildInstruction} from '@/lib/master/prompts';
-import {narrate} from '@/lib/master/narrate';
 import {decrypt} from '@/lib/crypto';
 
+import {ActionPayload, State} from '@/types/adventure';
+import {Master} from '@/types/master';
+
+import {classifyAction} from '@/lib/master/classifyAction';
+import {handlingError} from '@/lib/master/handlingError';
+import {buildHistory} from '@/lib/master/history';
+import {callMaster} from '@/lib/master/prompts/index';
+
+let loading: number;
 
 // ---------- GET: histórico (filtrado por type) ----------
 
@@ -25,6 +30,8 @@ export async function GET(request: Request, {params}: {params: Promise<{id: stri
     if (!adventureRow) {
       return NextResponse.json({error: 'Aventura não encontrada.'}, {status: 404});
     }
+    let state: State;
+    state = adventureRow?.state ? JSON.parse(adventureRow.state) : null;
 
     const log = await db
       .select({
@@ -35,7 +42,7 @@ export async function GET(request: Request, {params}: {params: Promise<{id: stri
       .where(and(eq(adventureLogs.adveId, adventureRow.id), inArray(adventureLogs.type, typesToInclude)))
       .orderBy(asc(adventureLogs.sentAt));
 
-    return NextResponse.json({log});
+    return NextResponse.json({log, loading, state});
   }
   catch (error) {
     console.error('Erro ao buscar histórico da aventura:', error);
@@ -47,9 +54,10 @@ export async function GET(request: Request, {params}: {params: Promise<{id: stri
 
 export async function POST(request: Request, {params}: {params: Promise<{id: string}>}) {
   try {
+    loading = 1
     // importações e verificadores
     const {id: roomId} = await params;    
-    const payload = await request.json();
+    const payload: ActionPayload = await request.json();
     if (!(payload?.action && payload?.playerName && (payload?.mode === 'ic' || payload?.mode === 'oc'))) {
       return NextResponse.json({error: 'Ação, nome do jogador ou modo inválido.'}, {status: 400});
     }
@@ -69,11 +77,21 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
     if (!masterRow) {
       return NextResponse.json({error: 'Sala sem Mestre (IA) configurado.'}, {status: 400});
     }
-    // descriptografa a chave UMA vez aqui
-    const master = {
-      ...masterRow,
-      apiKey: masterRow.apiKey ? decrypt(masterRow.apiKey) : null,
-    };
+    // descriptografa a chave
+    const master: Master = {...masterRow, apiKey: masterRow.apiKey ? decrypt(masterRow.apiKey) : null};
+
+    // pega a última instrução
+    let state: State;
+    state = adventureRow?.state ? JSON.parse(adventureRow.state) : {id: true, category: "START", object: "", objectType: "none", dice: 0, interactionId: ''};
+    console.log("\nstate: "+JSON.stringify(state)+"\n")
+    
+    // pega os últimos acontecimentos
+    const icLog = await db
+      .select({charName: adventureLogs.charName, text: adventureLogs.text})
+      .from(adventureLogs)
+      .where(and(eq(adventureLogs.adveId, adventureRow.id), eq(adventureLogs.type, 'ic')))
+      .orderBy(asc(adventureLogs.sentAt));
+    const history = buildHistory(icLog, 4000);
 
     // insere a fala do jogador no adventure_logs
     await db.insert(adventureLogs).values({
@@ -85,51 +103,49 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
       text: payload.action,
       sentAt: new Date(),
     });
+    loading = 2
 
-    // analisa a mensagem e classifica
-    const actionAnalyzed = await classifyAction(master, payload.action);
-    if (actionAnalyzed.category === 'OUTRO') payload.mode = 'error';
-    console.log(actionAnalyzed)
+    if (!state.id) {
+      // analisa a mensagem e classifica
+      const actionAnalyzed = await classifyAction(master, payload);
+      handlingError(payload, actionAnalyzed);
+      console.log("\actionAnalyzed: "+JSON.stringify(actionAnalyzed)+"\n")
 
-    // coloca o nome do npc
-    let masterName = "Mestre";
-    if (actionAnalyzed.category === 'CONVERSA') {
-      masterName = actionAnalyzed.object;
+      state = {
+        id: true,
+        category: actionAnalyzed.category,
+        object: actionAnalyzed.object,
+        objectType: actionAnalyzed.objectType,
+        dice: '',
+        instruction: null,
+        interactionId: null,
+      }
     }
 
-    // pega os últimos acontecimentos
-    const icLog = await db
-      .select({charName: adventureLogs.charName, text: adventureLogs.text})
-      .from(adventureLogs)
-      .where(and(eq(adventureLogs.adveId, adventureRow.id), eq(adventureLogs.type, 'ic')))
-      .orderBy(asc(adventureLogs.sentAt));
-    const history = buildHistory(icLog, 4000);
+    // chama o mestre
+    payload.response = await callMaster({payload, state, master, worldRow, history});
+    console.log("\nresponse: "+payload.response+"\n")
+    
+    if (payload.response) {
+      // salva a mensagem do mestre
+      await db.insert(adventureLogs).values({
+        adveId: adventureRow.id,
+        sender: master.model,
+        charId: null,
+        charName: payload.playerName,
+        type: payload.mode,
+        text: payload.response,
+        sentAt: new Date(),
+      });
 
-    // constroi o prompt final
-    const instruction = buildInstruction(actionAnalyzed, payload, history, worldRow);
-    console.log("Instrução final: "+instruction)
-
-    // envia ao mestre
-    let aiResponseText = 'Erro';
-    if (payload.mode !== 'erro') {
-      aiResponseText = await narrate(master, instruction, payload.action);
+      // atualiza o horario da sala e outros
+      await db.update(rooms).set({lastActivityAt: new Date()}).where(eq(rooms.id, roomId));
+      await db.update(adventures).set({state: JSON.stringify(state)}).where(eq(adventures.roomId, roomId));
     }
 
-    // salva a mensagem
-    await db.insert(adventureLogs).values({
-      adveId: adventureRow.id,
-      sender: masterRow.model,
-      charId: null,
-      charName: masterName,
-      type: payload.mode,
-      text: aiResponseText,
-      sentAt: new Date(),
-    });
+    loading = 0
 
-    // atualiza o horario da sala
-    await db.update(rooms).set({lastActivityAt: new Date()}).where(eq(rooms.id, roomId));
-
-    return NextResponse.json({success: true, masterResponse: aiResponseText});
+    return NextResponse.json({success: true, state: state});
   }
   catch (error) {
     console.error("ERRO NO BACKEND DA AVENTURA:", error);
@@ -138,6 +154,8 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
     if (errorMsg.includes('fetch failed') || errorMsg.includes('ECONNREFUSED')) {
       return NextResponse.json({error: 'Erro de Conexão', details: 'O servidor do Ollama não está rodando. Abra o Ollama no seu PC.'}, {status: 500});
     }
+
+    loading = 0
 
     return NextResponse.json({error: 'Erro ao invocar o Mestre', details: errorMsg}, {status: 500});
   }

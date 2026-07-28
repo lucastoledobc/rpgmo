@@ -1,52 +1,24 @@
 // arquivo: chamada para Ollama
 // local: src\lib\master\masterOllama.ts
 
-export interface OllamaMaster {
-  system: string;
-  model: string;
-  contextSize: number | null;
-  numPredict: number | null;
-  repeatPenalty: number | null;
-  temperature: number | null;
-  personality: string | null;
-}
+import {Master, ChatMessage} from "@/types/master";
 
-export interface OllamaPrompt {
-  system: string;
-  user: string;
-}
 
-interface OllamaRequestBody {
-  model: string;
-  system: string;
-  prompt: string;
-  stream: boolean;
-  format?: string;
-  options: {
-    num_ctx?: number;
-    num_predict?: number;
-    repeat_penalty?: number;
-    temperature?: number;
-  };
-}
-
-export async function callOllama({master, prompt, format}: {master: OllamaMaster; prompt: OllamaPrompt; format: string | null;}): Promise<string> {
-  const body: OllamaRequestBody = {
+// Chama Ollama generate
+export async function callOllama({master, systemPrompt, message, format, repeatPenalty, temperature}: {master: Master; systemPrompt: string; message: ChatMessage; format: string | null; repeatPenalty?: number | null; temperature?: number | null}): Promise<{text: string}> {
+  const body = {
     model: master.model,
-    system: prompt.system,
-    prompt: prompt.user,
+    system: systemPrompt,
+    prompt: message.text,
+    format: format ?? null,
     stream: false,
     options: {
       num_ctx: master.contextSize ?? 4096,
       num_predict: master.numPredict ?? 400,
-      repeat_penalty: master.repeatPenalty ?? 1.3,
-      temperature: master.temperature ?? 0.7,
+      temperature: temperature ?? master.temperature ?? 0.7,
+      repeat_penalty: repeatPenalty ?? master.repeatPenalty ?? 1.3,
     }
   };
-
-  if (format) {
-    body.format = format;
-  }
 
   const response = await fetch('http://localhost:11434/api/generate', {
     method: 'POST',
@@ -59,5 +31,80 @@ export async function callOllama({master, prompt, format}: {master: OllamaMaster
   }
 
   const data = await response.json();
-  return data.response;
+  return {text: data.response};
+}
+
+// Chama Ollama chat (salva seção por 5 min)
+export async function callOllamaChat({master, systemPrompt, messages}: {master: Master; systemPrompt: string; messages: ChatMessage[]}): Promise<{text: string}> {
+  const body = {
+    model: master.model,
+    messages: [
+      {role: 'system', content: systemPrompt},
+      ...messages.map((m) => ({role: m.role === 'player' ? 'user' : 'assistant', content: m.text})),
+    ],
+    stream: false,
+    keep_alive: '10m',
+    options: {
+      num_ctx: master.contextSize ?? 4096,
+      num_predict: master.numPredict ?? 300,
+      temperature: master.temperature ?? 0.9,
+      repeat_penalty: master.repeatPenalty ?? 1.1,
+    },
+  };
+
+  // Warmup: É o aquecimento (Nenhuma mensagem do jogador ainda)
+  if (messages.length === 0) {
+    // Dispara em segundo plano, SEM usar o 'await' para não travar o jogo
+    fetch('http://localhost:11434/api/chat', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body),
+    }).catch(err => console.error("Erro no aquecimento:", err));
+    
+    return {text: ''};
+  }
+
+  const response = await fetch('http://localhost:11434/api/chat', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Erro na API do Ollama: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return {text: data.message?.content ?? 'Ollama não gerou texto.'};
+}
+
+
+// Chama Ollama generate Img
+export async function callOllamaImg({master, prompt, format}: {master: Master; prompt: string; format: any;}): Promise<{text: string}> {
+  const body = {
+    model: master.model,
+    prompt: prompt,
+    stream: false,
+    width: format.width,
+    height: format.height,
+    options: {
+      num_ctx: master.contextSize ?? 4096,
+      num_predict: master.numPredict ?? 400,
+      temperature: master.temperature ?? 0.7,
+      repeat_penalty: master.repeatPenalty ?? 1.3,
+    }
+  }
+  
+  const response = await fetch('http://localhost:11434/api/generate', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(body)
+  });
+
+  if (!response.ok) {
+    throw new Error(`Erro na API do Ollama: ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  return {text: data?.image ?? 'Ollama não gerou imagem.'};
 }

@@ -1,5 +1,14 @@
-import type {ActionType} from '../classifyAction';
+// arquivo: Instrução para uma ação complexa
+// local: src\lib\master\prompts\action1.ts
 
-export function action1(object: string, char: any, history: string, world: any): string {
-  return `\nO jogador tenta algo arriscado com ${object || 'o ambiente'}. Peça uma rolagem de dados e narre o resultado.`;
-}
+import type {ActionPayload} from '@/types/adventure';
+import type {ActionType} from '@/types/adventure';
+
+export function action1(actionAnalyzed: ActionType, payload: ActionPayload, history: string, world: any): string {
+  return `Você é um narrador de RPG e o jogador ${payload.char?.name} tenta algo arriscado com ${actionAnalyzed.object || 'o ambiente'} e tirou ${payload.dice}.
+  \nHISTÓRICO DAS ÚLTIMAS JOGADAS: ${history}.
+  \nCONXTEXTO DA CENA ${world}.
+  \nVerifique se é possível fazer essa ação.
+  \nSe sim: Continue a narração como consequência.
+  \nSe não: Explique o porquê é impossível fazer isso agora.`;
+};

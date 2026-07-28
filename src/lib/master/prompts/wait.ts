@@ -1,5 +1,9 @@
-import type {ActionType} from '../classifyAction';
+// arquivo: Instrução para uma ação simples
+// local: src\lib\master\prompts\action0.ts
 
-export function wait(object: string, char: any, history: string, world: any): string {
+import type {ActionPayload} from '@/types/adventure';
+import type {ActionType} from '@/types/adventure';
+
+export function wait(actionAnalyzed: ActionType, payload: ActionPayload, history: string, world: any): string {
   return `\nAcelere a narrativa resumindo o tempo transcorrido.`;
 }

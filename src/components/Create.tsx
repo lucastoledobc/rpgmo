@@ -9,8 +9,8 @@ interface FormDataState {
   title: string;
   pass: string;
   worldId: string;
-  worldTitle: string;
-  worldVersion: string;
+  state: string;
+  context: string;
   timeline: string;
   createdAt: string | null;
   plot: {title: string; phase: number; phases: string[]} | null;
@@ -32,9 +32,9 @@ export default function Create() {
   const [formData, setFormData] = useState<FormDataState>({
     title: '',
     pass: '',
-    worldId: '',
-    worldTitle: '',
-    worldVersion: '1.00',
+    worldId: "1",
+    state: '',
+    context: '',
     timeline: '',
     createdAt: null,
     plot: null,
@@ -106,8 +106,9 @@ export default function Create() {
         setFormData((prev) => ({
           ...prev,
           title: json.title,
-          worldTitle: json.worldTitle,
-          worldVersion: json.worldVersion,
+          worldId: json.worldId,
+          state: json.state,
+          context: json.context,
           timeline: json.timeline,
           createdAt: json.createdAt,
           plot: json.plot,
@@ -175,11 +176,11 @@ export default function Create() {
 
           <div className="formGroup">
             <label className="label">Sistema</label>
-            <select name="worldTitle" className="input" value={formData.worldTitle} onChange={handleChange}>
-              <option value="Fantasia Medieval">Fantasia Medieval</option>
-              <option value="cyberpunk">Cyberpunk</option>
-              <option value="terror">Terror</option>
-              <option value="custom">Personalizado (seu sistema)</option>
+            <select name="worldId" className="input" value={formData.worldId} onChange={handleChange}>
+              <option value="1">Fantasia Medieval</option>
+              <option value="2">Cyberpunk</option>
+              <option value="3">Terror</option>
+              <option value="0">Personalizado (seu sistema)</option>
             </select>
           </div>
 

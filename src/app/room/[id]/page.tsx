@@ -36,9 +36,11 @@ export default async function RoomPage({params}: Props) {
       <RoomHeader room={roomDetails.room} adventure={roomDetails.adventure} world={roomDetails.world}/>
 
       <main className="roomMain">
-        <RoomChars roomId={id} adveId={roomDetails.adventure.id} characters={roomDetails.characters}/>
+        {/* <RoomChars roomId={id} adveId={roomDetails.adventure.id} characters={roomDetails.characters}/> */}
         <RoomInAdventure roomId={id} characters={roomDetails.characters} master={roomDetails.master}/>
-        <RoomOutAdventure roomId={id} characters={roomDetails.characters}/>
+        {/* <RoomOutAdventure roomId={id} characters={roomDetails.characters}/> */}
+        {/* <RoomChars roomId={id} adveId={roomDetails.adventure.id} characters={roomDetails.characters}/> */}
+        {/* <RoomChat roomId={id}/> */}
       </main>
     </div>
   );

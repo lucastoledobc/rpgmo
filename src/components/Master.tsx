@@ -74,8 +74,8 @@ export default function Master({roomId, master, onClose}: MasterProps) {
             contextSize: contextSize ? Number(contextSize) : null,
             repeatPenalty: repeatPenalty ? Number(repeatPenalty) : null,
             numPredict: numPredict ? Number(numPredict) : null,
+            temperature: temperature ? Number(temperature) : null,
           } : {}),
-          temperature: temperature ? Number(temperature) : null,
         }),
       });
 
@@ -150,6 +150,7 @@ export default function Master({roomId, master, onClose}: MasterProps) {
           <hr />
 
           {system === 'ollama' && (
+            <>
             <div className="formGroup">
               <div className="labelContainer">
                 <label className="label">Memória do Mestre</label>
@@ -165,7 +166,6 @@ export default function Master({roomId, master, onClose}: MasterProps) {
                 <option value={131072}>131072 - Máximo</option>
               </select>
             </div>
-          )}
 
           <div className="formGroup">
             <div className="labelContainer">
@@ -179,8 +179,6 @@ export default function Master({roomId, master, onClose}: MasterProps) {
             </div>
           </div>
 
-          {system === 'ollama' && (
-            <>
               <div className="formGroup">
                 <div className="labelContainer">
                   <label className="label">Penalidade de Repetição</label>

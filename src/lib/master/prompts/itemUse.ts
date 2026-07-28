@@ -1,5 +1,9 @@
-import type {ActionType} from '../classifyAction';
+// arquivo: Instrução para uma ação simples
+// local: src\lib\master\prompts\action0.ts
 
-export function itemUse(object: string, char: any, history: string, world: any): string {
-  return `\nO personagem interagiu com: ${object}. ${JSON.stringify(world.excerpt ?? world)}. Descreva o resultado `;
+import type {ActionPayload} from '@/types/adventure';
+import type {ActionType} from '@/types/adventure';
+
+export function itemUse(actionAnalyzed: ActionType, payload: ActionPayload, history: string, world: any): string {
+  return `\nO personagem interagiu com: ${actionAnalyzed.object}. ${JSON.stringify(world.excerpt ?? world)}. Descreva o resultado `;
 }

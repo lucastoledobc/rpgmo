@@ -10,7 +10,7 @@ import {encrypt} from '@/lib/crypto';
 export async function PUT(request: Request, {params}: {params: Promise<{id: string}>}) {
   try {
     const {id: roomId} = await params;
-    const {system, model, personality, apiKey, contextSize, temperature, repeatPenalty, numPredict} = await request.json();
+    const {system, model, modelImg, personality, apiKey, contextSize, temperature, repeatPenalty, numPredict} = await request.json();
 
     if (!model?.trim()) {
       return NextResponse.json({error: 'O modelo é obrigatório.'}, {status: 400});
@@ -33,14 +33,13 @@ export async function PUT(request: Request, {params}: {params: Promise<{id: stri
       .set({
         system: system ?? existente.system,
         model: model.trim(),
-        personality: personality || null,
+        modelImg: modelImg?.trim() ?? null,
+        apiKey: apiKey ? encrypt(apiKey) : null,
+        contextSize: contextSize ?? null,
+        numPredict: numPredict ?? null,
+        repeatPenalty: repeatPenalty ?? null,
         temperature: temperature ?? null,
-        // Ollama-específicos: se o sistema não for ollama, zera (não fazem sentido pro Gemini)
-        contextSize: system === 'ollama' ? (contextSize ?? null) : null,
-        repeatPenalty: system === 'ollama' ? (repeatPenalty ?? null) : null,
-        numPredict: system === 'ollama' ? (numPredict ?? null) : null,
-        // só reescreve a chave se veio algo novo — string vazia/undefined preserva a atual
-        ...(apiKey ? {apiKey: encrypt(apiKey)} : {}),
+        personality: personality || null,
       })
       .where(eq(masters.roomId, roomId));
 

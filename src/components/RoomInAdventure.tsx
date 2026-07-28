@@ -5,6 +5,7 @@
 import {useState, useEffect, useRef} from 'react';
 import type {CharacterWithDetails, RoomDetails} from '@/types/room';
 import Master from './Master';
+import NPC from './NPC';
 
 interface RoomInAdventureProps {
   roomId: string;
@@ -26,8 +27,9 @@ export default function RoomInAdventure({roomId, characters, master}: RoomInAdve
   const [action, setAction] = useState('');
   const [selectedCharId, setSelectedCharId] = useState('');
   const [playerName, setPlayerName] = useState('');
-  const [loadingIA, setLoadingIA] = useState(false);
+  const [loading, setLoading] = useState(0);
   const [isMasterModalOpen, setIsMasterModalOpen] = useState(false);
+  const [activeNpc, setActiveNpc] = useState<{npcName: string;} | null>(null);
   const endRef = useRef<HTMLDivElement>(null);
 
   const selectedChar = characters.find((c) => c.id === selectedCharId) ?? null;
@@ -42,6 +44,15 @@ export default function RoomInAdventure({roomId, characters, master}: RoomInAdve
         const res = await fetch(`/api/room/${roomId}/adventure?type=ic`);
         const data = await res.json();
         if (data.log) setLog(data.log);
+        setLoading(data.loading);
+        if (data.state) {
+          if (data.state.id && data.state.category == 'CONVERSA') {
+            setActiveNpc({
+              npcName: data.state.object || 'NPC'
+            });
+          } 
+          else {setActiveNpc(null)}
+        }
       }
       catch (err) {
         console.error("Erro ao buscar aventura:", err);
@@ -49,7 +60,7 @@ export default function RoomInAdventure({roomId, characters, master}: RoomInAdve
     };
 
     fetchLog();
-    const interval = setInterval(fetchLog, 10000);
+    const interval = setInterval(fetchLog, 3000);
     return () => clearInterval(interval);
   }, [roomId]);
 
@@ -59,24 +70,30 @@ export default function RoomInAdventure({roomId, characters, master}: RoomInAdve
 
   const handleSend = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!action.trim() || loadingIA) return;
+    if (!action.trim() || loading || !selectedCharId) return;
 
     const playerAction = action.trim();
     setAction('');
-    setLoadingIA(true);
+    setLoading(1);
 
     try {
-      await fetch(`/api/room/${roomId}/adventure`, {
+      const res = await fetch(`/api/room/${roomId}/adventure`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({action: playerAction, playerName, char: selectedChar, mode: 'ic'}),
       });
+      const data = await res.json();
+      if (data.state.category === 'CONVERSA') {
+        setActiveNpc({
+          npcName: data.state.object || 'NPC'
+        });
+      }
     }
     catch (err) {
       console.error("Erro ao falar com o Mestre:", err);
     }
     finally {
-      setLoadingIA(false);
+      setLoading(0);
     }
   };
 
@@ -85,10 +102,6 @@ export default function RoomInAdventure({roomId, characters, master}: RoomInAdve
       <header className="header">
         <h3 className='title3'>AVENTURA</h3>
         <button type="button" className="settings" onClick={() => setIsMasterModalOpen(true)}></button>
-
-        {isMasterModalOpen && (
-          <Master roomId={roomId} master={master} onClose={() => setIsMasterModalOpen(false)} />
-        )}
       </header>
 
       <div className='adventure'>
@@ -97,14 +110,15 @@ export default function RoomInAdventure({roomId, characters, master}: RoomInAdve
             <p>O Mestre está aguardando você iniciar a jornada...</p>
           ) : (
             log.map((entry) => (
-            <div className='messageRow'>
-              <p key={entry.id}>
+            <div className='messageRow' key={entry.id}>
+              <p>
                 <span className="charTag">{entry.charName}</span>: {entry.text}
               </p>
             </div>
             ))
           )}
-          {loadingIA && <p style={{color: '#888'}}>O Mestre está digitando...</p>}
+          {loading == 1 && <p style={{color: '#888'}}>Enviando mensagem...</p>}
+          {loading == 2 && <p style={{color: '#888'}}>O Mestre está digitando...</p>}
           <div ref={endRef} />
         </div>
 
@@ -125,13 +139,22 @@ export default function RoomInAdventure({roomId, characters, master}: RoomInAdve
             className="message"
             value={action}
             onChange={(e) => setAction(e.target.value)}
-            placeholder={loadingIA ? "Aguardando o Mestre..." : "Digite sua ação..."}
+            placeholder={loading ? "Aguardando o Mestre..." : "Digite sua ação..."}
             rows={1}
             autoComplete="off"
-            disabled={loadingIA}
+            disabled={loading>0}
           />
-          <button type="submit" className="enter" disabled={loadingIA}></button>
-        </form>
+          <button type="submit" className="enter" disabled={loading>0}></button>
+        </form>        
+
+        {isMasterModalOpen && (
+          <Master roomId={roomId} master={master} onClose={() => setIsMasterModalOpen(false)} />
+        )}
+
+        {activeNpc && (
+          <NPC roomId={roomId} npcName={activeNpc.npcName} playerName={playerName} characters={characters} onClose={() => setActiveNpc(null)}
+      />
+    )}
       </div>
     </aside>
   );

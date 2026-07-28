@@ -1,14 +1,10 @@
 // arquivo: seleciona o tipo da ação do jogador
 // local: src\lib\master\classifyAction.ts
 
+import type {ActionPayload} from '@/types/adventure';
+import type {ActionType} from '@/types/adventure';
 import {callOllama} from './masterOllama';
 import {callGemini} from './masterGemini';
-
-export interface ActionType {
-  category: string;
-  object: string;
-  objectType: 'rules' | 'place' | 'person' | 'monster' | 'item' | 'none';
-}
 
 const CLASSIFICATION_PROMPT = `Você é um classificador de ações de RPG. Analise a ação do jogador e retorne APENAS um JSON.
 
@@ -36,32 +32,26 @@ Ação: "quero dormir" -> {"category": "PASSAGEM_DE_TEMPO", "object": "", "objec
 
 Retorne EXCLUSIVAMENTE o JSON, sem texto adicional, com as chaves "category" (string), "object" (string), "objectType" (string: rules|place|person|monster|item|none).`;
 
-export async function classifyAction(master: any, action: string): Promise<ActionType> {
+export async function classifyAction(master: any, payload: ActionPayload): Promise<ActionType> {
   const fallback: ActionType = {category: "OUTRO", object: "", objectType: "none"};
+  let parsed;
 
   if (master.system === 'ollama') {
-    master.repeatPenalty = 1;
-    master.temperature = 0.1;
     try {
       const intentJsonStr = await callOllama({
         master,
-        prompt: {
-          system: CLASSIFICATION_PROMPT,
-          user: `Ação: "${action}"`
-        },
+        systemPrompt: CLASSIFICATION_PROMPT,
+        message: {role: 'player', text: payload.action},
         format: "json",
+        repeatPenalty: 1,
+        temperature: 0.1,
       });
 
-      const parsed = JSON.parse(intentJsonStr);
-      const validTypes = ['rules','place','person','monster','item','none'];
-      if (!validTypes.includes(parsed.objectType)) parsed.objectType = 'none';
-
-      if (parsed.category === 'CONVERSA' && parsed.object === '') {parsed.category = 'OUTRO';}
-
+      parsed = JSON.parse(intentJsonStr.text);
       return parsed;
     }
     catch (error) {
-      console.error("Erro na classificação de intenção. Assumindo OUTRO.", error);
+      payload.response = "Erro na classificação de intenção. Assumindo OUTRO." + error;
       return fallback;
     }
   }
@@ -70,10 +60,8 @@ export async function classifyAction(master: any, action: string): Promise<Actio
     try {
       const intentJsonStr = await callGemini({
         master,
-        prompt: {
-          system: CLASSIFICATION_PROMPT,
-          user: `Ação: "${action}"`
-        },
+        systemPrompt: CLASSIFICATION_PROMPT,
+        messages: [{role: 'player', text: payload.action}],
         format: {
           type: "object",
           properties: {
@@ -84,21 +72,16 @@ export async function classifyAction(master: any, action: string): Promise<Actio
         }
       });
 
-      const parsed = JSON.parse(intentJsonStr);
-      const validTypes = ['rules','place','person','monster','item','none'];
-      if (!validTypes.includes(parsed.objectType)) parsed.objectType = 'none';
-
-      if (parsed.category === 'CONVERSA' && parsed.object === '') {parsed.category = 'OUTRO';}
-
+      parsed = JSON.parse(intentJsonStr.text);
       return parsed;
     }
     catch (error) {
-      console.error("Erro na classificação de intenção. Assumindo OUTRO.", error);
+      payload.response = "Erro na classificação de intenção. Assumindo OUTRO." + error;
       return fallback;
     }
   }
   else {
-    console.warn(`Master system "${master.system}" ainda não implementado. Assumindo OUTRO.`);
+    payload.response = `Master system "${master.system}" ainda não implementado. Assumindo OUTRO.`;
     return fallback;
   }
 }

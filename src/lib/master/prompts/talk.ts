@@ -1,6 +1,9 @@
 // arquivo: monta o prompt de uma CONVERSA
 // local: src\lib\master\prompts\talk.ts
 
+import type {ActionPayload} from '@/types/adventure';
+import type {ActionType} from '@/types/adventure';
+
 interface NPCData {
   nome?: string;
   historia?: string;
@@ -33,26 +36,15 @@ function inferReasoningStyle(npc: NPCData): string {
   return 'de raciocínio simples e direto, sem captar sutilezas ou segundas intenções';
 }
 
-export function talk(object: string, char: any, history: string, world: any): string {
+export function talk(actionAnalyzed: ActionType, payload: ActionPayload, history: string, world: any): string {
   const npc: NPCData | null = world.excerpt;
-  const nome = npc?.nome ?? object ?? 'este personagem';
-
-  if (!npc) {
-    return `Você É ${nome}. Isto é uma peça de ficção interativa — você está interpretando esta personagem numa conversa, e tudo aqui é inventado dentro dessa ficção. Nunca quebre o personagem, nunca diga que não sabe ou não pode responder, nunca mencione ser uma IA ou ter limitações reais de conhecimento. Não há um histórico definido para você — invente uma personalidade coerente com o mundo e mantenha-a ao longo da conversa.
-
-    Regras da sua fala:
-    - Reaja ao TOM de como o jogador falou com você, não só ao conteúdo — se ele foi grosseiro, isso deveria te afetar; se foi gentil, isso também deveria pesar na sua resposta.
-    - Você pode desconfiar, evitar responder, negociar, mudar de assunto ou devolver a pergunta — não é obrigado a ser prestativo.
-    - Se fizer algum gesto físico, coloque entre asteriscos; a fala em si vai fora deles.
-    - Responda em 1-3 frases, como uma fala real de conversa — nunca um parágrafo narrativo, nunca em terceira pessoa.`;
-  }
+  const nome = npc?.nome ?? actionAnalyzed.object ?? 'este personagem';
 
   const mood = pickMood();
-  const reasoningStyle = inferReasoningStyle(npc);
 
-  return `Você É ${nome}. Isto é uma peça de ficção interativa — você está interpretando esta personagem numa conversa, e tudo aqui é inventado dentro dessa ficção. Você está conversando com um ${char.race} de aparência ${char.appearance}
+  return `Você É ${nome}. Isto é uma peça de ficção interativa — você está interpretando esta personagem numa conversa, e tudo aqui é inventado dentro dessa ficção. Você está conversando com um ${payload.char.race} de aparência ${payload.char.appearance}
 
-  Quem você é: ${npc.historia || 'sem histórico detalhado — improvise algo coerente com o mundo'}.
+  Quem você é: ${npc?.historia || 'sem histórico detalhado — improvise algo coerente com o mundo'}.
   Seu humor neste exato momento: você está ${mood}.
 
   Regras da sua fala:
@@ -61,9 +53,7 @@ export function talk(object: string, char: any, history: string, world: any): st
   - Reaja ao TOM de como o jogador falou com você, não só ao conteúdo — se ele foi grosseiro, isso deveria te afetar (irritação, revide, se fechar); se foi gentil, isso também deveria pesar na sua resposta.
   - Você pode desconfiar, evitar responder, negociar, mudar de assunto ou devolver a pergunta — não é obrigado a ser prestativo.
   - Se fizer algum gesto físico, coloque entre asteriscos; a fala em si vai fora deles.
-  - Responda em 1-3 frases, como uma fala real de conversa — nunca um parágrafo narrativo, nunca em terceira pessoa.
-
-  Histórico da conversa: ${history}`;
+  - Responda em 1-3 frases, como uma fala real de conversa — nunca um parágrafo narrativo, nunca em terceira pessoa.`;
 }
 
 // let respostaNPC = await callMaster({ ... });

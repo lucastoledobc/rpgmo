@@ -19,8 +19,9 @@ export const adventures = sqliteTable('adventures', {
   roomId: text('room_id').notNull().references(() => rooms.id),
   title: text('title').notNull(),
   worldId: integer('world_id').notNull().references(() => worlds.id),
-  currentYear: integer('current_year'),
-  timeline: text('timeline'),       // acontecimentos importantes que devem ser anotados
+  state: text('state'),
+  context: text('context'),
+  timeline: text('timeline'),   // acontecimentos importantes que devem ser anotados
   createdAt: integer('created_at', {mode: 'timestamp'}), // início da aventura
 }, (table) => [
   index('adventures_room_idx').on(table.roomId),
@@ -50,6 +51,7 @@ export const masters = sqliteTable('masters', {
   roomId: text('room_id').notNull().references(() => rooms.id),
   system: text('system').notNull(),     // "ollama/gemini/gpt"
   model: text('model').notNull(),       // "gemma4/gemini-flash/gpt-4o"
+  modelImg: text('model_img'),          // "gemma4/gemini-flash/gpt-4o"
   apiKey: text('api_key'),
   contextSize: integer('context_size'), // tamanho do contexto
   temperature: real('temperature'),     // criatividade
@@ -102,7 +104,7 @@ export const adventureLogs = sqliteTable('adventure_logs', {
   id: integer('id').primaryKey({autoIncrement: true}),
   adveId: integer('adve_id').notNull().references(() => adventures.id),
   sender: text('sender').notNull(),
-  charId: text('char_id').references(() => characters.id),
+  charId: text('char_id'),
   charName: text('char_name'),
   type: text('type').notNull().default('ic'), // 'ic' | 'oc'
   text: text('text').notNull(),

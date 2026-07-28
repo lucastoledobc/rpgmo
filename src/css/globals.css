@@ -461,7 +461,7 @@ hr {
 }
 .roomMain {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: auto;
   gap: 0.4rem;
 
   height: 100%; 
