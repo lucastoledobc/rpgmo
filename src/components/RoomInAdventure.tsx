@@ -52,9 +52,9 @@ export default function RoomInAdventure({roomId, characters, master}: RoomInAdve
               npcName: data.state.object || 'NPC'
             });
           }
-          if (data.state.dice) {
+          // if (data.state.dice) {
 
-          }
+          // }
           
           else {setNPCModal(null)}
         }

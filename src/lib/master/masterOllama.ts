@@ -5,7 +5,7 @@ import {Master, ChatMessage} from "@/types/master";
 
 
 // Chama Ollama generate
-export async function callOllama({master, systemPrompt, message, format, repeatPenalty, temperature}: {master: Master; systemPrompt: string; message: ChatMessage; format: string | null; repeatPenalty?: number | null; temperature?: number | null}): Promise<{text: string}> {
+export async function callOllama({master, systemPrompt, message, format, repeatPenalty, temperature}: {master: Master; systemPrompt: string; message: ChatMessage; format: object | null; repeatPenalty?: number | null; temperature?: number | null}): Promise<{text: string}> {
   const body = {
     model: master.model,
     system: systemPrompt,

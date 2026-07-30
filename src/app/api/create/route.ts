@@ -6,7 +6,7 @@ import {eq, and} from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import {db} from '@/db';
 import {rooms, worlds, masters, adventures, characters, adventureLogs, chatMessages} from '@/db/schema';
-import {pickRandomPlot} from '@/lib/pickRandomPlot';
+import {pickRandomPlot} from '@/lib/contextMaker';
 import {generateCharId} from '@/lib/generateCharId';
 import {encrypt} from '@/lib/crypto';
 

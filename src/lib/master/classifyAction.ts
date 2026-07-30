@@ -5,6 +5,8 @@ import type {ActionPayload} from '@/types/adventure';
 import type {ActionType} from '@/types/adventure';
 import {callOllama} from './masterOllama';
 import {callGemini} from './masterGemini';
+import {narrate} from './narrate';
+import { ChatMessage } from '@/types/master';
 
 const CLASSIFICATION_PROMPT = `Você é um classificador de ações de RPG. Analise a ação do jogador e retorne APENAS um JSON.
 
@@ -35,53 +37,30 @@ Retorne EXCLUSIVAMENTE o JSON, sem texto adicional, com as chaves "category" (st
 export async function classifyAction(master: any, payload: ActionPayload): Promise<ActionType> {
   const fallback: ActionType = {category: "OUTRO", object: "", objectType: "none"};
   let parsed;
-
-  if (master.system === 'ollama') {
-    try {
-      const intentJsonStr = await callOllama({
-        master,
-        systemPrompt: CLASSIFICATION_PROMPT,
-        message: {role: 'player', text: payload.action},
-        format: "json",
-        repeatPenalty: 1,
-        temperature: 0.1,
-      });
-
-      parsed = JSON.parse(intentJsonStr.text);
-      return parsed;
+  const format = {
+      type: "object",
+      properties: {
+        category: {type: "string"},
+        object: {type: "string"},
+        objectType: {type: "string"},
+      }
     }
+  try {
+    const chatHistory: ChatMessage[] = [{role: 'player', text: payload.action}]
+    const format = {
+      type: "object",
+      properties: {
+        category: {type: "string"},
+        object: {type: "string"},
+        objectType: {type: "string"},
+      }
+    }
+    const intentJsonStr = await narrate({type: '', master, chatHistory, instruction: CLASSIFICATION_PROMPT, format: format})
+    const parsed: ActionType = JSON.parse(intentJsonStr.text);
+    return parsed
+  }
     catch (error) {
       payload.response = "Erro na classificação de intenção. Assumindo OUTRO." + error;
       return fallback;
     }
-  }
-  if (master.system === 'gemini') {
-    master.temperature = 0.1;
-    try {
-      const intentJsonStr = await callGemini({
-        master,
-        systemPrompt: CLASSIFICATION_PROMPT,
-        messages: [{role: 'player', text: payload.action}],
-        format: {
-          type: "object",
-          properties: {
-            category: {type: "string"},
-            object: {type: "string"},
-            objectType: {type: "string"},
-          }
-        }
-      });
-
-      parsed = JSON.parse(intentJsonStr.text);
-      return parsed;
-    }
-    catch (error) {
-      payload.response = "Erro na classificação de intenção. Assumindo OUTRO." + error;
-      return fallback;
-    }
-  }
-  else {
-    payload.response = `Master system "${master.system}" ainda não implementado. Assumindo OUTRO.`;
-    return fallback;
-  }
 }

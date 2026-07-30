@@ -3,9 +3,9 @@
 
 import {callOllama, callOllamaChat, callOllamaImg} from './masterOllama';
 import {callGemini, callGeminiChat, callGeminiDoc, callGeminiImg} from './masterGemini';
-import {Master} from '@/types/master';
+import {Master, ChatMessage} from '@/types/master';
 
-export async function narrate({type, master, chatHistory, instruction, interactionId}: {type: string, master: Master, chatHistory: any, instruction?: string, interactionId?: string}): Promise<{text: string; interactionId?: string}> {
+export async function narrate({type, master, chatHistory, instruction, format, interactionId}: {type: string, master: Master, chatHistory: ChatMessage[], instruction?: string, format?: object, interactionId?: string}): Promise<{text: string; interactionId?: string}> {
   if (type == 'chat') {
     if (master.system === 'ollama') {
       try {
@@ -26,7 +26,7 @@ export async function narrate({type, master, chatHistory, instruction, interacti
         const res = await callGeminiChat({
           master: master,
           systemPrompt: instruction ?? undefined,
-          message: chatHistory,
+          message: chatHistory[0],
           previousInteractionId: interactionId ?? undefined,
         });
         return {text: res.text, interactionId: res.interactionId}
@@ -43,8 +43,8 @@ export async function narrate({type, master, chatHistory, instruction, interacti
         const res = await callOllama({
           master: master,
           systemPrompt: instruction ?? '',
-          message: {role: 'player', text: chatHistory},
-          format: null,
+          message: chatHistory[0],
+          format: format ? format : null,
         });
         return {text: res.text}
       }
@@ -58,8 +58,8 @@ export async function narrate({type, master, chatHistory, instruction, interacti
         const res = await callGemini({
           master: master,
           systemPrompt: instruction ?? '',
-          messages: [{role: 'player', text: chatHistory}],
-          format: null,
+          messages: chatHistory,
+          format: format ? format : null,
         });
         return {text: res.text}
       }

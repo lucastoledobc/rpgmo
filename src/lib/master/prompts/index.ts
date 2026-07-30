@@ -2,7 +2,7 @@
 // local: src\lib\master\prompts\index.ts
 
 import type {ActionPayload, State} from '@/types/adventure';
-import type {Master} from '@/types/master';
+import type {ChatMessage, Master} from '@/types/master';
 
 import {action0} from './action0';
 import {action1} from './action1';
@@ -92,7 +92,7 @@ export async function callMaster({payload, state, master, worldRow, history}: {p
     ? builder(state, payload, history, {...world, excerpt})
     : 'O sistema não entendeu a ação do jogador, peça para ele enviar novamente com outras palavras.';
 
-  const chatHistory = {role: 'player', text: payload.action}
+  const chatHistory: ChatMessage[] = [{role: 'player', text: payload.action}]
 
   if ((state.category === 'AÇÃO_COMPLEXA'
     || state.category === 'COMBATE'

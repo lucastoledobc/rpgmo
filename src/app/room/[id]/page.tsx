@@ -41,7 +41,7 @@ export default async function RoomPage({params}: Props) {
         <RoomInAdventure roomId={id} characters={roomDetails.characters} master={roomDetails.master}/>
         {/* <RoomOutAdventure roomId={id} characters={roomDetails.characters}/> */}
         {/* <RoomChars roomId={id} adveId={roomDetails.adventure.id} characters={roomDetails.characters}/> */}
-        <RoomLog roomId={id}/>
+        {/* <RoomLog roomId={id}/> */}
       </main>
     </div>
   );

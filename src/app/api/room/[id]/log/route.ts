@@ -6,7 +6,7 @@ import {eq, asc, and} from 'drizzle-orm';
 import {db} from '@/db';
 import {adventures, adventureLogs} from '@/db/schema';
 
-export async function GET({params}: {params: Promise<{id: string}>}) {
+export async function GET(request: Request, {params}: {params: Promise<{id: string}>}) {
   try {
     const {id: roomId} = await params;
 
