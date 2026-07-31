@@ -1,10 +1,10 @@
 // arquivo: Instrução para uma descrição de algo 
 // local: src\lib\master\prompts\action0.ts
 
-import type {ActionPayload} from '@/types/adventure';
-import type {ActionType} from '@/types/adventure';
+import type {ActionPayload, ActionType} from '@/types/adventure';
+import type {ChatMessage} from '@/types/master';
 
-export function description(actionAnalyzed: ActionType, payload: ActionPayload, history: string, world: any): string {
+export function description(actionAnalyzed: ActionType, payload: ActionPayload, chatHistory: ChatMessage[], world: any): string {
   return `Você é um narrador de RPG. O personagem ${payload.char?.name} fez uma pergunta de algo e você precisa descrever.
   \nHISTÓRICO DAS ÚLTIMAS JOGADAS: ${history}.
   \nCONXTEXTO DA CENA ${world}

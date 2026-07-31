@@ -1,6 +1,9 @@
 // arquivo: prepara os histórico do log para ir pro mestre
 // local: src\lib\master\history.ts
 
+import {eq, asc, and, inArray} from 'drizzle-orm';
+import {db} from '@/db';
+import {adventureLogs} from '@/db/schema';
 import type {ChatMessage} from '@/types/master';
 
 // Reconstrói o histórico da conversa ATUAL com o NPC — necessário pro Ollama
@@ -33,8 +36,15 @@ export function buildNPCChatHistory(
 }
 
 
-export function buildHistory(log: {charName: string | null; text: string}[], charBudget: number = 2000): string {
-  const entries: string[] = [];
+export function buildHistory(adveId: number, charBudget: number = 2000): ChatMessage {
+  
+  const log: ChatMessage[] = db
+    .select({charName: adventureLogs.charName, text: adventureLogs.text})
+    .from(adventureLogs)
+    .where(and(eq(adventureLogs.adveId, adveId), eq(adventureLogs.type, 'ic')))
+    .orderBy(asc(adventureLogs.sentAt));
+
+  const entries: {role: 'player' | 'master', text: string}[] = [];
   let usedChars = 0;
 
   for (let i = log.length - 1; i >= 0; i--) {

@@ -1,8 +1,8 @@
 // arquivo: monta o prompt de uma CONVERSA
 // local: src\lib\master\prompts\talk.ts
 
-import type {ActionPayload} from '@/types/adventure';
-import type {ActionType} from '@/types/adventure';
+import type {ActionPayload, ActionType} from '@/types/adventure';
+import type {ChatMessage} from '@/types/master';
 
 interface NPCData {
   nome?: string;
@@ -36,7 +36,7 @@ function inferReasoningStyle(npc: NPCData): string {
   return 'de raciocínio simples e direto, sem captar sutilezas ou segundas intenções';
 }
 
-export function talk(actionAnalyzed: ActionType, payload: ActionPayload, history: string, world: any): string {
+export function talk(actionAnalyzed: ActionType, payload: ActionPayload, chatHistory: ChatMessage[], world: any): string {
   const npc: NPCData | null = world.excerpt;
   const nome = npc?.nome ?? actionAnalyzed.object ?? 'este personagem';
 

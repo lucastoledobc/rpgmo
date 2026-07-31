@@ -1,7 +1,7 @@
 // arquivo: monta a instrução final
 // local: src\lib\master\prompts\index.ts
 
-import type {ActionPayload, State} from '@/types/adventure';
+import type {ActionPayload, State, Context} from '@/types/adventure';
 import type {ChatMessage, Master} from '@/types/master';
 
 import {action0} from './action0';
@@ -17,11 +17,11 @@ import {talk} from './talk';
 import {wait} from './wait';
 
 import {findWorldExcerpt, resolveWorld} from '@/lib/resolveWorld'
-import {narrate} from '../narrate';
+import {narrate} from '@/lib/master/narrate';
 
 
 // Cada categoria de ação tem sua própria função que devolve uma instrução específica
-const PROMPT_BUILDERS: Record<string, (state: State, payload: ActionPayload, history: string, world: any) => string> = {
+const PROMPT_BUILDERS: Record<string, (state: State, payload: ActionPayload, chatHistory: ChatMessage[], world: any) => string> = {
   AÇÃO_SIMPLES: action0,
   AÇÃO_COMPLEXA: action1,
   APRESENTAÇÃO: apresentation,
@@ -36,11 +36,11 @@ const PROMPT_BUILDERS: Record<string, (state: State, payload: ActionPayload, his
 };
 
 
-export async function callMaster({payload, state, master, worldRow, history}: {payload: ActionPayload, state: State, master: Master, worldRow: any, history: string}): Promise<string> {
+export async function callMaster({payload, state, context, master, worldRow}: {payload: ActionPayload, state: State, context: Context, master: Master, worldRow: any}): Promise<string> {
 
   let type = '';
   let instruction = '';
-  let res;
+  let res: {text: string, interactionId?: string}
 
   const world = resolveWorld(worldRow);
 
@@ -52,8 +52,8 @@ export async function callMaster({payload, state, master, worldRow, history}: {p
 
     const excerpt = findWorldExcerpt('rules', state.object, world);
     const builder = PROMPT_BUILDERS['DICE'];
-    instruction = builder(state, payload, history, excerpt)
-    
+    instruction = builder(state, payload, chatHistory, excerpt)
+
     res = await narrate({type, master, chatHistory, instruction});
     
     state.dice = res.text
@@ -67,7 +67,7 @@ export async function callMaster({payload, state, master, worldRow, history}: {p
   // Pega a função certa pra essa categoria e gera a instrução específica
   const builder = PROMPT_BUILDERS[state.category];
   instruction = builder
-    ? builder(state, payload, history, {...world, excerpt})
+    ? builder(state, payload, chatHistory, {...world, excerpt})
     : 'O sistema não entendeu a ação do jogador, peça para ele enviar novamente com outras palavras.';
 
   console.log(`Chamando Mestre ${master.system}, tipo ${state.category}`)
@@ -90,6 +90,12 @@ export async function callMaster({payload, state, master, worldRow, history}: {p
     
     state.id = false;
     state.dice = ''
+  }
+  else if (state.category === 'COMBATE') {
+    context.id = `${payload.char.name} entrou em combate com um ${state.object ? state.object : state.objectType}.`
+    context.objects = [payload.char, excerpt]
+
+    return `Modal de ${state.category} iniciado`;
   }
   else {
     res = await narrate({type, master, chatHistory, instruction});

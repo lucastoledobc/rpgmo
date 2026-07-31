@@ -1,10 +1,10 @@
 // arquivo: Instrução para uma apresentação de algo
 // local: src\lib\master\prompts\action0.ts
 
-import type {ActionPayload} from '@/types/adventure';
-import type {ActionType} from '@/types/adventure';
+import type {ActionPayload, ActionType} from '@/types/adventure';
+import type {ChatMessage} from '@/types/master';
 
-export function apresentation(actionAnalyzed: ActionType, payload: ActionPayload, history: string, world: any): string {
+export function apresentation(actionAnalyzed: ActionType, payload: ActionPayload, chatHistory: ChatMessage[], world: any): string {
   const head = `Você é um narrador de RPG. O jogador ${payload.char?.name} encontrou algo novo e precisa de uma apresentação.
   \nHISTÓRICO DAS ÚLTIMAS JOGADAS: ${history}.
   \nCONXTEXTO DA CENA ${world}.

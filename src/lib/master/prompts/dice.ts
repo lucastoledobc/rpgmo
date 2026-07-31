@@ -2,8 +2,9 @@
 // local: src\lib\master\diceEvent.ts
 
 import type {ActionPayload, ActionType} from '@/types/adventure';
+import type {ChatMessage} from '@/types/master';
 
-export function dice(actionAnalyzed: ActionType, payload: ActionPayload, history: string, world: any): string  {
+export function dice(actionAnalyzed: ActionType, payload: ActionPayload, chatHistory: ChatMessage[], world: any): string {
     const instruction = `
     Estamos em um jogo de RPG e o jogador falou ${payload.action}.\n
     Isso corresponde a uma uma ação complexa. Procure no livro qual dado ele deve jogar para essa situação.

@@ -1,9 +1,10 @@
 // arquivo: gera o passo inicial da aventura
 // local: src\lib\master\prompts\startAdventure.ts
 
-import {ActionPayload, ActionType, State} from '@/types/adventure';
+import type {ActionPayload, ActionType} from '@/types/adventure';
+import type {ChatMessage} from '@/types/master';
 
-export function startAdventure(state: State, payload: ActionPayload, history: string, world: any): string {
+export function startAdventure(actionAnalyzed: ActionType, payload: ActionPayload, chatHistory: ChatMessage[], world: any): string {
 
     payload.playerName = "Mestre"
 

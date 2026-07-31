@@ -27,3 +27,8 @@ export interface State {
   instruction: string | null;
   interactionId?: string | null;
 }
+
+export interface Context {
+  id: string;
+  objects: any[];
+}

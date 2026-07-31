@@ -2,7 +2,7 @@
 // local: src\app\api\create\route.ts
 
 import {NextResponse} from 'next/server';
-import {eq, and} from 'drizzle-orm';
+import {eq} from 'drizzle-orm';
 import bcrypt from 'bcryptjs';
 import {db} from '@/db';
 import {rooms, worlds, masters, adventures, characters, adventureLogs, chatMessages} from '@/db/schema';
