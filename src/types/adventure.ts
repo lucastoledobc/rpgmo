@@ -9,7 +9,7 @@ export interface ActionPayload {
   action: string;
   dice: number;
   response: string;
-  mode: 'ic' | 'npc' | 'oc' | 'error';
+  mode: 'system' | 'ic' | 'npc' | 'oc' | 'error';
 }
 
 export interface ActionType {
@@ -23,7 +23,7 @@ export interface State {
   category: string;
   object: string;
   objectType: 'rules' | 'place' | 'person' | 'monster' | 'item' | 'none';
-  dice: string;
+  dice: string | number;
   instruction: string | null;
   interactionId?: string | null;
 }

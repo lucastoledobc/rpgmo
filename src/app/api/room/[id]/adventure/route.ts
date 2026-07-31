@@ -58,9 +58,11 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
     // importações e verificadores
     const {id: roomId} = await params;
     const payload: ActionPayload = await request.json();
-    if (!(payload?.action && payload?.playerName && (payload?.mode === 'ic' || payload?.mode === 'oc'))) {
-      return NextResponse.json({error: 'Ação, nome do jogador ou modo inválido.'}, {status: 400});
+    if (!(payload?.action && payload?.playerName)) {
+      return NextResponse.json({error: 'Ação ou nome do jogador inválido.'}, {status: 400});
     }
+
+    // pega no db: sala, aventura, mundo e mestre
     const [roomRow] = await db.select().from(rooms).where(eq(rooms.id, roomId));
     if (!roomRow) {
       return NextResponse.json({error: 'Sala não encontrada.'}, {status: 404});
@@ -77,10 +79,10 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
     if (!masterRow) {
       return NextResponse.json({error: 'Sala sem Mestre (IA) configurado.'}, {status: 400});
     }
-    // descriptografa a chave
+    // descriptografa a apiKey
     const master: Master = {...masterRow, apiKey: masterRow.apiKey ? decrypt(masterRow.apiKey) : null};
 
-    // pega a última instrução
+    // pega o estado do jogo
     let state: State;
     state = adventureRow?.state ? JSON.parse(adventureRow.state) : {id: true, category: "START", object: "", objectType: "none", dice: 0, interactionId: ''};
     console.log("\nstate: "+JSON.stringify(state)+"\n")
@@ -98,11 +100,13 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
       adveId: adventureRow.id,
       sender: payload.playerName,
       charId: payload.char?.id ?? null,
-      charName: payload.char?.name ?? null,
+      charName:  payload.char?.name ?? null,
       type: payload.mode,
-      text: payload.action,
+      text: typeof(state.dice) === 'string' ? payload.action : String(state.dice),
       sentAt: new Date(),
     });
+    
+    // leitura da parte do jogador complete. Parte 2: interpretação
     loading = 2
 
     if (!state.id) {
@@ -121,6 +125,9 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
         interactionId: null,
       }
     }
+
+    // interpretação concluída. Parte 3: mestre
+    loading = 3
 
     // chama o mestre
     payload.response = await callMaster({payload, state, master, worldRow, history});

@@ -5,7 +5,7 @@ import type {ChatMessage} from '@/types/master';
 
 // Reconstrói o histórico da conversa ATUAL com o NPC — necessário pro Ollama
 export function buildNPCChatHistory(
-  fullLogDesc: {charId: string, charName: string, type: string; text: string}[], // já ordenado
+  fullLogDesc: {charId: string | null, charName: string | null, type: string; text: string}[], // já ordenado
   charBudget: number = 2000
 ): ChatMessage[] {
 

@@ -5,39 +5,111 @@
   "theme": "Fantasia Medieval Clássica",
   "rules": {
     "name": "d20-lite",
-    "status": "d20 + modificador",
+    "status": "d20",
     "key_rules": [
       "Sucesso em testes: 10 ou mais no dado",
       "Morte: 3 falhas em testes de resistência"
-    ]
+    ],
+    "locais": {
+      "Reino": "Governado por um rei, tem leis próprias e subregiões.",
+      "Cidade": "Região sem monstros selvagens. Pode pertencer a um reino ou não.",
+      "Local": "Ambiente pequeno",
+      "Selvagem": "Região com monstros selvagens. Pode pertencer a um reino ou não.",
+      "Calabouço": "Ambiente com armadilhas e monstros selvagens.",
+      "Covil": "Ambiente que pertence a um Chefe."
+    }
   },
   "places": [
     {
       "type": "Reino",
       "name": "Reino de Aethelgard",
       "descricao": "O coração da civilização humana, governado pelo Rei Valerius II.",
-      "perigos": "Intrigas políticas e espionagem.",
-      "locais_interesse": ["Capital Áurea", "Vale dos Sussurros", "Montanhas do Norte"]
+      "cidades": [
+        {          
+          "type": "Cidade",
+          "name": "Capital Áurea",
+          "descricao": "O coração da civilização humana, governado pelo Rei Valerius II.",
+          "locais": [
+            {              
+              "type": "local",
+              "name": "Castelo",
+              "descricao": "O coração da civilização humana, governado pelo Rei Valerius II."
+            },
+            {              
+              "type": "local",
+              "name": "Pátio Central",
+              "descricao": "O coração da civilização humana, governado pelo Rei Valerius II."
+            }
+          ]
+        },
+        {
+          "type": "Cidade",
+          "name": "Porto de Saltmarsh",
+          "descricao": "Uma cidade costeira agitada, famosa por seu comércio de especiarias e contrabandistas.",
+          "perigos": "Gangues locais e guardas corruptos.",
+          "locais_interesse": ["Mercado de Peixes", "Guilda dos Navegadores", "Taverna do Bico de Águia"]
+        },
+        {          
+          "type": "Selvagem",
+          "name": "Vale dos Sussurros",
+          "descricao": "O coração da civilização humana, governado pelo Rei Valerius II.",
+          "locais": [
+            {              
+              "type": "local",
+              "name": "Castelo",
+              "descricao": "O coração da civilização humana, governado pelo Rei Valerius II."
+            }
+          ]
+        },
+        {
+          "type": "Selvagem",
+          "name": "Montanhas do Norte",
+          "descricao": "O coração da civilização humana, governado pelo Rei Valerius II.",
+          "locais": [
+            {              
+              "type": "local",
+              "name": "Castelo",
+              "descricao": "O coração da civilização humana, governado pelo Rei Valerius II."
+            }
+          ]
+        }
+      ]
     },
     {
-      "type": "Cidade",
-      "name": "Porto de Saltmarsh",
-      "descricao": "Uma cidade costeira agitada, famosa por seu comércio de especiarias e contrabandistas.",
-      "perigos": "Gangues locais e guardas corruptos.",
-      "locais_interesse": ["Mercado de Peixes", "Guilda dos Navegadores", "Taverna do Bico de Águia"]
-    },
-    {
-      "type": "Região Selvagem",
+      "type": "Selvagem",
       "name": "Vale dos Sussurros",
       "descricao": "Uma região florestal densa com névoa perene.",
       "nivel_dificuldade": "Médio",
       "perigos": "Lobos gigantes e plantas carnívoras.",
-      "locais_interesse": ["Taverna do Elmo Quebrado", "Ruínas do Templo Solar"]
+      "locais_interesse": [
+        {
+          "type": "Local",
+          "name": "Taverna do Elmo Quebrado",
+          "descricao": "Uma cidade costeira agitada, famosa por seu comércio de especiarias e contrabandistas.",
+          "perigos": "Gangues locais e guardas corruptos.",
+          "locais_interesse": ["Mercado de Peixes", "Guilda dos Navegadores", "Taverna do Bico de Águia"]
+        },
+        {
+          "type": "Calabouço",
+          "name": "Ruínas do Templo Solar",
+          "descricao": "Uma cidade costeira agitada, famosa por seu comércio de especiarias e contrabandistas.",
+          "perigos": "Gangues locais e guardas corruptos.",
+          "locais_interesse": ["Mercado de Peixes", "Guilda dos Navegadores", "Taverna do Bico de Águia"]
+        }
+      ]
     },
     {
       "type": "Calabouço",
       "name": "Criptas dos Esquecidos",
       "descricao": "Um labirinto subterrâneo abaixo da capital, lar de mortos-vivos antigos.",
+      "nivel_dificuldade": "Alto",
+      "perigos": "Armadilhas de lâminas, esqueletos arqueiros, maldições.",
+      "locais_interesse": ["Sala do Trono de Osso", "Arquivo dos Magos Mortos"]
+    },
+    {
+      "type": "Calabouço",
+      "name": "Caverna do Infinito",
+      "descricao": "Um calabouço profundo mas com teto tão alto, que se forma nuvens nele.",
       "nivel_dificuldade": "Alto",
       "perigos": "Armadilhas de lâminas, esqueletos arqueiros, maldições.",
       "locais_interesse": ["Sala do Trono de Osso", "Arquivo dos Magos Mortos"]
@@ -60,7 +132,7 @@
     ],
     "cronica": "Aethelgard vive um período de reconstrução após séculos de guerra, onde antigas ruínas escondem segredos que podem mudar o destino dos reinos novamente."
   },
-  "chars": [    
+  "chars": [
     {
       "id": "god_00",
       "name": "Solara",
@@ -77,7 +149,9 @@
       "motivacao": "Recuperar a honra e o comando de um navio.",
       "status": [
         {"name": "Força", "valor": 16},
-        {"name": "HP", "valor": 30, "maximo": 30}
+        {"name": "Destreza", "valor": 10},
+        {"name": "Inteligencia", "valor": 12},
+        {"name": "HP", "valor": 30, "max": 30}
       ]
     },
     {
@@ -89,8 +163,10 @@
       "historia": "Uma guardiã que vive nas ruínas do Templo Solar. Ela consegue ouvir as árvores e sabe quando alguém mal-intencionado entra no vale.",
       "motivacao": "Proteger as plantas carnívoras da ganância dos alquimistas.",
       "status": [
-        {"name": "Sabedoria", "valor": 18},
-        {"name": "HP", "valor": 20, "maximo": 20}
+        {"name": "Força", "valor": 16},
+        {"name": "Destreza", "valor": 10},
+        {"name": "Inteligencia", "valor": 12},
+        {"name": "HP", "valor": 20, "max": 20}
       ]
     },
     {
@@ -102,8 +178,10 @@
       "historia": "Conhecido por forjar as espadas mais afiadas do Reino. Perdeu um olho em um acidente com uma forja mágica.",
       "motivacao": "Criar uma obra-prima que sobreviva ao fogo de um dragão.",
       "status": [
-        {"name": "Constituição", "valor": 17},
-        {"name": "HP", "valor": 25, "maximo": 25}
+        {"name": "Força", "valor": 16},
+        {"name": "Destreza", "valor": 10},
+        {"name": "Inteligencia", "valor": 12},
+        {"name": "HP", "valor": 25, "max": 25}
       ]
     },
     {
@@ -115,8 +193,10 @@
       "historia": "Um antigo mago que tentou vencer a morte através de rituais proibidos. Agora guarda os arquivos dos magos mortos.",
       "motivacao": "Guardar o conhecimento proibido e impedir que vivos profanem o túmulo.",
       "status": [
-        {"name": "Inteligência", "valor": 19},
-        {"name": "HP", "valor": 40, "maximo": 40}
+        {"name": "Força", "valor": 16},
+        {"name": "Destreza", "valor": 10},
+        {"name": "Inteligencia", "valor": 12},
+        {"name": "HP", "valor": 40, "max": 40}
       ]
     },
     {
@@ -128,8 +208,10 @@
       "historia": "Um ser ancestral que desperta a cada século para renovar suas chamas com o ouro dos reinos vizinhos.",
       "motivacao": "Acumular tesouros e manter seu território livre de aventureiros.",
       "status": [
-        {"name": "Força", "valor": 24},
-        {"name": "HP", "valor": 150, "maximo": 150}
+        {"name": "Força", "valor": 16},
+        {"name": "Destreza", "valor": 10},
+        {"name": "Inteligencia", "valor": 12},
+        {"name": "HP", "valor": 150, "max": 150}
       ]
     }
   ],

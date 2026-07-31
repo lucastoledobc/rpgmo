@@ -18,10 +18,11 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
   try {
     const {id: roomId} = await params;
     const payload: ActionPayload = await request.json();
-    if (!(payload?.action && payload?.playerName && (payload?.mode === 'ic' || payload?.mode === 'oc'))) {
-      return NextResponse.json({error: 'Ação, nome do jogador ou modo inválido.'}, {status: 400});
+    if (!(payload?.action && payload?.playerName)) {
+      return NextResponse.json({error: 'Ação ou nome do jogador inválido.'}, {status: 400});
     }
 
+    // pega no db a aventura e verifica se o estado é CONVERSA
     const [adventureRow] = await db.select().from(adventures).where(eq(adventures.roomId, roomId));
     if (!adventureRow) return NextResponse.json({error: 'Aventura não encontrada.'}, {status: 404});
     const state: State = adventureRow.state ? JSON.parse(adventureRow.state) : null;
@@ -29,6 +30,7 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
       return NextResponse.json({error: 'Não há conversa ativa nesta sala.'}, {status: 409});
     }
 
+    // pega os dados do mestre
     const [masterRow] = await db.select().from(masters).where(eq(masters.roomId, roomId));
     if (!masterRow) return NextResponse.json({error: 'Sala sem Mestre (IA) configurado.'}, {status: 400});
     const master = {...masterRow, apiKey: masterRow.apiKey ? decrypt(masterRow.apiKey) : null};
@@ -44,17 +46,17 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
       sentAt: new Date(),
     });
 
+    // pega o log das últimas falas
     const fullLogDesc = await db
       .select({charId: adventureLogs.charId, charName: adventureLogs.charName, type: adventureLogs.type, text: adventureLogs.text})
       .from(adventureLogs)
       .where(eq(adventureLogs.adveId, adventureRow.id))
       .orderBy(desc(adventureLogs.sentAt));
 
+    // otimiza para o mestre
     const chatHistory = buildNPCChatHistory(fullLogDesc, 2000);
-    
-    console.log(chatHistory)
 
-    // console.log(state)
+    // chama o mestre
     const res = await narrate({type: 'chat', master, chatHistory, instruction: state?.instruction ?? undefined, interactionId: state?.interactionId ?? undefined});
     if (res.interactionId) {state.interactionId = res.interactionId;}
     

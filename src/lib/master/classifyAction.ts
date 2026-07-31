@@ -1,18 +1,15 @@
 // arquivo: seleciona o tipo da ação do jogador
 // local: src\lib\master\classifyAction.ts
 
-import type {ActionPayload} from '@/types/adventure';
-import type {ActionType} from '@/types/adventure';
-import {callOllama} from './masterOllama';
-import {callGemini} from './masterGemini';
+import type {ActionPayload, ActionType} from '@/types/adventure';
+import {Master, ChatMessage} from '@/types/master';
 import {narrate} from './narrate';
-import { ChatMessage } from '@/types/master';
 
 const CLASSIFICATION_PROMPT = `Você é um classificador de ações de RPG. Analise a ação do jogador e retorne APENAS um JSON.
 
 CATEGORIAS (escolha exatamente uma):
 - AÇÃO_SIMPLES: o jogador faz algo rotineiro, sem risco ou objeto novo envolvido (beber água, sentar, olhar ao redor, andar, descansar).
-- AÇÃO_COMPLEXA: o jogador tenta algo arriscado ou que exige teste de habilidade, mas não é combate nem usa item (escalar um muro, arrombar uma porta, saltar um abismo).
+- AÇÃO_COMPLEXA: o jogador tenta algo que pode dar errado ou que exige teste de habilidade, mas não é combate nem usa item (escalar um muro, arrombar uma porta, saltar um abismo).
 - APRESENTAÇÃO: o jogador CHEGA a um lugar novo ou VÊ algo pela primeira vez que precisa ser descrito ao jogador.
 - DESCRIÇÃO: o jogador PERGUNTA explicitamente sobre algo que já existe na cena.
 - CONVERSA: o jogador fala com um NPC específico.
@@ -26,6 +23,7 @@ REGRA DE DESEMPATE: ações cotidianas sem risco (comer, beber água de uma font
 
 Exemplos:
 Ação: "quero beber água" -> {"category": "AÇÃO_SIMPLES", "object": "água", "objectType": "none"}
+Ação: "quero saltar sobre uma ponte" -> {"category": "AÇÃO_COMPLEXA", "object": "salto", "objectType": "none"}
 Ação: "bebo a poção vermelha do meu inventário" -> {"category": "USO_ITEM", "object": "poção vermelha", "objectType": "item"}
 Ação: "entro na caverna escura" -> {"category": "APRESENTAÇÃO", "object": "caverna escura", "objectType": "place"}
 Ação: "o que é aquela estátua?" -> {"category": "DESCRIÇÃO", "object": "estátua", "objectType": "none"}
@@ -34,33 +32,17 @@ Ação: "quero dormir" -> {"category": "PASSAGEM_DE_TEMPO", "object": "", "objec
 
 Retorne EXCLUSIVAMENTE o JSON, sem texto adicional, com as chaves "category" (string), "object" (string), "objectType" (string: rules|place|person|monster|item|none).`;
 
-export async function classifyAction(master: any, payload: ActionPayload): Promise<ActionType> {
-  const fallback: ActionType = {category: "OUTRO", object: "", objectType: "none"};
-  let parsed;
+export async function classifyAction(master: Master, payload: ActionPayload): Promise<ActionType> {
+  const chatHistory: ChatMessage[] = [{role: 'player', text: payload.action}]
   const format = {
-      type: "object",
-      properties: {
-        category: {type: "string"},
-        object: {type: "string"},
-        objectType: {type: "string"},
-      }
+    type: "object",
+    properties: {
+      category: {type: "string"},
+      object: {type: "string"},
+      objectType: {type: "string"},
     }
-  try {
-    const chatHistory: ChatMessage[] = [{role: 'player', text: payload.action}]
-    const format = {
-      type: "object",
-      properties: {
-        category: {type: "string"},
-        object: {type: "string"},
-        objectType: {type: "string"},
-      }
-    }
-    const intentJsonStr = await narrate({type: '', master, chatHistory, instruction: CLASSIFICATION_PROMPT, format: format})
-    const parsed: ActionType = JSON.parse(intentJsonStr.text);
-    return parsed
   }
-    catch (error) {
-      payload.response = "Erro na classificação de intenção. Assumindo OUTRO." + error;
-      return fallback;
-    }
+  const res = await narrate({type: '', master, chatHistory, instruction: CLASSIFICATION_PROMPT, format: format})
+  const parsed: ActionType = JSON.parse(res.text);
+  return parsed
 }

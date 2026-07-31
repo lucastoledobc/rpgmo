@@ -5,6 +5,7 @@
 import {useState, useEffect, useRef} from 'react';
 import type {CharacterWithDetails, RoomDetails} from '@/types/room';
 import Master from './Master';
+import Dice from './Dice';
 import NPC from './NPC';
 
 interface RoomInAdventureProps {
@@ -23,15 +24,16 @@ interface LogEntry {
 }
 
 export default function RoomInAdventure({roomId, characters, master}: RoomInAdventureProps) {
-  const [log, setLog] = useState<LogEntry[]>([]);
-  const [action, setAction] = useState('');
-  const [selectedCharId, setSelectedCharId] = useState('');
   const [playerName, setPlayerName] = useState('');
+  const [selectedCharId, setSelectedCharId] = useState('');
+  const [action, setAction] = useState('');
+  const [log, setLog] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(0);
+  const endRef = useRef<HTMLDivElement>(null);
   const [masterModal, setMasterModal] = useState(false);
   const [npcModal, setNPCModal] = useState<{npcName: string;} | null>(null);
-  const [diceModal, setDiceModal] = useState<{npcName: string;} | null>(null);
-  const endRef = useRef<HTMLDivElement>(null);
+  const [combatModal, setCombatModal] = useState<{dice: string} | null>(null);
+  const [diceModal, setDiceModal] = useState<{dice: string} | null>(null);
 
   const selectedChar = characters.find((c) => c.id === selectedCharId) ?? null;
 
@@ -52,11 +54,16 @@ export default function RoomInAdventure({roomId, characters, master}: RoomInAdve
               npcName: data.state.object || 'NPC'
             });
           }
-          // if (data.state.dice) {
-
-          // }
+          if (data.state.dice && typeof(data.state.dice)=='string') {
+            setDiceModal({
+              dice: data.state.dice || 'Nd20'
+            });
+          }
           
-          else {setNPCModal(null)}
+          else {
+            setDiceModal(null);
+            setNPCModal(null);
+          }
         }
       }
       catch (err) {
@@ -116,14 +123,15 @@ export default function RoomInAdventure({roomId, characters, master}: RoomInAdve
           ) : (
             log.map((entry) => (
             <div className='messageRow' key={entry.id}>
-              <p>
+              <p key={entry.id}>
                 <span className="charTag">{entry.charName}</span>: {entry.text}
               </p>
             </div>
             ))
           )}
           {loading == 1 && <p style={{color: '#888'}}>Enviando mensagem...</p>}
-          {loading == 2 && <p style={{color: '#888'}}>O Mestre está digitando...</p>}
+          {loading == 2 && <p style={{color: '#888'}}>O Mestre está pensando...</p>}
+          {loading == 3 && <p style={{color: '#888'}}>O Mestre está digitando...</p>}
           <div ref={endRef} />
         </div>
 
@@ -156,10 +164,13 @@ export default function RoomInAdventure({roomId, characters, master}: RoomInAdve
           <Master roomId={roomId} master={master} onClose={() => setMasterModal(false)} />
         )}
 
+        {diceModal && (
+          <Dice roomId={roomId} diceNotation={diceModal.dice} onClose={() => setNPCModal(null)}/>
+        )}
+
         {npcModal && (
-          <NPC roomId={roomId} npcName={npcModal.npcName} playerName={playerName} characters={characters} onClose={() => setNPCModal(null)}
-      />
-    )}
+          <NPC roomId={roomId} npcName={npcModal.npcName} playerName={playerName} characters={characters} onClose={() => setNPCModal(null)}/>
+        )}
       </div>
     </aside>
   );
