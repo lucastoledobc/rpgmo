@@ -1,5 +1,5 @@
-// arquivo: route de conversa com NPC dentro do modal
-// local: src\app\api\room\[id]\adventure\npc\route.ts
+// arquivo: route de combate
+// local: src\app\api\room\[id]\adventure\combat\route.ts
 
 import {NextResponse} from 'next/server';
 import {eq, desc} from 'drizzle-orm';
@@ -8,7 +8,7 @@ import {rooms, adventures, worlds, masters, adventureLogs} from '@/db/schema';
 import {decrypt} from '@/lib/crypto';
 
 import type {ActionPayload, State} from '@/types/adventure';
-import type {Master} from '@/types/master';
+import type {Master} from '@/types/room';
 
 import {buildHistory} from '@/lib/master/history';
 import {narrate} from '@/lib/master/narrate';
@@ -26,8 +26,8 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
     const [adventureRow] = await db.select().from(adventures).where(eq(adventures.roomId, roomId));
     if (!adventureRow) return NextResponse.json({error: 'Aventura não encontrada.'}, {status: 404});
     const state: State = adventureRow.state ? JSON.parse(adventureRow.state) : null;
-    if (!state || state.category !== 'CONVERSA') {
-      return NextResponse.json({error: 'Não há conversa ativa nesta sala.'}, {status: 409});
+    if (!state || state.category !== 'COMBATE') {
+      return NextResponse.json({error: 'Não há combate ativo nesta sala.'}, {status: 409});
     }
 
     // pega os dados do mestre
@@ -55,7 +55,7 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
       .limit(100);
 
     // otimiza para o mestre
-    const chatHistory = buildHistory(log, ['npc'], 2000, true);
+    const chatHistory = buildHistory(log, ['combat'], 2000, true);
 
     // chama o mestre
     const res = await narrate({type: 'chat', master, chatHistory, instruction: state?.instruction ?? undefined, interactionId: state?.interactionId ?? undefined});
@@ -64,7 +64,7 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
     // salva a mensagem do mestre
     await db.insert(adventureLogs).values({
       adveId: adventureRow.id,
-      sender: master.model,
+      sender: master.model ?? 'Mestre',
       charId: null,
       charName: state.object,
       type: payload.mode,

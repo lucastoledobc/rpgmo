@@ -2,13 +2,13 @@
 // local: src\app\api\room\[id]\adventure\route.ts
 
 import {NextResponse} from 'next/server';
-import {eq, asc, and, inArray} from 'drizzle-orm';
+import {eq, asc, and, desc, inArray} from 'drizzle-orm';
 import {db} from '@/db';
 import {rooms, adventures, worlds, masters, adventureLogs} from '@/db/schema';
 import {decrypt} from '@/lib/crypto';
 
 import {ActionPayload, State, Context} from '@/types/adventure';
-import {Master} from '@/types/master';
+import {Master} from '@/types/room';
 
 import {classifyAction} from '@/lib/master/classifyAction';
 import {handlingError} from '@/lib/master/handlingError';
@@ -54,7 +54,7 @@ export async function GET(request: Request, {params}: {params: Promise<{id: stri
 
 export async function POST(request: Request, {params}: {params: Promise<{id: string}>}) {
   try {
-    loading = 1
+    loading = 1 // preparação
     // importações e verificadores
     const {id: roomId} = await params;
     const payload: ActionPayload = await request.json();
@@ -81,7 +81,7 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
     }
     // descriptografa a apiKey
     const master: Master = {...masterRow, apiKey: masterRow.apiKey ? decrypt(masterRow.apiKey) : null};
-
+    
     // pega o estado e contexto atual do jogo
     let state: State;
     state = adventureRow?.state ? JSON.parse(adventureRow.state) : {id: true, category: "START", object: "", objectType: "none", dice: 0, interactionId: ''};
@@ -89,6 +89,27 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
     let context: Context;
     context = adventureRow?.context ? JSON.parse(adventureRow.context) : {id: '', objects: []};
     console.log("\ncontext: "+JSON.stringify(context)+"\n")
+
+
+    // insere a fala do jogador no adventure_logs
+    await db.insert(adventureLogs).values({
+      adveId: adventureRow.id,
+      sender: payload.playerName,
+      charId: payload.char?.id ?? null,
+      charName:  payload.char?.name ?? null,
+      type: state.category === 'OUTRO' ? payload.mode : 'error',
+      text: typeof(state.dice) === 'string' ? payload.action : String(state.dice),
+      sentAt: new Date(),
+    });
+    // pega o log das últimas falas
+    const logRow = await db
+      .select()
+      .from(adventureLogs)
+      .where(eq(adventureLogs.adveId, adventureRow.id))
+      .orderBy(desc(adventureLogs.sentAt));
+
+
+    loading = 2 // mestre escutou, agora vai pensar
 
     if (!state.id) {
       // analisa a mensagem e classifica
@@ -107,32 +128,17 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
       }
     }
 
-    // leitura da parte do jogador complete. Parte 2: interpretação
-    loading = 2
-
-    // insere a fala do jogador no adventure_logs
-    await db.insert(adventureLogs).values({
-      adveId: adventureRow.id,
-      sender: payload.playerName,
-      charId: payload.char?.id ?? null,
-      charName:  payload.char?.name ?? null,
-      type: state.category === 'OUTRO' ? payload.mode : 'error',
-      text: typeof(state.dice) === 'string' ? payload.action : String(state.dice),
-      sentAt: new Date(),
-    });
-
-    // interpretação concluída. Parte 3: mestre
-    loading = 3
+    loading = 3 // mestre pensou, agora vai digitar
 
     // chama o mestre
-    payload.response = await callMaster({payload, state, context, master, worldRow});
+    payload.response = await callMaster({payload, state, context, master, worldRow, logRow});
     console.log("\nresponse: "+payload.response+"\n")
     
     if (payload.response) {
       // salva a mensagem do mestre
       await db.insert(adventureLogs).values({
         adveId: adventureRow.id,
-        sender: master.model,
+        sender: master.model ?? 'Mestre',
         charId: null,
         charName: payload.playerName,
         type: payload.mode,

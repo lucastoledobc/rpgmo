@@ -4,56 +4,58 @@
 'use client';
 import {useState} from 'react';
 import {useRouter} from 'next/navigation';
-import type {RoomDetails} from '@/types/room';
+import type {Master} from '@/types/room';
 
 interface MasterProps {
   roomId: string;
-  master: RoomDetails['master'];
+  master: Master;
   onClose: () => void;
 }
 
 export default function Master({roomId, master, onClose}: MasterProps) {
   const router = useRouter();
-
-  const [system, setSystem] = useState(master.system);
-  const [model, setModel] = useState(master.model);
-  const [personality, setPersonality] = useState(master.personality ?? '');
-  const [contextSize, setContextSize] = useState(master.contextSize?.toString() ?? '4096');
-  const [temperature, setTemperature] = useState(master.temperature?.toString() ?? '0.85');
-  const [repeatPenalty, setRepeatPenalty] = useState(master.repeatPenalty?.toString() ?? '1.1');
-  const [numPredict, setNumPredict] = useState(master.numPredict?.toString() ?? '400');
-  const [apiKey, setApiKey] = useState(''); // sempre começa vazio — nunca pré-preenchemos segredo
-
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [pass, setPass] = useState('');
+  const [formData, setFormData] = useState<Master>({
+    system: master.system,
+    model: master.model,
+    modelImg: master.modelImg,
+    apiKey: master.apiKey,
+    url: master.url,
+    contextSize: master.contextSize,
+    temperature: master.temperature,
+    repeatPenalty: master.repeatPenalty,
+    numPredict: master.numPredict,
+    personality: master.personality,
+  });
 
-  const getTemperatureLabel = (val: string) => {
-    const num = parseFloat(val);
-    if (num <= 0.2) return "Determinista (Robótico)";
-    if (num <= 0.6) return "Focado e Lógico";
-    if (num <= 0.9) return "Normal";
-    if (num <= 1.2) return "Muito Criativo";
+  // atualiza a escrita na tela
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const {name, value} = e.target;
+    setFormData((prev) => ({...prev, [name]: value}));
+  };
+
+  const getTemperatureLabel = (val: number) => {
+    if (val <= 0.2) return "Determinista (Robótico)";
+    if (val <= 0.6) return "Focado e Lógico";
+    if (val <= 0.9) return "Normal";
+    if (val <= 1.2) return "Muito Criativo";
     return "Criativo até demais (Instável)";
   };
 
-  const getPenaltyLabel = (val: string) => {
-    const num = parseFloat(val);
-    if (num < 1.0) return "Força Repetição (Ruim)";
-    if (num === 1.0) return "Desativada (Padrão)";
-    if (num <= 1.15) return "Variada / Ideal para RPG";
-    if (num <= 1.3) return "Rígida (Evita clichês)";
+  const getPenaltyLabel = (val: number) => {
+    if (val < 1.0) return "Força Repetição (Ruim)";
+    if (val === 1.0) return "Desativada (Padrão)";
+    if (val <= 1.15) return "Variada / Ideal para RPG";
+    if (val <= 1.3) return "Rígida (Evita clichês)";
     return "Extrema (Pode quebrar nomes e termos)";
   };
 
   const handleSave = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!model.trim()) {
-      setError('O modelo é obrigatório.');
-      return;
-    }
-
-    if (system === 'gemini' && !master.hasApiKey && !apiKey.trim()) {
+    if (formData.system === 'gemini' && !master.apiKey && !pass.trim()) {
       setError('Esta sala ainda não tem uma chave de API do Gemini configurada.');
       return;
     }
@@ -65,19 +67,9 @@ export default function Master({roomId, master, onClose}: MasterProps) {
       const response = await fetch(`/api/room/${roomId}/master`, {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          system,
-          model: model.trim(),
-          personality: personality || null,
-          apiKey: apiKey.trim() || undefined, // undefined = "não mexer na chave já salva"
-          ...(system === 'ollama' ? {
-            contextSize: contextSize ? Number(contextSize) : null,
-            repeatPenalty: repeatPenalty ? Number(repeatPenalty) : null,
-            numPredict: numPredict ? Number(numPredict) : null,
-            temperature: temperature ? Number(temperature) : null,
-          } : {}),
-        }),
+        body: JSON.stringify({...formData, pass}),
       });
+
 
       const result = await response.json();
 
@@ -105,9 +97,10 @@ export default function Master({roomId, master, onClose}: MasterProps) {
         <form onSubmit={handleSave}>
           <div className="formGroup">
             <label className="label">Sistema</label>
-            <select className="input" value={system} onChange={(e) => setSystem(e.target.value)}>
-              <option value="ollama">Ollama (local)</option>
+            <select className="input" value={formData.system?.toString()} onChange={handleChange}>
               <option value="gemini">Gemini</option>
+              <option value="ollamaLocal">Ollama (local)</option>
+              <option value="ollamaOnline">Ollama (online)</option>
             </select>
           </div>
 
@@ -116,22 +109,37 @@ export default function Master({roomId, master, onClose}: MasterProps) {
             <input
               type="text"
               className="input"
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-              placeholder={system === 'ollama' ? 'qwen2.5:3b' : 'gemini-3.5-flash'}
+              value={formData.model?.toString()}
+              onChange={handleChange}
+              placeholder={formData.system === 'ollama' ? 'qwen2.5:3b' : 'gemini-3.5-flash'}
               required
             />
           </div>
 
-          {system === 'gemini' && (
+          {formData.system !== 'ollamaLocal' && (
             <div className="formGroup">
               <label className="label">Chave de API</label>
               <input
                 type="password"
                 className="input"
-                value={apiKey}
-                onChange={(e) => setApiKey(e.target.value)}
-                placeholder={master.hasApiKey ? 'Chave já configurada — deixe em branco para manter' : 'Cole sua chave do Gemini'}
+                value={pass}
+                onChange={(e) => setPass(e.target.value)}
+                placeholder={master.apiKey ? 'Chave já configurada — deixe em branco para manter' : 'Cole sua chave do Gemini'}
+                required
+              />
+            </div>
+          )}
+          
+          {formData.system === 'ollamaLocal' && (
+            <div className="formGroup">
+              <label className="label">Url</label>
+              <input
+                type="text"
+                className="input"
+                value={formData.url?.toString()}
+                onChange={handleChange}
+                placeholder='http://127.0.0.1:11434'
+                required
               />
             </div>
           )}
@@ -139,24 +147,24 @@ export default function Master({roomId, master, onClose}: MasterProps) {
           <div className="formGroup">
             <label className="label">Personalidade</label>
             <textarea
-              className="input"
               rows={3}
-              value={personality}
-              onChange={(e) => setPersonality(e.target.value)}
+              className="input"
+              value={formData.personality?.toString()}
+              onChange={handleChange}
               placeholder="Mestre clássico de RPG, descritivo e justo."
             />
           </div>
 
           <hr />
 
-          {system === 'ollama' && (
+          {formData.system === 'ollama' && (
             <>
             <div className="formGroup">
               <div className="labelContainer">
                 <label className="label">Memória do Mestre</label>
                 <span className="tooltip-icon" data-tooltip="Tamanho do Contexto em Tokens. + Tokens = + Memória = + memória do seu PC."></span>
               </div>
-              <select className="input" value={contextSize} onChange={(e) => setContextSize(e.target.value)}>
+              <select className="input" value={formData.contextSize ?? 2024} onChange={handleChange}>
                 <option value={2048}>2048 - Leve</option>
                 <option value={4096}>4096 - Equilibrado</option>
                 <option value={8192}>8192 - Recomendado</option>
@@ -167,38 +175,38 @@ export default function Master({roomId, master, onClose}: MasterProps) {
               </select>
             </div>
 
-          <div className="formGroup">
-            <div className="labelContainer">
-              <label className="label">Criatividade (Temperatura)</label>
-              <span className="tooltip-icon" data-tooltip="Valores baixos deixam o mestre lógico e previsível. Valores altos (0.8 - 1.0) trazem mais criatividade e descrições ricas. Acima de 1.2 pode gerar respostas sem sentido."></span>
-            </div>
-
-            <div className="sliderContainer">
-              <input type="range" min="0.0" max="1.5" step="0.05" className="input-range" value={temperature} onChange={(e) => setTemperature(e.target.value)}/>
-              <span className='label'>{temperature+" - "+getTemperatureLabel(temperature)}</span>
-            </div>
-          </div>
-
-              <div className="formGroup">
-                <div className="labelContainer">
-                  <label className="label">Penalidade de Repetição</label>
-                  <span className="tooltip-icon" data-tooltip="Valores ligeiramente acima de 1.0 (como 1.1) forçam o mestre a usar sinônimos e termos variados, impedindo que a narração fique repetitiva."></span>
-                </div>
-
-                <div className="sliderContainer">
-                  <input type="range" min="0.5" max="1.5" step="0.05" className="input-range"
-                    value={repeatPenalty} onChange={(e) => setRepeatPenalty(e.target.value)}/>
-                  <span className='label'>{repeatPenalty+" - "+getPenaltyLabel(repeatPenalty)}</span>
-                </div>
+            <div className="formGroup">
+              <div className="labelContainer">
+                <label className="label">Criatividade (Temperatura)</label>
+                <span className="tooltip-icon" data-tooltip="Valores baixos deixam o mestre lógico e previsível. Valores altos (0.8 - 1.0) trazem mais criatividade e descrições ricas. Acima de 1.2 pode gerar respostas sem sentido."></span>
               </div>
 
-              <div className="formGroup">
-                <div className="labelContainer">
-                  <label className="label">Tamanho Máximo da Resposta (num_predict)</label>
-                  <span className="tooltip-icon" data-tooltip="Controla o tamanho das falas do mestre. Valores equilibrados (300-400) evitam textos longos cansativos e mantêm o ritmo do jogo dinâmico."></span>
-                </div>
-                <input type="number" className="input" value={numPredict} onChange={(e) => setNumPredict(e.target.value)} />
+              <div className="sliderContainer">
+                <input type="range" min="0.0" max="1.5" step="0.05" className="input-range" value={formData.temperature ?? 0.8} onChange={handleChange}/>
+                <span className='label'>{formData.temperature+" - "+getTemperatureLabel(formData.temperature ?? 0.8)}</span>
               </div>
+            </div>
+
+            <div className="formGroup">
+              <div className="labelContainer">
+                <label className="label">Penalidade de Repetição</label>
+                <span className="tooltip-icon" data-tooltip="Valores ligeiramente acima de 1.0 (como 1.1) forçam o mestre a usar sinônimos e termos variados, impedindo que a narração fique repetitiva."></span>
+              </div>
+
+              <div className="sliderContainer">
+                <input type="range" min="0.5" max="1.5" step="0.05" className="input-range"
+                  value={formData.repeatPenalty ?? 1.1} onChange={handleChange}/>
+                <span className='label'>{formData.repeatPenalty+" - "+getPenaltyLabel(formData.repeatPenalty ?? 1.1)}</span>
+              </div>
+            </div>
+
+            <div className="formGroup">
+              <div className="labelContainer">
+                <label className="label">Tamanho Máximo da Resposta (num_predict)</label>
+                <span className="tooltip-icon" data-tooltip="Controla o tamanho das falas do mestre. Valores equilibrados (300-400) evitam textos longos cansativos e mantêm o ritmo do jogo dinâmico."></span>
+              </div>
+              <input type="number" className="input" value={formData.numPredict ?? 400} onChange={handleChange}/>
+            </div>
             </>
           )}
 

@@ -36,7 +36,7 @@ const PROMPT_BUILDERS: Record<string, (state: State, payload: ActionPayload, cha
 };
 
 
-export async function callMaster({payload, state, context, master, worldRow}: {payload: ActionPayload, state: State, context: Context, master: Master, worldRow: any}): Promise<string> {
+export async function callMaster({payload, state, context, master, worldRow, logRow}: {payload: ActionPayload, state: State, context: Context, master: Master, worldRow: any, logRow: any}): Promise<string> {
 
   let type = '';
   let instruction = '';

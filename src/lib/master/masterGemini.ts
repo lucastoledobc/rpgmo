@@ -2,7 +2,8 @@
 // local: src\lib\master\masterGemini.ts
 
 import {GoogleGenAI} from "@google/genai";
-import {Master, ChatMessage} from "@/types/master";
+import type {ChatMessage} from '@/types/adventure';
+import type {Master} from '@/types/room';
 import * as fs from "node:fs";
 
 
@@ -20,7 +21,7 @@ export async function callGemini({master, systemPrompt, messages, format}: {mast
 
   try {
     const interaction = await ai.interactions.create({
-      model: master.model,
+      model: master.model ?? '',
       system_instruction: systemPrompt,
       input: inputSteps,
       ...(format ? {response_format: {type: "text", mime_type: "application/json", schema: format}} : {}),
@@ -43,7 +44,7 @@ export async function callGeminiChat({master, message, systemPrompt, previousInt
 
   try {
     const interaction = await ai.interactions.create({
-      model: master.model,
+      model: master.model ?? '',
       input: message.text,
       system_instruction: systemPrompt,
       previous_interaction_id: previousInteractionId,
@@ -104,7 +105,7 @@ export async function callGeminiDoc({master, systemPrompt, path,}: {master: Mast
 
   try {
     const interaction = await ai.interactions.create({
-      model: master.model,
+      model: master.model ?? '',
       system_instruction: systemPrompt,
       input: [
         {type: "document", uri: file.uri, mime_type: file.mimeType},

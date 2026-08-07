@@ -3,14 +3,14 @@
 
 import {NextResponse} from 'next/server';
 import {eq} from 'drizzle-orm';
-import bcrypt from 'bcryptjs';
 import {db} from '@/db';
 import {rooms} from '@/db/schema';
+import bcrypt from 'bcryptjs';
 
 export async function POST(request: Request) {
   try {
     // recebe do front
-    const {room, pass} = await request.json();
+    const {room, pass, playerName} = await request.json();
 
     // verifica a sala na db
     const [roomRow] = await db.select().from(rooms).where(eq(rooms.id, room));
@@ -24,9 +24,14 @@ export async function POST(request: Request) {
       return NextResponse.json({error: 'Senha incorreta.'}, {status: 401});
     }
 
+    // verifica se o playerName é válido
+    if (!playerName || playerName.trim() === '') {
+      return NextResponse.json({error: 'Insira seu nome, jogador.'}, {status: 400});
+    }
+
     return NextResponse.json({success: true});
   }
   catch (error) {
-    return NextResponse.json({error: 'Erro ao autenticar.'}, {status: 500});
+    return NextResponse.json({error: 'Erro do servidor ao autenticar.'}, {status: 500});
   }
 }

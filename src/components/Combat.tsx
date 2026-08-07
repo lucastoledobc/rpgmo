@@ -1,4 +1,4 @@
-// arquivo: modal de conversa contínua com um NPC
+// arquivo: modal de combate
 // local: src\components\NPC.tsx
 
 'use client';
@@ -18,7 +18,7 @@ interface LocalMessage {
   text: string;
 }
 
-export default function NPC({roomId, npcName, playerName, characters, onClose}: ChatNPCProps) {
+export default function Combat({roomId, npcName, playerName, characters, onClose}: ChatNPCProps) {
   const [messages, setMessages] = useState<LocalMessage[]>([]);
   const [input, setInput] = useState('');
   const [selectedCharId, setSelectedCharId] = useState('');
@@ -41,10 +41,10 @@ export default function NPC({roomId, npcName, playerName, characters, onClose}: 
     setLoading(1);
 
     try {
-      const res = await fetch(`/api/room/${roomId}/adventure/npc`, {
+      const res = await fetch(`/api/room/${roomId}/adventure/combat`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({action: message, playerName, char: selectedChar, mode: 'npc'}),
+        body: JSON.stringify({action: message, playerName, char: selectedChar, mode: 'combat'}),
       });
       const data = await res.json();
 
@@ -74,7 +74,7 @@ export default function NPC({roomId, npcName, playerName, characters, onClose}: 
   return (
     <div className="modalBox">
       <div className="editBox">
-        <h2 className='title3'>Conversando com {npcName}</h2>
+        <h2 className='title3'>Hora do DUELO</h2>
 
         <div className="adventureLog" style={{maxHeight: '300px', overflowY: 'auto'}}>
           {messages.map((m, i) => (

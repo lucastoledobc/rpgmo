@@ -9,7 +9,7 @@ export interface ActionPayload {
   action: string;
   dice: number;
   response: string;
-  mode: 'system' | 'ic' | 'npc' | 'oc' | 'error';
+  mode: 'system' | 'ic' | 'oc' | 'npc' | 'combat' | 'error';
 }
 
 export interface ActionType {
@@ -29,6 +29,12 @@ export interface State {
 }
 
 export interface Context {
-  id: string;
+  plot: number;
+  text: string;
   objects: any[];
+}
+
+export interface ChatMessage {
+  role: 'player' | 'master';
+  text: string;
 }

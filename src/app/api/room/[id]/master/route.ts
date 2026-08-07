@@ -10,36 +10,34 @@ import {encrypt} from '@/lib/crypto';
 export async function PUT(request: Request, {params}: {params: Promise<{id: string}>}) {
   try {
     const {id: roomId} = await params;
-    const {system, model, modelImg, personality, apiKey, contextSize, temperature, repeatPenalty, numPredict} = await request.json();
+    const {system, model, modelImg, apiKey, url, contextSize, temperature, repeatPenalty, numPredict, personality, pass} = await request.json();
 
-    if (!model?.trim()) {
-      return NextResponse.json({error: 'O modelo é obrigatório.'}, {status: 400});
-    }
-
-    if (system && !['ollama', 'gemini'].includes(system)) {
+    if (system && !['gemini', 'ollamaLocal', 'ollamaOnline'].includes(system)) {
       return NextResponse.json({error: 'Sistema de IA inválido.'}, {status: 400});
     }
 
-    const [existente] = await db.select().from(masters).where(eq(masters.roomId, roomId));
-    if (!existente) {
+    const [master] = await db.select().from(masters).where(eq(masters.roomId, roomId));
+    if (!master) {
       return NextResponse.json({error: 'Mestre não encontrado para esta sala.'}, {status: 404});
     }
 
-    if (system === 'gemini' && !existente.apiKey && !apiKey) {
-      return NextResponse.json({error: 'Configure uma chave de API do Gemini antes de salvar.'}, {status: 400});
+    if (system !== 'ollamaLocal' && !master.apiKey && !pass) {
+      return NextResponse.json({error: 'Configure uma chave de API antes de salvar.'}, {status: 400});
     }
+    const encryptKey = pass ? encrypt(pass) : master.apiKey;
 
     await db.update(masters)
       .set({
-        system: system ?? existente.system,
-        model: model.trim(),
-        modelImg: modelImg?.trim() ?? null,
-        apiKey: apiKey ? encrypt(apiKey) : null,
-        contextSize: contextSize ?? null,
-        numPredict: numPredict ?? null,
-        repeatPenalty: repeatPenalty ?? null,
-        temperature: temperature ?? null,
-        personality: personality || null,
+        system: system?.trim() ?? master.system,
+        model: model?.trim() ?? master.model,
+        modelImg: modelImg?.trim() ?? master.modelImg,
+        apiKey: encryptKey,
+        url: url?.trim() ?? master.url,
+        contextSize: contextSize ?? master.contextSize,
+        numPredict: numPredict ?? master.numPredict,
+        repeatPenalty: repeatPenalty ?? master.repeatPenalty,
+        temperature: temperature ?? master.temperature,
+        personality: personality?.trim() ?? master.personality,
       })
       .where(eq(masters.roomId, roomId));
 

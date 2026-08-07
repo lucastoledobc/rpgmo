@@ -1,12 +1,13 @@
 // arquivo: estrutura das tabelas de dados (schema)
 // local: src\db\schema.ts
 
-import {sqliteTable, text, integer, real, index, unique} from 'drizzle-orm/sqlite-core';
+import {sqliteTable, text, integer, real, index} from 'drizzle-orm/sqlite-core';
+
 
 // ---------- rooms ----------
 
 export const rooms = sqliteTable('rooms', {
-  id: text('id').primaryKey(),    // código de 12 caracteres
+  id: text('id').primaryKey().notNull(),    // código de 12 caracteres
   passHash: text('pass_hash').notNull(),
   createdAt: integer('created_at', {mode: 'timestamp'}).notNull(),
   lastActivityAt: integer('last_activity_at', {mode: 'timestamp'}).notNull(),
@@ -17,8 +18,8 @@ export const rooms = sqliteTable('rooms', {
 export const adventures = sqliteTable('adventures', {
   id: integer('id').primaryKey({autoIncrement: true}),
   roomId: text('room_id').notNull().references(() => rooms.id),
-  title: text('title').notNull(),
   worldId: integer('world_id').notNull().references(() => worlds.id),
+  title: text('title').notNull(),
   state: text('state'),
   context: text('context'),
   timeline: text('timeline'),   // acontecimentos importantes que devem ser anotados
@@ -32,7 +33,7 @@ export const adventures = sqliteTable('adventures', {
 export const worlds = sqliteTable('worlds', {
   id: integer('id').primaryKey({autoIncrement: true}),
   title: text('title').notNull(),
-  version: text('version').notNull(),
+  version: text('version').notNull().default("1.00"),
   theme: text('theme'),
   rules: text('rules').notNull(),
   places: text('places'),
@@ -49,10 +50,11 @@ export const worlds = sqliteTable('worlds', {
 export const masters = sqliteTable('masters', {
   id: integer('id').primaryKey({autoIncrement: true}),
   roomId: text('room_id').notNull().references(() => rooms.id),
-  system: text('system').notNull(),     // "ollama/gemini/gpt"
-  model: text('model').notNull(),       // "gemma4/gemini-flash/gpt-4o"
-  modelImg: text('model_img'),          // "gemma4/gemini-flash/gpt-4o"
+  system: text('system'),               // "ollama/gemini"
+  model: text('model'),                 // "qwen2-5:7b/gemini-flash-3.6"
+  modelImg: text('model_img'),          // "gemma4/gemini-flash"
   apiKey: text('api_key'),
+  url: text('url'),
   contextSize: integer('context_size'), // tamanho do contexto
   temperature: real('temperature'),     // criatividade
   repeatPenalty: real('repeat_penalty'),// repetir palavras
@@ -65,7 +67,7 @@ export const masters = sqliteTable('masters', {
 // ---------- characters ----------
 
 export const characters = sqliteTable('characters', {
-  id: text('id').primaryKey(),    //"id = nome_12caracteres" 
+  id: text('id').primaryKey().notNull(), //"id = nome_12caracteres" 
   adveId: integer('adve_id').notNull().references(() => adventures.id),
   name: text('name'),
   age: integer('age'),
@@ -82,10 +84,10 @@ export const characters = sqliteTable('characters', {
 export const characterStatus = sqliteTable('character_status', {
   id: integer('id').primaryKey({autoIncrement: true}),
   charId: text('char_id').notNull().references(() => characters.id),
-  name: text('name').notNull(), // ex: "Força", "HP", "Sanidade"
+  name: text('name').notNull(),         // ex: "Força", "HP", "Sanidade"
   value: integer('value').notNull(),
-  max: integer('max'), // nullable — só resources tem
-  type: text('type').notNull(), // 'attribute' | 'resource'
+  max: integer('max'),                  // nullable — só resources tem
+  type: text('type').notNull(),         // 'attribute' | 'resource'
 });
 
 // ---------- character_items ----------

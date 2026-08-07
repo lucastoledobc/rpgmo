@@ -2,23 +2,27 @@
 // local: src\lib\master\resolveWorld.ts
 
 import type {State} from '@/types/adventure';
-
+import type {World} from '@/types/world';
 
 function parseField<T>(value: string | null, fallback: T): T {
   if (!value) return fallback;
   try { return JSON.parse(value); } catch { return fallback; }
 }
 
-export function resolveWorld(worldRow: any): any {
+export function resolveWorld(worldRow: any): World {
   const world = {
-    rules: worldRow.rules,
-    history: parseField(worldRow.history, {}),
+    id: worldRow.id,
+    title: worldRow.title,
+    version: worldRow.version,
+    theme: worldRow.theme,
+    rules: parseField(worldRow.rules, null),
+    history: parseField(worldRow.history, null),
     places: parseField(worldRow.places, []),
     chars: parseField(worldRow.chars, []),
     monsters: parseField(worldRow.monsters, []),
     items: parseField(worldRow.items, []),
     groups: parseField(worldRow.groups, []),
-    plot: parseField(worldRow.plots, []),
+    plots: parseField(worldRow.plots, []),
   };
   return world
 }

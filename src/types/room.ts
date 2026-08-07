@@ -1,6 +1,19 @@
 // arquivo: define o formato de personagem "montado" (com status e itens já aninhados)
 // local: src\types\room.ts
 
+export interface Master {
+  system: string | null;
+  model: string | null;
+  modelImg: string | null;
+  apiKey: string | null;
+  url: string | null;
+  contextSize: number | null;
+  temperature: number | null;
+  repeatPenalty: number | null;
+  numPredict: number | null;
+  personality: string | null;
+}
+
 export interface CharacterStatus {
   id: number;
   name: string;
@@ -47,15 +60,6 @@ export interface RoomDetails {
     theme: string | null;
     version: string;
   };
-  master: {
-    system: string;
-    model: string;
-    contextSize: number | null;
-    temperature: number | null;
-    repeatPenalty: number | null;
-    numPredict: number | null;
-    personality: string | null;
-    hasApiKey: boolean;
-  };
+  master: Master;
   characters: CharacterWithDetails[];
 }

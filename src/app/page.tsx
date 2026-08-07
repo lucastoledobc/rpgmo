@@ -2,6 +2,7 @@
 // local: src\app\page.tsx
 
 'use client';
+import Link from 'next/link';
 import {useState} from 'react';
 import {useRouter} from 'next/navigation';
 
@@ -92,7 +93,7 @@ export default function Home() {
           </div>
 
           <div className="buttonContainer">
-            <button type="button" className="button" onClick={() => router.push('/create')}>CRIAR SALA</button>
+            <Link href="/create" className="button">CRIAR SALA</Link>
             <button type="submit" className="button">ENTRAR</button>
           </div>
         </form>

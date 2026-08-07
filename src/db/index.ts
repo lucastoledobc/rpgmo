@@ -1,3 +1,6 @@
+// arquivo: função de comunicação com a db Drizzle
+// local: src\db\index.ts
+
 import {drizzle} from 'drizzle-orm/libsql';
 import {createClient} from '@libsql/client';
 import * as schema from './schema';

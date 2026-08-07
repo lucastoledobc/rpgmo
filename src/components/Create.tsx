@@ -6,19 +6,27 @@ import {useState, useRef} from 'react';
 import {useRouter} from 'next/navigation';
 
 interface FormDataState {
-  title: string;
-  pass: string;
-  worldId: string;
-  state: string;
-  context: string;
-  timeline: string;
-  createdAt: string | null;
-  plot: {title: string; phase: number; phases: string[]} | null;
-  masterSystem: string;
-  masterModel: string;
-  masterKey: string;
-  personality: string;
+  room: {
+    pass: string;
+  };
+  adventure: {
+    title: string;
+    worldId: number;
+    state: any;
+    context: any;
+    timeline: any;
+    createdAt: any | null;
+  };
+  world: number | any;
+  master: {
+    system: string;
+    model: string;
+    apiKey: string;
+    personality: string;
+  };
   chars: any[];
+  charStatus: any[];
+  charItems: any[];
   log: any[];
   chat: any[];
 }
@@ -30,25 +38,33 @@ export default function Create() {
   const [room, setRoom] = useState('');
   const [alert, setAlert] = useState({text: '', type: ''});
   const [formData, setFormData] = useState<FormDataState>({
-    title: '',
-    pass: '',
-    worldId: "1",
-    state: '',
-    context: '',
-    timeline: '',
-    createdAt: null,
-    plot: null,
-    masterSystem: 'ollama',
-    masterModel: 'qwen2.5:3b',
-    masterKey: '',
-    personality: '',
+    room: {
+      pass: ''
+    },
+    adventure: {
+      title: '',
+      worldId: 1,
+      state: '',
+      context: '',
+      timeline: '',
+      createdAt: null
+    },
+    world: 1,
+    master: {
+      system: 'gemini',
+      model: 'gemini-3.5-flash-lite',
+      apiKey: '',
+      personality: 'Mestre clássico de RPG, descritivo e justo.'
+    },
     chars: [],
+    charStatus: [],
+    charItems: [],
     log: [],
     chat: []
   });
 
   // atualiza a escrita na tela
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const {name, value} = e.target;
     setFormData((prev) => ({...prev, [name]: value}));
   };
@@ -56,7 +72,10 @@ export default function Create() {
   // Carrega livro (upload de mundo personalizado)
   const handleBook = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      setAlert({text: 'Nenhum livro selecionado.', type: 'error'});
+      return;
+    }
 
     const reader = new FileReader();
     reader.onload = async (event) => {
@@ -75,8 +94,11 @@ export default function Create() {
         if (uploadRes.ok) {
           setFormData((prev) => ({
             ...prev,
-            worldId: result.worldId,
-            worldTitle: 'custom'
+            adventure: {
+              ...prev.adventure,
+              worldId: 0
+            },
+            world: result,
           }));
         }
         else {
@@ -93,7 +115,10 @@ export default function Create() {
   // Carrega aventura antiga
   const handleJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      setAlert({text: 'Nenhuma aventura selecionada.', type: 'error'});
+      return;
+    }
 
     setAlert({text: 'Preenchendo dados a partir da aventura...', type: 'info'});
 
@@ -105,14 +130,22 @@ export default function Create() {
 
         setFormData((prev) => ({
           ...prev,
-          title: json.title,
-          worldId: json.worldId,
-          state: json.state,
-          context: json.context,
-          timeline: json.timeline,
-          createdAt: json.createdAt,
-          plot: json.plot,
+          room: {
+            title: json.title,
+            pass: json.pass
+          },
+          adventure: {
+            title: json.title,
+            worldId: 0,
+            state: json.state,
+            context: json.context,
+            timeline: json.timeline,
+            createdAt: json.createdAt,
+          },
+          world: json.world,
           chars: json.chars,
+          charStatus: json.charStatus,
+          charItems: json.charItems,
           log: json.log,
           chat: json.chat
         }));
@@ -161,12 +194,12 @@ export default function Create() {
 
           <div className="formGroup">
             <label className="label">Título da Aventura</label>
-            <input type='text' name="title" className="input" value={formData.title} onChange={handleChange} placeholder="Título da Aventura" required/>
+            <input type='text' name="title" className="input" value={formData.adventure.title} onChange={handleChange} placeholder="Título da Aventura" required/>
           </div>
 
           <div className="formGroup">
-            <label className="label">Senha</label>
-            <input type="password" name="pass" className="input" value={formData.pass} onChange={handleChange} placeholder="******" required/>
+            <label className="label">Senha da Sala</label>
+            <input type="password" name="pass" className="input" value={formData.room.pass} onChange={handleChange} placeholder="******" required/>
           </div>
         </section>
         <hr />
@@ -176,11 +209,11 @@ export default function Create() {
 
           <div className="formGroup">
             <label className="label">Sistema</label>
-            <select name="worldId" className="input" value={formData.worldId} onChange={handleChange}>
+            <select name="world" className="input" value={formData.world} onChange={handleChange}>
               <option value="1">Fantasia Medieval</option>
               <option value="2">Cyberpunk</option>
               <option value="3">Terror</option>
-              <option value="0">Personalizado (seu sistema)</option>
+              <option value="0">Personalizado (seu livro)</option>
             </select>
           </div>
 
@@ -197,27 +230,39 @@ export default function Create() {
 
           <div className="formGroup">
             <label className="label">Sistema</label>
-            <select name="masterSystem" className="input" value={formData.masterSystem} onChange={handleChange}>
-              <option value="ollama">Ollama (local)</option>
-              <option value="claude">Claude</option>
+            <select name="masterSystem" className="input" value={formData.master.system} onChange={handleChange}>
               <option value="gemini">Gemini</option>
-              <option value="gpt">ChatGPT</option>
+              <option value="ollamaLocal">Ollama (local)</option>
+              <option value="ollamaOnline">Ollama (online)</option>
+              <option value="person">Pessoa</option>
             </select>
           </div>
 
           <div className="formGroup">
             <label className="label">Modelo</label>
-            <input type='text' name="masterModel" className="input" value={formData.masterModel} onChange={handleChange} placeholder="qwen2.5:3b / gemini-flash / gpt-o4" required/>
-          </div>          
+            <input type='text' name="masterModel" className="input" value={formData.master.model} onChange={handleChange} placeholder={
+              formData.master.system == 'gemini' ? "gemini-flash" : 
+              formData.master.system == 'ollamaLocal' ? "qwen2.5:3b" : 
+              formData.master.system == 'ollamaOnline' ? "gemma4:cloud" :
+              formData.master.system == 'person' ? "nome do jogador" : ""}
+            required/>
+          </div>
 
           <div className="formGroup">
-            <label className="label">API Key</label>
-            <input type="password" name="masterKey" className="input" value={formData.masterKey} onChange={handleChange} placeholder="Senha API da sua IA"/>
-          </div>          
+            <label className="label">{
+            formData.master.system === 'gemini' ? 'API Key (Gemini)' : 
+            formData.master.system === 'ollamaLocal' ? 'URL Local' : 
+            formData.master.system === 'ollamaOnline' ? 'API Key (Ollama)' : ''}</label>
+            <input type="password" name="masterKey" className="input" value={formData.master.apiKey} onChange={handleChange} placeholder={
+              formData.master.system === 'gemini' ? '******' : 
+              formData.master.system === 'ollamaLocal' ? 'http://127.0.0.1:11434' : 
+              formData.master.system === 'ollamaOnline' ? '******' : ''} 
+            />
+          </div>
 
           <div className="formGroup">
             <label className="label">Personalidade</label>
-            <input type='text' name="personality" className="input" value={formData.personality} onChange={handleChange} placeholder={"Mestre clássico de RPG, descritivo e justo."}/>
+            <input type='text' name="personality" className="input" value={formData.master.personality} onChange={handleChange} placeholder={"Mestre clássico de RPG, descritivo e justo."}/>
           </div>
         </section>
         <hr />

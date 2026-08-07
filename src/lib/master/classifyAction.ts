@@ -14,7 +14,6 @@ CATEGORIAS (escolha exatamente uma):
 - DESCRIÇÃO: o jogador PERGUNTA explicitamente sobre algo que já existe na cena.
 - CONVERSA: o jogador fala com um NPC específico.
 - COMBATE: o jogador ataca ou é atacado.
-- USO_ITEM: o jogador usa um item do inventário ou do cenário com um propósito específico.
 - PASSAGEM_DE_TEMPO: o jogador pula adiante no tempo.
 - REGRA: o jogador pergunta sobre uma regra do jogo, não sobre a história.
 - OUTRO: nenhuma das anteriores se aplica.
@@ -24,7 +23,6 @@ REGRA DE DESEMPATE: ações cotidianas sem risco (comer, beber água de uma font
 Exemplos:
 Ação: "quero beber água" -> {"category": "AÇÃO_SIMPLES", "object": "água", "objectType": "none"}
 Ação: "quero saltar sobre uma ponte" -> {"category": "AÇÃO_COMPLEXA", "object": "salto", "objectType": "none"}
-Ação: "bebo a poção vermelha do meu inventário" -> {"category": "USO_ITEM", "object": "poção vermelha", "objectType": "item"}
 Ação: "entro na caverna escura" -> {"category": "APRESENTAÇÃO", "object": "caverna escura", "objectType": "place"}
 Ação: "o que é aquela estátua?" -> {"category": "DESCRIÇÃO", "object": "estátua", "objectType": "none"}
 Ação: "ataco o goblin" -> {"category": "COMBATE", "object": "goblin", "objectType": "monster"}
