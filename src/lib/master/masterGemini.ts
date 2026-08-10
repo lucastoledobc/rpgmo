@@ -2,8 +2,8 @@
 // local: src\lib\master\masterGemini.ts
 
 import {GoogleGenAI} from "@google/genai";
-import type {ChatMessage} from '@/types/adventure';
-import type {Master} from '@/types/room';
+import type {ChatMessage} from '@/types/master';
+import type {Master} from '@/types/campaign';
 import * as fs from "node:fs";
 
 

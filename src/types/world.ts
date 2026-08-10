@@ -52,9 +52,9 @@ export interface World {
   title: string;
   version: string;
   theme: string | null;
-  rules: any | null;
+  rules: any;
   places: Place[] | null;
-  history?: any | null;
+  history: any | null;
   chars: Character[] | null;
   monsters: Monster[] | null;
   items: Item[] | null;

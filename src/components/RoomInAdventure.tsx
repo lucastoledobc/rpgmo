@@ -3,27 +3,12 @@
 
 'use client';
 import {useState, useEffect, useRef} from 'react';
-import type {CharacterWithDetails, RoomDetails} from '@/types/room';
+import type {Campaign, Log} from '@/types/campaign';
 import Master from './Master';
 import Dice from './Dice';
 import NPC from './NPC';
 
-interface RoomInAdventureProps {
-  roomId: string;
-  characters: CharacterWithDetails[];
-  master: RoomDetails['master'];
-}
-
-interface LogEntry {
-  id: number;
-  sender: string;
-  charId: string | null;
-  charName: string | null;
-  text: string;
-  sentAt: string;
-}
-
-export default function RoomInAdventure({roomId, characters, master}: RoomInAdventureProps) {
+export default function RoomInAdventure({campaign}: {campaign: Campaign}) {
   const [playerName, setPlayerName] = useState('');
   const [selectedCharId, setSelectedCharId] = useState('');
   const [action, setAction] = useState('');

@@ -1,7 +1,7 @@
 // arquivo: Instrução para combate
 // local: src\lib\master\prompts\action0.ts
 
-import type {ActionPayload, ActionType} from '@/types/adventure';
+import type {ActionPayload, ActionType} from '@/types/master';
 import type {ChatMessage} from '@/types/master';
 
 export function combat(actionAnalyzed: ActionType, payload: ActionPayload, chatHistory: ChatMessage[], world: any): string {

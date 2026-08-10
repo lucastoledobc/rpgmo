@@ -4,7 +4,7 @@
 import {NextResponse} from 'next/server';
 import {eq} from 'drizzle-orm';
 import {db} from '@/db';
-import {rooms, adventures, worlds, masters, characters, characterStatus, characterItems, adventureLogs, chatMessages} from '@/db/schema';
+import {campaigns, worlds, masters, characters, characterStatus, characterItems, campaignLogs, chatMessages} from '@/db/schema';
 import {generateCharId} from '@/lib/generateCharId';
 import bcrypt from 'bcryptjs';
 import {encrypt} from '@/lib/crypto';
@@ -12,30 +12,30 @@ import {encrypt} from '@/lib/crypto';
 export async function POST(request: Request) {
   try {
     // recebe do front
-    let {room, adventure, world, master, chars, charStatus, charItems, log, chat} = await request.json();
+    let {data, world, master, chars, charStatus, charItems, log, chat} = await request.json();
 
     // verifica se nome da sala e senha foram preenchidos
-    if (!adventure?.title?.trim() || !room?.pass?.trim()) {
+    if (!data?.title?.trim() || !data?.pass?.trim()) {
       return NextResponse.json({error: 'Nome da sala e senha são obrigatórios.'}, {status: 400});
     }
 
     // gera um Id único para sala
-    let roomId = '';
+    let room = '';
     let sId = false;
     while (!sId) {
-      roomId = Array.from({length: 12}, () => "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random() * 36)]).join('');
-      const [exist] = await db.select().from(rooms).where(eq(rooms.id, roomId));
+      room = Array.from({length: 12}, () => "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random() * 36)]).join('');
+      const [exist] = await db.select().from(campaigns).where(eq(campaigns.room, room));
       if (!exist) sId = true; // se não existe é preenchido, caso contrário, repete o loop
     }
 
     // mundo
     let sourceWorld: any;
-    if (adventure.worldId === 0 && !world) {
+    if (data.worldId === 0 && !world) {
       return NextResponse.json({error: 'Mundo personalizado não fornecido.'}, {status: 400});
     }
-    else if (adventure.worldId !== 0) {
+    else if (data.worldId !== 0) {
       // aventura nova -> pega o livro no db
-      [sourceWorld] = await db.select().from(worlds).where(eq(worlds.id, adventure.worldId));
+      [sourceWorld] = await db.select().from(worlds).where(eq(worlds.id, data.worldId));
       if (!sourceWorld) {
         return NextResponse.json({error: 'Mundo de origem não encontrado.'}, {status: 404});
       }
@@ -43,7 +43,7 @@ export async function POST(request: Request) {
       // seleciona um plot aleatório do livro, caso haja
       const plotsArray = sourceWorld.plots ? JSON.parse(sourceWorld.plots) : [];
       if (plotsArray.length > 0) {
-        adventure.context.plot = Math.floor(Math.random() * plotsArray.length);
+        data.context.plot = Math.floor(Math.random() * plotsArray.length);
       }
     }
     else {
@@ -64,38 +64,32 @@ export async function POST(request: Request) {
     }
 
     // criptografa a senha da sala e apiKey do mestre
-    const passHash = await bcrypt.hash(room.pass, 10);
+    const passHash = await bcrypt.hash(data.pass, 10);
     const encryptedKey = master.apiKey ? encrypt(master.apiKey) : null;
 
     // preenche o banco de dados
     await db.transaction(async (tx) => {
-
-      // sala
-      await tx.insert(rooms).values({
-        id: roomId,
-        passHash,
-        createdAt: new Date(),
-        lastActivityAt: new Date(),
-      });
 
       // mundo
       const {id: _templateId, ...worldFields} = sourceWorld;
       const [worldCopy] = await tx.insert(worlds).values({...worldFields}).returning({id: worlds.id});
 
       // aventura
-      const [newAdventure] = await tx.insert(adventures).values({
-        roomId,
-        title: adventure.title,
+      const [newCampaign] = await tx.insert(campaigns).values({
+        room,
+        title: data.title,
+        passHash,
         worldId: worldCopy.id,
-        state: adventure.state,
-        context: adventure.context,
-        timeline: adventure.timeline,
-        createdAt: adventure.createdAt ? new Date(adventure.createdAt) : new Date(),
-      }).returning({id: adventures.id});
+        state: data.state,
+        context: data.context,
+        timeline: data.timeline,
+        createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
+        lastActivityAt: data.lastActivityAt ? new Date(data.lastActivityAt) :new Date(),
+      }).returning({room: campaigns.room});
 
       // mestre (IA)
       await tx.insert(masters).values({
-        roomId,
+        room,
         system: master.system,
         model: master.model,
         apiKey: encryptedKey,
@@ -119,7 +113,7 @@ export async function POST(request: Request) {
         : [];
 
       if (restoredChars.length > 0) {
-        await tx.insert(characters).values(restoredChars.map((c: any) => ({...c, adveId: newAdventure.id})));
+        await tx.insert(characters).values(restoredChars.map((c: any) => ({...c, room: newCampaign.room})));
       }
 
       if (charStatus && charStatus.length > 0) {
@@ -145,9 +139,9 @@ export async function POST(request: Request) {
         const mappedLogs = log.map((entry: any) => ({
           ...entry,
           id: undefined,
-          adveId: newAdventure.id,
+          room: newCampaign.room,
         }));
-        await tx.insert(adventureLogs).values(mappedLogs);
+        await tx.insert(campaignLogs).values(mappedLogs);
       }
 
       // restaura o chat
@@ -155,13 +149,13 @@ export async function POST(request: Request) {
         const mappedChats = chat.map((entry: any) => ({
           ...entry,
           id: undefined,
-          adveId: newAdventure.id,
+          room: newCampaign.room,
         }));
         await tx.insert(chatMessages).values(mappedChats);
       }
     });
 
-    return NextResponse.json({success: true, roomId}, {status: 201});
+    return NextResponse.json({success: true, room}, {status: 201});
   }
   catch (error) {
     return NextResponse.json({error: `Erro ao criar sala: ${error}`}, {status: 500});

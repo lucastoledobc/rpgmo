@@ -1,7 +1,7 @@
 // Arquivo: Lida com o livro/mundo
 // local: src\lib\master\resolveWorld.ts
 
-import type {State} from '@/types/adventure';
+import type {State} from '@/types/master';
 import type {World} from '@/types/world';
 
 function parseField<T>(value: string | null, fallback: T): T {

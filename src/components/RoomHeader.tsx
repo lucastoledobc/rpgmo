@@ -3,15 +3,9 @@
 
 'use client';
 import {useState} from 'react';
-import type {RoomDetails} from '@/types/room';
+import type {Campaign} from '@/types/campaign';
 
-interface RoomHeaderProps {
-  room: RoomDetails['room'];
-  adventure: RoomDetails['adventure'];
-  world: RoomDetails['world'];
-}
-
-export default function RoomHeader({room, adventure, world}: RoomHeaderProps) {
+export default function RoomHeader({campaign}: {campaign: Campaign}) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (

@@ -1,33 +1,39 @@
-// arquivo: modal de edição do mestre da sala
-// local: src\components\Master.tsx
+// arquivo: modal de edição da campanha
+// local: src\components\Config.tsx
 
 'use client';
 import {useState} from 'react';
 import {useRouter} from 'next/navigation';
-import type {Master} from '@/types/campaign';
+import type {Campaign} from '@/types/campaign';
 
-interface MasterProps {
-  roomId: string;
-  master: Master;
+interface ConfigProps {
+  campaign: Campaign;
   onClose: () => void;
 }
 
-export default function Master({roomId, master, onClose}: MasterProps) {
+export default function Config({campaign, onClose}: ConfigProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
-  const [pass, setPass] = useState('');
-  const [formData, setFormData] = useState<Master>({
-    system: master.system,
-    model: master.model,
-    modelImg: master.modelImg,
-    apiKey: master.apiKey,
-    url: master.url,
-    contextSize: master.contextSize,
-    temperature: master.temperature,
-    repeatPenalty: master.repeatPenalty,
-    numPredict: master.numPredict,
-    personality: master.personality,
+  const [formData, setFormData] = useState<Campaign>({
+    data: {
+      room: campaign.data.room,
+      title: campaign.data.title,
+      pass: '',
+      worldId: campaign.data.worldId,
+      state: campaign.data.state,
+      context: campaign.data.context,
+      timeline: campaign.data.timeline,
+      createdAt: campaign.data.createdAt,
+      lastActivityAt: campaign.data.lastActivityAt,
+    },
+    world: campaign.world,
+    master: campaign.master,
+    characters: campaign.characters,
+    charStatus: [],
+    charItems: [],
+    log: [],
+    chat: [],
   });
 
   // atualiza a escrita na tela
@@ -55,7 +61,7 @@ export default function Master({roomId, master, onClose}: MasterProps) {
   const handleSave = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (formData.system === 'gemini' && !master.apiKey && !pass.trim()) {
+    if (formData.master.system === 'gemini' && !formData.master.apiKey && !formData.data.pass.trim()) {
       setError('Esta sala ainda não tem uma chave de API do Gemini configurada.');
       return;
     }
@@ -64,10 +70,10 @@ export default function Master({roomId, master, onClose}: MasterProps) {
     setError('');
 
     try {
-      const response = await fetch(`/api/room/${roomId}/master`, {
+      const response = await fetch(`/api/room/${campaign.data.room}/config`, {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({...formData, pass}),
+        body: JSON.stringify(formData),
       });
 
 
@@ -97,7 +103,7 @@ export default function Master({roomId, master, onClose}: MasterProps) {
         <form onSubmit={handleSave}>
           <div className="formGroup">
             <label className="label">Sistema</label>
-            <select className="input" value={formData.system?.toString()} onChange={handleChange}>
+            <select className="input" value={formData.master.system?.toString()} onChange={handleChange}>
               <option value="gemini">Gemini</option>
               <option value="ollamaLocal">Ollama (local)</option>
               <option value="ollamaOnline">Ollama (online)</option>
@@ -109,34 +115,34 @@ export default function Master({roomId, master, onClose}: MasterProps) {
             <input
               type="text"
               className="input"
-              value={formData.model?.toString()}
+              value={formData.master.model?.toString()}
               onChange={handleChange}
-              placeholder={formData.system === 'ollama' ? 'qwen2.5:3b' : 'gemini-3.5-flash'}
+              placeholder={formData.master.system === 'ollama' ? 'qwen2.5:3b' : 'gemini-3.5-flash'}
               required
             />
           </div>
 
-          {formData.system !== 'ollamaLocal' && (
+          {formData.master.system !== 'ollamaLocal' && (
             <div className="formGroup">
               <label className="label">Chave de API</label>
               <input
                 type="password"
                 className="input"
-                value={pass}
-                onChange={(e) => setPass(e.target.value)}
-                placeholder={master.apiKey ? 'Chave já configurada — deixe em branco para manter' : 'Cole sua chave do Gemini'}
+                value={formData.data.pass}
+                onChange={handleChange}
+                placeholder={formData.master.apiKey ? 'Chave já configurada — deixe em branco para manter' : 'Cole sua chave do Gemini'}
                 required
               />
             </div>
           )}
           
-          {formData.system === 'ollamaLocal' && (
+          {formData.master.system === 'ollamaLocal' && (
             <div className="formGroup">
               <label className="label">Url</label>
               <input
                 type="text"
                 className="input"
-                value={formData.url?.toString()}
+                value={formData.master.url?.toString()}
                 onChange={handleChange}
                 placeholder='http://127.0.0.1:11434'
                 required
@@ -149,7 +155,7 @@ export default function Master({roomId, master, onClose}: MasterProps) {
             <textarea
               rows={3}
               className="input"
-              value={formData.personality?.toString()}
+              value={formData.master.personality?.toString()}
               onChange={handleChange}
               placeholder="Mestre clássico de RPG, descritivo e justo."
             />
@@ -157,14 +163,14 @@ export default function Master({roomId, master, onClose}: MasterProps) {
 
           <hr />
 
-          {formData.system === 'ollama' && (
+          {formData.master.system === 'ollama' && (
             <>
             <div className="formGroup">
               <div className="labelContainer">
                 <label className="label">Memória do Mestre</label>
                 <span className="tooltip-icon" data-tooltip="Tamanho do Contexto em Tokens. + Tokens = + Memória = + memória do seu PC."></span>
               </div>
-              <select className="input" value={formData.contextSize ?? 2024} onChange={handleChange}>
+              <select className="input" value={formData.master.contextSize ?? 2024} onChange={handleChange}>
                 <option value={2048}>2048 - Leve</option>
                 <option value={4096}>4096 - Equilibrado</option>
                 <option value={8192}>8192 - Recomendado</option>
@@ -182,8 +188,8 @@ export default function Master({roomId, master, onClose}: MasterProps) {
               </div>
 
               <div className="sliderContainer">
-                <input type="range" min="0.0" max="1.5" step="0.05" className="input-range" value={formData.temperature ?? 0.8} onChange={handleChange}/>
-                <span className='label'>{formData.temperature+" - "+getTemperatureLabel(formData.temperature ?? 0.8)}</span>
+                <input type="range" min="0.0" max="1.5" step="0.05" className="input-range" value={formData.master.temperature ?? 0.8} onChange={handleChange}/>
+                <span className='label'>{formData.master.temperature+" - "+getTemperatureLabel(formData.master.temperature ?? 0.8)}</span>
               </div>
             </div>
 
@@ -195,8 +201,8 @@ export default function Master({roomId, master, onClose}: MasterProps) {
 
               <div className="sliderContainer">
                 <input type="range" min="0.5" max="1.5" step="0.05" className="input-range"
-                  value={formData.repeatPenalty ?? 1.1} onChange={handleChange}/>
-                <span className='label'>{formData.repeatPenalty+" - "+getPenaltyLabel(formData.repeatPenalty ?? 1.1)}</span>
+                  value={formData.master.repeatPenalty ?? 1.1} onChange={handleChange}/>
+                <span className='label'>{formData.master.repeatPenalty+" - "+getPenaltyLabel(formData.master.repeatPenalty ?? 1.1)}</span>
               </div>
             </div>
 
@@ -205,7 +211,7 @@ export default function Master({roomId, master, onClose}: MasterProps) {
                 <label className="label">Tamanho Máximo da Resposta (num_predict)</label>
                 <span className="tooltip-icon" data-tooltip="Controla o tamanho das falas do mestre. Valores equilibrados (300-400) evitam textos longos cansativos e mantêm o ritmo do jogo dinâmico."></span>
               </div>
-              <input type="number" className="input" value={formData.numPredict ?? 400} onChange={handleChange}/>
+              <input type="number" className="input" value={formData.master.numPredict ?? 400} onChange={handleChange}/>
             </div>
             </>
           )}

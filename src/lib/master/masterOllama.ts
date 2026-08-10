@@ -2,8 +2,8 @@
 // local: src\lib\master\masterOllama.ts
 
 import {Ollama} from "ollama";
-import type {ChatMessage} from '@/types/adventure';
-import type {Master} from '@/types/room';
+import type {ChatMessage} from '@/types/master';
+import type {Master} from '@/types/campaign';
 
 
 // Chama Ollama generate

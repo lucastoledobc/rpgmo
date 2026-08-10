@@ -7,8 +7,8 @@ import {db} from '@/db';
 import {rooms, adventures, worlds, masters, adventureLogs} from '@/db/schema';
 import {decrypt} from '@/lib/crypto';
 
-import {ActionPayload, State, Context} from '@/types/adventure';
-import {Master} from '@/types/room';
+import {ActionPayload, State, Context} from '@/types/master';
+import {Master} from '@/types/campaign';
 
 import {classifyAction} from '@/lib/master/classifyAction';
 import {handlingError} from '@/lib/master/handlingError';

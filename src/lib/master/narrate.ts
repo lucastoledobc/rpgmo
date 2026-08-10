@@ -3,8 +3,8 @@
 
 import {callOllamaLocal, callOllamaLocalChat, callOllamaLocalImg, callOllamaOnline, callOllamaChatOnline} from './masterOllama';
 import {callGemini, callGeminiChat, callGeminiDoc, callGeminiImg} from './masterGemini';
-import type {ChatMessage} from '@/types/adventure';
-import type {Master} from '@/types/room';
+import type {ChatMessage} from '@/types/master';
+import type {Master} from '@/types/campaign';
 
 export async function narrate({type, master, chatHistory, instruction, format, interactionId}: {type: string, master: Master, chatHistory: ChatMessage[], instruction?: string, format?: object, interactionId?: string}): Promise<{text: string; interactionId?: string}> {
   if (type == 'chat') {

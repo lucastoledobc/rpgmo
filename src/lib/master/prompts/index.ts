@@ -1,7 +1,7 @@
 // arquivo: monta a instrução final
 // local: src\lib\master\prompts\index.ts
 
-import type {ActionPayload, State, Context} from '@/types/adventure';
+import type {ActionPayload, State, Context} from '@/types/master';
 import type {ChatMessage, Master} from '@/types/master';
 
 import {action0} from './action0';

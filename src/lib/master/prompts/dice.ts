@@ -1,7 +1,7 @@
 // arquivo: Faz a leitura de qual dado deve ser lançado.
 // local: src\lib\master\diceEvent.ts
 
-import type {ActionPayload, ActionType} from '@/types/adventure';
+import type {ActionPayload, ActionType} from '@/types/master';
 import type {ChatMessage} from '@/types/master';
 
 export function dice(actionAnalyzed: ActionType, payload: ActionPayload, chatHistory: ChatMessage[], world: any): string {

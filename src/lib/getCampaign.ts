@@ -1,26 +1,19 @@
 // arquivo: centralização da busca db
-// local: src\lib\getRoomData.ts
+// local: src\lib\getCampaign.ts
 
 import {eq, inArray} from 'drizzle-orm';
 import {db} from '@/db';
-import {rooms, adventures, worlds, masters, characters, characterStatus, characterItems} from '@/db/schema';
-import type {RoomDetails} from '@/types/room';
+import {campaigns, worlds, masters, characters, characterStatus, characterItems} from '@/db/schema';
+import type {Campaign} from '@/types/campaign';
 
-export async function getRoomData(roomId: string): Promise<RoomDetails | null> {
-  const [roomRow] = await db.select().from(rooms).where(eq(rooms.id, roomId));
+export async function getCampaign(room: string): Promise<Campaign | null> {
+  const [campaignRow] = await db.select().from(campaigns).where(eq(campaigns.room, room));
 
-  if (!roomRow) return null;
+  if (!campaignRow) return null;
 
-  const [[adventureRow], [masterRow]] = await Promise.all([
-    db.select().from(adventures).where(eq(adventures.roomId, roomId)),
-    db.select().from(masters).where(eq(masters.roomId, roomId)),
-  ]);
-
-  if (!adventureRow) return null;
-
-  const [worldRow] = await db.select().from(worlds).where(eq(worlds.id, adventureRow.worldId));
-
-  const characterRows = await db.select().from(characters).where(eq(characters.adveId, adventureRow.id));
+  const [masterRow] = await db.select().from(masters).where(eq(masters.room, room));
+  const [worldRow] = await db.select().from(worlds).where(eq(worlds.id, campaignRow.worldId));
+  const characterRows = await db.select().from(characters).where(eq(characters.room, campaignRow.room));
   const charIds = characterRows.map((c) => c.id);
 
   const [statusRows, itemRows] = charIds.length
@@ -43,17 +36,12 @@ export async function getRoomData(roomId: string): Promise<RoomDetails | null> {
   }));
 
   return {
-    room: {
-      id: roomRow.id,
-      createdAt: roomRow.createdAt,
-      lastActivityAt: roomRow.lastActivityAt,
-    },
-    adventure: {
-      id: adventureRow.id,
-      title: adventureRow.title,
-      worldId: adventureRow.worldId,
-      timeline: adventureRow.timeline,
-      createdAt: adventureRow.createdAt,
+    data: {
+      room: campaignRow.room,
+      title: campaignRow.title,
+      worldId: campaignRow.worldId,
+      timeline: campaignRow.timeline,
+      createdAt: campaignRow.createdAt,
     },
     world: {
       id: worldRow.id,
@@ -69,7 +57,6 @@ export async function getRoomData(roomId: string): Promise<RoomDetails | null> {
       repeatPenalty: masterRow.repeatPenalty,
       numPredict: masterRow.numPredict,
       personality: masterRow.personality,
-      hasApiKey: Boolean(masterRow.apiKey),
     },
     characters: charactersWithDetails,
   };

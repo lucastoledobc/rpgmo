@@ -4,7 +4,7 @@
 'use client';
 import {useState} from 'react';
 import {useRouter} from 'next/navigation';
-import type {CharacterWithDetails} from '@/types/room';
+import type {CharacterWithDetails} from '@/types/campaign';
 
 interface StatusRow {
   name: string;

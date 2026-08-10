@@ -4,63 +4,55 @@
 'use client';
 import {useState, useRef} from 'react';
 import {useRouter} from 'next/navigation';
-
-interface FormDataState {
-  room: {
-    pass: string;
-  };
-  adventure: {
-    title: string;
-    worldId: number;
-    state: any;
-    context: any;
-    timeline: any;
-    createdAt: any | null;
-  };
-  world: number | any;
-  master: {
-    system: string;
-    model: string;
-    apiKey: string;
-    personality: string;
-  };
-  chars: any[];
-  charStatus: any[];
-  charItems: any[];
-  log: any[];
-  chat: any[];
-}
+import type {Campaign} from '@/types/campaign';
 
 export default function Create() {
   const router = useRouter();
   const bookInputRef = useRef<HTMLInputElement>(null);
-  const adventureInputRef = useRef<HTMLInputElement>(null);
-  const [room, setRoom] = useState('');
+  const campaignInputRef = useRef<HTMLInputElement>(null);
   const [alert, setAlert] = useState({text: '', type: ''});
-  const [formData, setFormData] = useState<FormDataState>({
-    room: {
-      pass: ''
-    },
-    adventure: {
+  const [formData, setFormData] = useState<Campaign>({
+    data: {
+      room: '',
       title: '',
+      pass: '',
       worldId: 1,
-      state: '',
-      context: '',
+      state: {
+        id: false,
+        category: '',
+        object: '',
+        objectType: 'rules',
+        dice: '',
+        instruction: null,
+        interactionId: null
+      },
+      context: {
+        plot: 0,
+        text: '',
+        objects: []
+      },
       timeline: '',
-      createdAt: null
+      createdAt: null,
+      lastActivityAt: null
     },
-    world: 1,
+    world: null,
     master: {
       system: 'gemini',
       model: 'gemini-3.5-flash-lite',
+      modelImg: null,
       apiKey: '',
-      personality: 'Mestre clássico de RPG, descritivo e justo.'
+      url: '',
+      contextSize: null,
+      numPredict: null,
+      temperature: null,
+      repeatPenalty: null,
+      personality: 'Mestre clássico de RPG, descritivo e justo.',
     },
-    chars: [],
+    characters: [],
     charStatus: [],
     charItems: [],
     log: [],
-    chat: []
+    chat: [],
   });
 
   // atualiza a escrita na tela
@@ -94,8 +86,8 @@ export default function Create() {
         if (uploadRes.ok) {
           setFormData((prev) => ({
             ...prev,
-            adventure: {
-              ...prev.adventure,
+            data: {
+              ...prev.data,
               worldId: 0
             },
             world: result,
@@ -130,12 +122,9 @@ export default function Create() {
 
         setFormData((prev) => ({
           ...prev,
-          room: {
+          campaign: {
             title: json.title,
-            pass: json.pass
-          },
-          adventure: {
-            title: json.title,
+            pass: json.pass,
             worldId: 0,
             state: json.state,
             context: json.context,
@@ -174,7 +163,7 @@ export default function Create() {
     const result = await response.json();
 
     if (response.ok) {
-      setRoom(result.roomId);
+      setFormData((prev) => ({...prev, data: {...prev.data, room: result.room}}));
       setAlert({text: 'Sala criada!', type: 'success'});
     } 
     else {
@@ -194,12 +183,12 @@ export default function Create() {
 
           <div className="formGroup">
             <label className="label">Título da Aventura</label>
-            <input type='text' name="title" className="input" value={formData.adventure.title} onChange={handleChange} placeholder="Título da Aventura" required/>
+            <input type='text' name="title" className="input" value={formData.data.title} onChange={handleChange} placeholder="Título da Aventura" required/>
           </div>
 
           <div className="formGroup">
             <label className="label">Senha da Sala</label>
-            <input type="password" name="pass" className="input" value={formData.room.pass} onChange={handleChange} placeholder="******" required/>
+            <input type="password" name="pass" className="input" value={formData.data.pass} onChange={handleChange} placeholder="******" required/>
           </div>
         </section>
         <hr />
@@ -209,7 +198,7 @@ export default function Create() {
 
           <div className="formGroup">
             <label className="label">Sistema</label>
-            <select name="world" className="input" value={formData.world} onChange={handleChange}>
+            <select name="world" className="input" value={formData.data.worldId} onChange={handleChange}>
               <option value="1">Fantasia Medieval</option>
               <option value="2">Cyberpunk</option>
               <option value="3">Terror</option>
@@ -230,7 +219,7 @@ export default function Create() {
 
           <div className="formGroup">
             <label className="label">Sistema</label>
-            <select name="masterSystem" className="input" value={formData.master.system} onChange={handleChange}>
+            <select name="masterSystem" className="input" value={formData.master.system?.toString()} onChange={handleChange}>
               <option value="gemini">Gemini</option>
               <option value="ollamaLocal">Ollama (local)</option>
               <option value="ollamaOnline">Ollama (online)</option>
@@ -240,7 +229,7 @@ export default function Create() {
 
           <div className="formGroup">
             <label className="label">Modelo</label>
-            <input type='text' name="masterModel" className="input" value={formData.master.model} onChange={handleChange} placeholder={
+            <input type='text' name="masterModel" className="input" value={formData.master.model?.toString()} onChange={handleChange} placeholder={
               formData.master.system == 'gemini' ? "gemini-flash" : 
               formData.master.system == 'ollamaLocal' ? "qwen2.5:3b" : 
               formData.master.system == 'ollamaOnline' ? "gemma4:cloud" :
@@ -253,7 +242,7 @@ export default function Create() {
             formData.master.system === 'gemini' ? 'API Key (Gemini)' : 
             formData.master.system === 'ollamaLocal' ? 'URL Local' : 
             formData.master.system === 'ollamaOnline' ? 'API Key (Ollama)' : ''}</label>
-            <input type="password" name="masterKey" className="input" value={formData.master.apiKey} onChange={handleChange} placeholder={
+            <input type="password" name="masterKey" className="input" value={formData.master.apiKey?.toString()} onChange={handleChange} placeholder={
               formData.master.system === 'gemini' ? '******' : 
               formData.master.system === 'ollamaLocal' ? 'http://127.0.0.1:11434' : 
               formData.master.system === 'ollamaOnline' ? '******' : ''} 
@@ -262,14 +251,14 @@ export default function Create() {
 
           <div className="formGroup">
             <label className="label">Personalidade</label>
-            <input type='text' name="personality" className="input" value={formData.master.personality} onChange={handleChange} placeholder={"Mestre clássico de RPG, descritivo e justo."}/>
+            <input type='text' name="personality" className="input" value={formData.master.personality?.toString()} onChange={handleChange} placeholder={"Mestre clássico de RPG, descritivo e justo."}/>
           </div>
         </section>
         <hr />
 
         <div className="buttonContainer">
-          <button type="button" className="button" onClick={() => adventureInputRef.current?.click()}>[CARREGAR AVENTURA]</button>
-          <input type="file" ref={adventureInputRef} onChange={handleJSON} style={{display: 'none'}} accept=".json"/>
+          <button type="button" className="button" onClick={() => campaignInputRef.current?.click()}>[CARREGAR CAMPANHA]</button>
+          <input type="file" ref={campaignInputRef} onChange={handleJSON} style={{display: 'none'}} accept=".json"/>
 
           <button type="submit" className="button">CRIAR SALA</button>
         </div>
@@ -280,9 +269,9 @@ export default function Create() {
             <h3 className='subTile'>{alert.text}</h3>
             {alert.type=="success" && (
             <>
-            <p>ID da sala: <strong>{room}</strong></p>
+            <p>ID da sala: <strong>{formData.data.room}</strong></p>
             <div className="buttonContainer">
-              <button className="button" onClick={() => navigator.clipboard.writeText(room)}>COPIAR ID</button>
+              <button className="button" onClick={() => navigator.clipboard.writeText(formData.data.room)}>COPIAR ID</button>
               <button className="button" onClick={() => router.push(`/`)}>VOLTAR</button>
             </div>
             <h3 className='subTile'>Boa Aventura!</h3>

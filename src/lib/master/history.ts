@@ -1,7 +1,7 @@
 // arquivo: prepara os histórico do log para ir pro mestre
 // local: src\lib\master\history.ts
 
-import type {ChatMessage} from '@/types/adventure';
+import type {ChatMessage} from '@/types/master';
 
 interface LogRow {
   charId: string | null;

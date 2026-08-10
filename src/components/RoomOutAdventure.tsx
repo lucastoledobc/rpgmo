@@ -3,7 +3,7 @@
 
 'use client';
 import {useState, useEffect, useRef} from 'react';
-import type {CharacterWithDetails} from '@/types/room';
+import type {CharacterWithDetails} from '@/types/campaign';
 
 interface OOCEntry {
   id: number;

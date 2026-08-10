@@ -1,7 +1,7 @@
 // arquivo: Instrução para uma descrição de algo 
 // local: src\lib\master\prompts\action0.ts
 
-import type {ActionPayload, ActionType} from '@/types/adventure';
+import type {ActionPayload, ActionType} from '@/types/master';
 import type {ChatMessage} from '@/types/master';
 
 export function description(actionAnalyzed: ActionType, payload: ActionPayload, chatHistory: ChatMessage[], world: any): string {

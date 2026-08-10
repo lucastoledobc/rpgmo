@@ -5,7 +5,7 @@ import {NextResponse} from 'next/server';
 import {eq, desc, and} from 'drizzle-orm';
 import {db} from '@/db';
 import {adventures, characters, adventureLogs} from '@/db/schema';
-import type {State} from '@/types/adventure';
+import type {State} from '@/types/master';
 
 export async function POST(request: Request, {params}: {params: Promise<{id: string}>}) {
   try {

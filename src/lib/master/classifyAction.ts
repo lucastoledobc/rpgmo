@@ -1,7 +1,7 @@
 // arquivo: seleciona o tipo da ação do jogador
 // local: src\lib\master\classifyAction.ts
 
-import type {ActionPayload, ActionType} from '@/types/adventure';
+import type {ActionPayload, ActionType} from '@/types/master';
 import {Master, ChatMessage} from '@/types/master';
 import {narrate} from './narrate';
 

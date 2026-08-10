@@ -1,7 +1,7 @@
 // arquivo: monta o prompt de uma CONVERSA
 // local: src\lib\master\prompts\talk.ts
 
-import type {ActionPayload, ActionType} from '@/types/adventure';
+import type {ActionPayload, ActionType} from '@/types/master';
 import type {ChatMessage} from '@/types/master';
 
 interface NPCData {

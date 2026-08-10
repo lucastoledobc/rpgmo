@@ -1,0 +1,20 @@
+{
+  "home": {
+    "title": "RPG MO",
+    "roomLabel": "Sala",
+    "passLabel": "Senha",
+    "playerLabel": "Jogador",
+    "createButton": "CRIAR SALA",
+    "enterButton": "ENTRAR"
+  },
+  "adventure": {
+    "waitingMessage": "O Mestre está aguardando você iniciar a jornada...",
+    "sendingMessage": "Enviando mensagem...",
+    "masterTyping": "O Mestre está digitando..."
+  },
+  "dice": {
+    "title": "Role os dados",
+    "rollButton": "Rolar dados",
+    "orTypeValue": "ou digitar valor"
+  }
+}

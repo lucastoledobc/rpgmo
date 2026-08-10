@@ -4,7 +4,7 @@
 import {NextResponse} from 'next/server';
 import {eq} from 'drizzle-orm';
 import {db} from '@/db';
-import {rooms} from '@/db/schema';
+import {campaigns} from '@/db/schema';
 import bcrypt from 'bcryptjs';
 
 export async function POST(request: Request) {
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     const {room, pass, playerName} = await request.json();
 
     // verifica a sala na db
-    const [roomRow] = await db.select().from(rooms).where(eq(rooms.id, room));
+    const [roomRow] = await db.select().from(campaigns).where(eq(campaigns.room, room));
     if (!roomRow) {
       return NextResponse.json({error: 'Sala não encontrada.'}, {status: 404});
     }

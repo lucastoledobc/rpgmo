@@ -3,7 +3,7 @@
 
 'use client';
 import {useState, useRef, useEffect} from 'react';
-import type {CharacterWithDetails} from '@/types/room';
+import type {CharacterWithDetails} from '@/types/campaign';
 
 interface ChatNPCProps {
   roomId: string;

@@ -1,7 +1,7 @@
 // arquivo: mantém o contexto da situação atual
 // local: src\lib\contextMaker.ts
 
-import type {ActionPayload, State} from '@/types/adventure'
+import type {ActionPayload, State} from '@/types/master'
 import type {Master} from '@/types/master'
 
 // Escolhe um plot aleatório entre os disponíveis no mundo de origem

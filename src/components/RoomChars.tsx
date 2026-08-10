@@ -3,7 +3,7 @@
 
 'use client';
 import {useState, useEffect} from 'react';
-import type {CharacterWithDetails} from '@/types/room';
+import type {CharacterWithDetails} from '@/types/campaign';
 import Char from './Char';
 
 interface RoomCharsProps {
