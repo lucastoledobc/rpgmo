@@ -11,48 +11,22 @@ export default function Create() {
   const bookInputRef = useRef<HTMLInputElement>(null);
   const campaignInputRef = useRef<HTMLInputElement>(null);
   const [alert, setAlert] = useState({text: '', type: ''});
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<Campaign>({
     data: {
       room: '',
       title: '',
       pass: '',
       worldId: 1,
-      state: {
-        id: false,
-        category: '',
-        object: '',
-        objectType: 'rules',
-        dice: '',
-        instruction: null,
-        interactionId: null
-      },
-      context: {
-        plot: 0,
-        text: '',
-        objects: []
-      },
-      timeline: '',
-      createdAt: null,
-      lastActivityAt: null
     },
-    world: null,
     master: {
       system: 'gemini',
       model: 'gemini-3.5-flash-lite',
       modelImg: null,
       apiKey: '',
       url: '',
-      contextSize: null,
-      numPredict: null,
-      temperature: null,
-      repeatPenalty: null,
       personality: 'Mestre clássico de RPG, descritivo e justo.',
-    },
-    characters: [],
-    charStatus: [],
-    charItems: [],
-    log: [],
-    chat: [],
+    }
   });
 
   // atualiza a escrita na tela
@@ -112,6 +86,7 @@ export default function Create() {
       return;
     }
 
+    setIsLoading(true);
     setAlert({text: 'Preenchendo dados a partir da aventura...', type: 'info'});
 
     const reader = new FileReader();
@@ -120,29 +95,15 @@ export default function Create() {
         const resultText = event.target?.result as string;
         const json = JSON.parse(resultText);
 
-        setFormData((prev) => ({
-          ...prev,
-          campaign: {
-            title: json.title,
-            pass: json.pass,
-            worldId: 0,
-            state: json.state,
-            context: json.context,
-            timeline: json.timeline,
-            createdAt: json.createdAt,
-          },
-          world: json.world,
-          chars: json.chars,
-          charStatus: json.charStatus,
-          charItems: json.charItems,
-          log: json.log,
-          chat: json.chat
-        }));
+        setFormData(json);
 
         setAlert({text: 'Dados preenchidos. Confirme nome da sala e senha antes de criar.', type: 'info'});
       }
       catch (err) {
         setAlert({text: 'Erro ao receber a aventura.', type: 'error'});
+      }
+      finally {
+        setIsLoading(false);
       }
     };
     reader.readAsText(file);
@@ -150,10 +111,12 @@ export default function Create() {
 
   // cria a sala
   const create = async (e: React.SubmitEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    setAlert({text: 'Criando a sala...', type: 'info'});
+  setIsLoading(true);
+  setAlert({text: 'Criando a sala...', type: 'info'});
 
+  try {
     const response = await fetch('/api/create', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
@@ -165,11 +128,18 @@ export default function Create() {
     if (response.ok) {
       setFormData((prev) => ({...prev, data: {...prev.data, room: result.room}}));
       setAlert({text: 'Sala criada!', type: 'success'});
-    } 
+    }
     else {
       setAlert({text: result.error, type: 'error'});
     }
-  };
+  }
+  catch (error) {
+    setAlert({text: 'Erro de conexão com o servidor.', type: 'error'});
+  }
+  finally {
+    setIsLoading(false);
+  }
+};
 
   // html da tela
   return (
@@ -183,12 +153,12 @@ export default function Create() {
 
           <div className="formGroup">
             <label className="label">Título da Aventura</label>
-            <input type='text' name="title" className="input" value={formData.data.title} onChange={handleChange} placeholder="Título da Aventura" required/>
+            <input type='text' name="title" className="input" value={formData.data?.title} onChange={handleChange} placeholder="Título da Aventura" required/>
           </div>
 
           <div className="formGroup">
             <label className="label">Senha da Sala</label>
-            <input type="password" name="pass" className="input" value={formData.data.pass} onChange={handleChange} placeholder="******" required/>
+            <input type="password" name="pass" className="input" value={formData.data?.pass} onChange={handleChange} placeholder="******" required/>
           </div>
         </section>
         <hr />
@@ -198,7 +168,7 @@ export default function Create() {
 
           <div className="formGroup">
             <label className="label">Sistema</label>
-            <select name="world" className="input" value={formData.data.worldId} onChange={handleChange}>
+            <select name="world" className="input" value={formData.data?.worldId} onChange={handleChange}>
               <option value="1">Fantasia Medieval</option>
               <option value="2">Cyberpunk</option>
               <option value="3">Terror</option>
@@ -219,7 +189,7 @@ export default function Create() {
 
           <div className="formGroup">
             <label className="label">Sistema</label>
-            <select name="masterSystem" className="input" value={formData.master.system?.toString()} onChange={handleChange}>
+            <select name="masterSystem" className="input" value={formData.master?.system?.toString()} onChange={handleChange}>
               <option value="gemini">Gemini</option>
               <option value="ollamaLocal">Ollama (local)</option>
               <option value="ollamaOnline">Ollama (online)</option>
@@ -229,29 +199,29 @@ export default function Create() {
 
           <div className="formGroup">
             <label className="label">Modelo</label>
-            <input type='text' name="masterModel" className="input" value={formData.master.model?.toString()} onChange={handleChange} placeholder={
-              formData.master.system == 'gemini' ? "gemini-flash" : 
-              formData.master.system == 'ollamaLocal' ? "qwen2.5:3b" : 
-              formData.master.system == 'ollamaOnline' ? "gemma4:cloud" :
-              formData.master.system == 'person' ? "nome do jogador" : ""}
+            <input type='text' name="masterModel" className="input" value={formData.master?.model?.toString()} onChange={handleChange} placeholder={
+              formData.master?.system == 'gemini' ? "gemini-flash" : 
+              formData.master?.system == 'ollamaLocal' ? "qwen2.5:3b" : 
+              formData.master?.system == 'ollamaOnline' ? "gemma4:cloud" :
+              formData.master?.system == 'person' ? "nome do jogador" : ""}
             required/>
           </div>
 
           <div className="formGroup">
             <label className="label">{
-            formData.master.system === 'gemini' ? 'API Key (Gemini)' : 
-            formData.master.system === 'ollamaLocal' ? 'URL Local' : 
-            formData.master.system === 'ollamaOnline' ? 'API Key (Ollama)' : ''}</label>
-            <input type="password" name="masterKey" className="input" value={formData.master.apiKey?.toString()} onChange={handleChange} placeholder={
-              formData.master.system === 'gemini' ? '******' : 
-              formData.master.system === 'ollamaLocal' ? 'http://127.0.0.1:11434' : 
-              formData.master.system === 'ollamaOnline' ? '******' : ''} 
+            formData.master?.system === 'gemini' ? 'API Key (Gemini)' : 
+            formData.master?.system === 'ollamaLocal' ? 'URL Local' : 
+            formData.master?.system === 'ollamaOnline' ? 'API Key (Ollama)' : ''}</label>
+            <input type="password" name="masterKey" className="input" value={formData.master?.apiKey?.toString()} onChange={handleChange} placeholder={
+              formData.master?.system === 'gemini' ? '******' : 
+              formData.master?.system === 'ollamaLocal' ? 'http://127.0.0.1:11434' : 
+              formData.master?.system === 'ollamaOnline' ? '******' : ''} 
             />
           </div>
 
           <div className="formGroup">
             <label className="label">Personalidade</label>
-            <input type='text' name="personality" className="input" value={formData.master.personality?.toString()} onChange={handleChange} placeholder={"Mestre clássico de RPG, descritivo e justo."}/>
+            <input type='text' name="personality" className="input" value={formData.master?.personality?.toString()} onChange={handleChange} placeholder={"Mestre clássico de RPG, descritivo e justo."}/>
           </div>
         </section>
         <hr />
@@ -260,7 +230,9 @@ export default function Create() {
           <button type="button" className="button" onClick={() => campaignInputRef.current?.click()}>[CARREGAR CAMPANHA]</button>
           <input type="file" ref={campaignInputRef} onChange={handleJSON} style={{display: 'none'}} accept=".json"/>
 
-          <button type="submit" className="button">CRIAR SALA</button>
+          <button type="submit" className="button" disabled={isLoading}>
+              {isLoading ? 'ESPERE...' : 'CRIAR SALA'}
+            </button>
         </div>
         </form>
 
@@ -269,9 +241,9 @@ export default function Create() {
             <h3 className='subTile'>{alert.text}</h3>
             {alert.type=="success" && (
             <>
-            <p>ID da sala: <strong>{formData.data.room}</strong></p>
+            <p>ID da sala: <strong>{formData.data?.room}</strong></p>
             <div className="buttonContainer">
-              <button className="button" onClick={() => navigator.clipboard.writeText(formData.data.room)}>COPIAR ID</button>
+              <button className="button" onClick={() => navigator.clipboard.writeText(formData.data?.room || '')}>COPIAR ID</button>
               <button className="button" onClick={() => router.push(`/`)}>VOLTAR</button>
             </div>
             <h3 className='subTile'>Boa Aventura!</h3>

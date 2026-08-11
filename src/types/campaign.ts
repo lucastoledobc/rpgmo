@@ -21,16 +21,16 @@ export interface Context {
 }
 
 export interface Master {
-  system: string | null;
-  model: string | null;
-  modelImg: string | null;
-  apiKey: string | null;
-  url: string | null;
-  contextSize: number | null;
-  numPredict: number | null;
-  temperature: number | null;
-  repeatPenalty: number | null;
-  personality: string | null;
+  system?: string | null;
+  model?: string | null;
+  modelImg?: string | null;
+  apiKey?: string | null;
+  url?: string | null;
+  contextSize?: number | null;
+  numPredict?: number | null;
+  temperature?: number | null;
+  repeatPenalty?: number | null;
+  personality?: string | null;
 }
 
 export interface CharacterStatus {
@@ -71,23 +71,23 @@ interface Log {
 }
 
 export interface Campaign {
-  data: {
-    room: string;
-    title: string;
-    pass: string;
-    worldId: number,
-    state: State,
-    context: Context,
-    timeline: string,
-    createdAt: Date | null;
-    lastActivityAt: Date | null;
+  data?: {
+    room?: string
+    title?: string
+    pass?: string
+    worldId?: number
+    state?: State | null
+    context?: Context | null
+    timeline?: string | null
+    createdAt?: Date | null
+    lastActivityAt?: Date | null
   };
-  world: World | null;
-  master: Master;
-  characters: Character[];
-  charStatus: CharacterStatus[];
-  charItems: CharacterItem[];
-  log: Log[];
-  chat: any[];
+  world?: World | null
+  master?: Master
+  chars?: Character[]
+  charStatus?: CharacterStatus[]
+  charItems?: CharacterItem[]
+  log?: Log[]
+  chat?: any[]
 }
 

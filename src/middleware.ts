@@ -1,0 +1,46 @@
+// arquivo: intercepta as requisições para as salas e valida o token JWT
+// local: src/middleware.ts (ou na raiz do projeto)
+
+import {NextRequest, NextResponse} from 'next/server';
+import {jwtVerify} from 'jose';
+
+export async function middleware(request: NextRequest) {
+  const token = request.cookies.get('rpg_session')?.value;
+  const {pathname} = request.nextUrl;
+
+  // retira a URL: ["", "room", "SALA123"]
+  const segments = pathname.split('/');
+  const roomFromUrl = segments[2]; // Pega o código da sala
+
+  // sem token -> manda de volta para a Home
+  if (!token) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  try {
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+    
+    // Verifica e decodifica o token
+    const {payload} = await jwtVerify(token, secret);
+    
+    const tokenRoom = payload.room as string;
+
+    // verifica se a sala do token do jogador é a sala que ele está tentando acessar
+    if (tokenRoom !== roomFromUrl) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+
+    return NextResponse.next();
+  }
+  catch (error) {
+    // Se o token for inválido ou expirado, limpa o cookie e redireciona
+    const response = NextResponse.redirect(new URL('/', request.url));
+    response.cookies.delete('rpg_session');
+    return response;
+  }
+}
+
+// Configura o middleware para rodar APENAS nas rotas das salas
+export const config = {
+  matcher: '/room/:path*',
+};

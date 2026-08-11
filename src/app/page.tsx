@@ -8,6 +8,7 @@ import {useRouter} from 'next/navigation';
 
 export default function Home() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const [alert, setAlert] = useState({text: '', type: ''});
   const [formData, setFormData] = useState({
     room: '',
@@ -18,31 +19,41 @@ export default function Home() {
   // atualiza a escrita na tela
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const {name, value} = e.target;
-    const finalValue = name === 'room' ? value.trim().toUpperCase() : value;
+    const finalValue = name === 'room' ? value.trim().toUpperCase() : value.trim();
     setFormData((prev) => ({...prev, [name]: finalValue}));
   };
   
   // login
   const login = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    setIsLoading(true);
     setAlert({text: 'Verificando...', type: 'info'});
 
-    const response = await fetch('/api/auth', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(formData),
-    });
+    try {
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(formData),
+      });
 
-    const result = await response.json();
+      const result = await response.json();
 
-    if (response.ok) {
-      localStorage.setItem('playerName', formData.playerName);
-      router.push(`/room/${formData.room}`);
+      if (response.ok) {
+        localStorage.setItem('playerName', formData.playerName);
+        router.push(`/room/${formData.room}`);
+      }
+      else {
+        setAlert({text: result.error || 'Erro ao entrar na sala.', type: 'error'});
+      }
     }
-    else {
-      setAlert({text: result.error, type: 'error'});
+    catch (error) {
+      setAlert({text: 'Erro de conexão com o servidor.', type: 'error'});
     }
-  }
+    finally {
+      setIsLoading(false);
+    }
+  };
 
   // página html
   return (
@@ -54,7 +65,8 @@ export default function Home() {
           <div className="formGroup">
             <label className="label" htmlFor="room">Sala</label>
             <input 
-              type="text" 
+              type="text"
+              id="room"
               name="room"
               className="input"
               value={formData.room}
@@ -68,8 +80,9 @@ export default function Home() {
           <div className="formGroup">
             <label className="label" htmlFor="pass">Senha</label>
             <input 
-              type="password" 
-              name="pass" 
+              type="password"
+              id="pass"
+              name="pass"
               className="input"
               value={formData.pass}
               onChange={handleChange}
@@ -81,7 +94,8 @@ export default function Home() {
           <div className="formGroup">
             <label className="label" htmlFor="playerName">Jogador</label>
             <input 
-              type="text" 
+              type="text"
+              id="playerName"
               name="playerName"
               className="input"
               value={formData.playerName}
@@ -94,7 +108,9 @@ export default function Home() {
 
           <div className="buttonContainer">
             <Link href="/create" className="button">CRIAR SALA</Link>
-            <button type="submit" className="button">ENTRAR</button>
+            <button type="submit" className="button" disabled={isLoading}>
+              {isLoading ? 'ENTRANDO...' : 'ENTRAR'}
+            </button>
           </div>
         </form>
         {/* Caixa de Alertas */}
