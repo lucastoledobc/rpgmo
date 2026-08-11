@@ -27,7 +27,7 @@ export const worlds = sqliteTable('worlds', {
   rules: text('rules').notNull(),
   places: text('places'),
   history: text('history'),
-  chars: text('chars'),
+  npcs: text('npcs'),
   monsters: text('monsters'),
   items: text('items'),
   groups: text('groups'),

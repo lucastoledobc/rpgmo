@@ -132,7 +132,7 @@
     ],
     "cronica": "Aethelgard vive um período de reconstrução após séculos de guerra, onde antigas ruínas escondem segredos que podem mudar o destino dos reinos novamente."
   },
-  "chars": [
+  "npcs": [
     {
       "id": "god_00",
       "name": "Solara",

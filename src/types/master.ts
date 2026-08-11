@@ -1,15 +1,15 @@
 // arquivo: define o formato dos objetos para o mestre
 // local: src\types\master.ts
 
-import {CharacterWithDetails} from './campaign'
+import {Character} from './campaign'
 
 export interface ActionPayload {
   playerName: string;
-  char: CharacterWithDetails;
+  char: Character;
   action: string;
   dice: number;
   response: string;
-  mode: 'system' | 'ic' | 'oc' | 'npc' | 'combat' | 'error';
+  mode: 'system' | 'ic' | 'oc' | 'npc' | 'combat' | 'error'
 }
 
 export interface ActionType {

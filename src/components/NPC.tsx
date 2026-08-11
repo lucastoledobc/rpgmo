@@ -3,13 +3,13 @@
 
 'use client';
 import {useState, useRef, useEffect} from 'react';
-import type {CharacterWithDetails} from '@/types/campaign';
+import type {Character} from '@/types/campaign';
 
 interface ChatNPCProps {
   roomId: string;
   npcName: string;
   playerName: string;
-  characters: CharacterWithDetails[];
+  characters: Character[];
   onClose: () => void;
 }
 

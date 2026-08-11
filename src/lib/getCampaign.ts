@@ -3,7 +3,8 @@
 
 import {eq, inArray} from 'drizzle-orm';
 import {db} from '@/db';
-import {campaigns, worlds, masters, characters, characterStatus, characterItems} from '@/db/schema';
+import {campaigns, worlds, masters, characters, characterStatus, characterItems, campaignLogs, chatMessages} from '@/db/schema';
+import {resolveWorld} from '@/lib/resolveWorld';
 import type {Campaign} from '@/types/campaign';
 
 export async function getCampaign(room: string): Promise<Campaign | null> {
@@ -13,6 +14,8 @@ export async function getCampaign(room: string): Promise<Campaign | null> {
 
   const [masterRow] = await db.select().from(masters).where(eq(masters.room, room));
   const [worldRow] = await db.select().from(worlds).where(eq(worlds.id, campaignRow.worldId));
+  const world = worldRow ? resolveWorld(worldRow) : null;
+
   const characterRows = await db.select().from(characters).where(eq(characters.room, campaignRow.room));
   const charIds = characterRows.map((c) => c.id);
 
@@ -43,21 +46,19 @@ export async function getCampaign(room: string): Promise<Campaign | null> {
       timeline: campaignRow.timeline,
       createdAt: campaignRow.createdAt,
     },
-    world: {
-      id: worldRow.id,
-      title: worldRow.title,
-      theme: worldRow.theme,
-      version: worldRow.version,
-    },
+    world: world,
     master: {
       system: masterRow.system,
       model: masterRow.model,
+      modelImg: masterRow.modelImg,
+      apiKey: masterRow.apiKey,
+      url: masterRow.url,
       contextSize: masterRow.contextSize,
       temperature: masterRow.temperature,
       repeatPenalty: masterRow.repeatPenalty,
       numPredict: masterRow.numPredict,
       personality: masterRow.personality,
     },
-    characters: charactersWithDetails,
+    chars: charactersWithDetails,
   };
 }

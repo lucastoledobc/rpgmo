@@ -3,24 +3,23 @@
 
 'use client';
 import {useState, useEffect, useRef} from 'react';
-import type {Campaign, Log} from '@/types/campaign';
+import type {Campaign, Character, Log} from '@/types/campaign';
 import Master from './Master';
 import Dice from './Dice';
 import NPC from './NPC';
 
 export default function RoomInAdventure({campaign}: {campaign: Campaign}) {
   const [playerName, setPlayerName] = useState('');
-  const [selectedCharId, setSelectedCharId] = useState('');
-  const [action, setAction] = useState('');
-  const [log, setLog] = useState<LogEntry[]>([]);
-  const [loading, setLoading] = useState(0);
+  const [log, setLog] = useState<Log[]>([]);
   const endRef = useRef<HTMLDivElement>(null);
+  const [selectedChar, setSelectedChar] = useState<Character | null>(null);
+  const [action, setAction] = useState('');
+  const [loading, setLoading] = useState(0);
+
   const [masterModal, setMasterModal] = useState(false);
   const [npcModal, setNPCModal] = useState<{npcName: string;} | null>(null);
   const [combatModal, setCombatModal] = useState<{dice: string} | null>(null);
   const [diceModal, setDiceModal] = useState<{dice: string} | null>(null);
-
-  const selectedChar = characters.find((c) => c.id === selectedCharId) ?? null;
 
   useEffect(() => {
     setPlayerName(localStorage.getItem('playerName') || 'Jogador');
@@ -29,7 +28,7 @@ export default function RoomInAdventure({campaign}: {campaign: Campaign}) {
   useEffect(() => {
     const fetchLog = async () => {
       try {
-        const res = await fetch(`/api/room/${roomId}/adventure?type=ic`);
+        const res = await fetch(`/api/room/${campaign.data?.room}/adventure?type=ic`);
         const data = await res.json();
         if (data.log) setLog(data.log);
         setLoading(data.loading);
@@ -51,30 +50,32 @@ export default function RoomInAdventure({campaign}: {campaign: Campaign}) {
           }
         }
       }
-      catch (err) {
-        console.error("Erro ao buscar aventura:", err);
+      catch (error) {
+        console.error("Erro ao buscar aventura:", error);
       }
     };
 
     fetchLog();
     const interval = setInterval(fetchLog, 3000);
     return () => clearInterval(interval);
-  }, [roomId]);
+  }, [campaign.data?.room]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({behavior: 'smooth'});
   }, [log]);
 
+  const selectedChar = campaign.chars?.find((c) => c.id === selectedCharId) ?? null;
+
   const handleSend = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!action.trim() || loading || !selectedCharId) return;
+    if (!action.trim() || loading || !selectedChar) return;
 
     const playerAction = action.trim();
     setAction('');
     setLoading(1);
 
     try {
-      const res = await fetch(`/api/room/${roomId}/adventure`, {
+      const res = await fetch(`/api/room/${campaign.data?.room}/adventure`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({action: playerAction, playerName, char: selectedChar, mode: 'ic'}),
@@ -122,9 +123,9 @@ export default function RoomInAdventure({campaign}: {campaign: Campaign}) {
 
         <form onSubmit={handleSend} className="messageBox">
           <div className='charSelectorWrapper'>
-            <select className="hiddenSelect" value={selectedCharId} onChange={(e) => setSelectedCharId(e.target.value)}>
+            <select className="hiddenSelect" value={selectedChar?.id || ''} onChange={(e) => setSelectedChar(campaign.chars?.find((c) => c.id === e.target.value) || null)}>
               <option value="">-- Sem personagem --</option>
-              {characters.map((c) => (
+              {campaign.chars?.map((c) => (
                 <option key={c.id} value={c.id}>{c.name} ({c.id})</option>
               ))}
             </select>
@@ -146,15 +147,7 @@ export default function RoomInAdventure({campaign}: {campaign: Campaign}) {
         </form>        
 
         {masterModal && (
-          <Master roomId={roomId} master={master} onClose={() => setMasterModal(false)} />
-        )}
-
-        {diceModal && (
-          <Dice roomId={roomId} diceNotation={diceModal.dice} onClose={() => setNPCModal(null)}/>
-        )}
-
-        {npcModal && (
-          <NPC roomId={roomId} npcName={npcModal.npcName} playerName={playerName} characters={characters} onClose={() => setNPCModal(null)}/>
+          <Master campaign={campaign} onClose={() => setMasterModal(false)} />
         )}
       </div>
     </aside>

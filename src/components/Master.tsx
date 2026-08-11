@@ -4,30 +4,29 @@
 'use client';
 import {useState} from 'react';
 import {useRouter} from 'next/navigation';
-import type {Master} from '@/types/campaign';
+import type {Campaign, Master} from '@/types/campaign';
 
 interface MasterProps {
-  roomId: string;
-  master: Master;
+  campaign: Campaign;
   onClose: () => void;
 }
 
-export default function Master({roomId, master, onClose}: MasterProps) {
+export default function Master({campaign, onClose}: MasterProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [pass, setPass] = useState('');
   const [formData, setFormData] = useState<Master>({
-    system: master.system,
-    model: master.model,
-    modelImg: master.modelImg,
-    apiKey: master.apiKey,
-    url: master.url,
-    contextSize: master.contextSize,
-    temperature: master.temperature,
-    repeatPenalty: master.repeatPenalty,
-    numPredict: master.numPredict,
-    personality: master.personality,
+    system: campaign.master?.system,
+    model: campaign.master?.model,
+    modelImg: campaign.master?.modelImg,
+    apiKey: campaign.master?.apiKey,
+    url: campaign.master?.url,
+    contextSize: campaign.master?.contextSize,
+    temperature: campaign.master?.temperature,
+    repeatPenalty: campaign.master?.repeatPenalty,
+    numPredict: campaign.master?.numPredict,
+    personality: campaign.master?.personality,
   });
 
   // atualiza a escrita na tela
@@ -55,7 +54,7 @@ export default function Master({roomId, master, onClose}: MasterProps) {
   const handleSave = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (formData.system === 'gemini' && !master.apiKey && !pass.trim()) {
+    if (formData.system === 'gemini' && !formData.apiKey && !pass.trim()) {
       setError('Esta sala ainda não tem uma chave de API do Gemini configurada.');
       return;
     }
@@ -64,7 +63,7 @@ export default function Master({roomId, master, onClose}: MasterProps) {
     setError('');
 
     try {
-      const response = await fetch(`/api/room/${roomId}/master`, {
+      const response = await fetch(`/api/room/${campaign.data?.room}/master`, {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({...formData, pass}),
@@ -124,7 +123,7 @@ export default function Master({roomId, master, onClose}: MasterProps) {
                 className="input"
                 value={pass}
                 onChange={(e) => setPass(e.target.value)}
-                placeholder={master.apiKey ? 'Chave já configurada — deixe em branco para manter' : 'Cole sua chave do Gemini'}
+                placeholder={formData.apiKey ? 'Chave já configurada — deixe em branco para manter' : 'Cole sua chave do Gemini'}
                 required
               />
             </div>

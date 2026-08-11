@@ -9,7 +9,7 @@ export interface Place {
   places?: Place[];
 }
 
-export interface Character {
+export interface Npc {
   id: string;
   name: string;
   history?: string;
@@ -55,7 +55,7 @@ export interface World {
   rules: any;
   places: Place[] | null;
   history: any | null;
-  chars: Character[] | null;
+  npcs: Npc[] | null;
   monsters: Monster[] | null;
   items: Item[] | null;
   groups: Group[] | null;

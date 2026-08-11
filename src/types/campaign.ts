@@ -1,7 +1,7 @@
 // arquivo: define o formato da campanha
 // local: src\types\room.ts
 
-import type {Character, World} from "./world";
+import type {World} from "./world";
 
 
 export interface State {
@@ -16,6 +16,7 @@ export interface State {
 
 export interface Context {
   plot: number;
+  plotPhase: number;
   text: string;
   objects: any[];
 }
@@ -49,7 +50,7 @@ export interface CharacterItem {
   weight: number | null;
 }
 
-export interface CharacterWithDetails {
+export interface Character {
   id: string;
   name: string | null;
   age: number | null;
@@ -57,21 +58,25 @@ export interface CharacterWithDetails {
   class: string | null;
   history: string | null;
   appearance: string | null;
-  status: CharacterStatus[];
-  items: CharacterItem[];
+  status?: CharacterStatus[];
+  items?: CharacterItem[];
 }
 
-interface Log {
-  id: number;
-  sender: string;
-  charId: string | null;
-  charName: string | null;
-  text: string;
-  sentAt: string;
+export interface Log {
+  sender: string
+  charId: string | null
+  charName: string | null
+  type: 'system' | 'ic' | 'oc' | 'npc' | 'combat' | 'error'
+  text: string
+}
+
+export interface Chat {
+  sender: string
+  text: string
 }
 
 export interface Campaign {
-  data?: {
+  data: {
     room?: string
     title?: string
     pass?: string
@@ -85,8 +90,6 @@ export interface Campaign {
   world?: World | null
   master?: Master
   chars?: Character[]
-  charStatus?: CharacterStatus[]
-  charItems?: CharacterItem[]
   log?: Log[]
   chat?: any[]
 }
