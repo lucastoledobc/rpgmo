@@ -9,7 +9,6 @@ export const campaigns = sqliteTable('campaigns', {
   room: text('room').notNull().primaryKey(),
   title: text('title').notNull(),
   passHash: text('pass_hash').notNull(),
-  worldId: integer('world_id').notNull().references(() => worlds.id),
   state: text('state'),
   context: text('context'),
   timeline: text('timeline'),
@@ -17,10 +16,27 @@ export const campaigns = sqliteTable('campaigns', {
   lastActivityAt: integer('last_activity_at', {mode: 'timestamp'}).notNull(),
 });
 
+// ---------- worlds templates ----------
+
+export const worldTemplates = sqliteTable('world_templates', {
+  id: integer('id').primaryKey({autoIncrement: true}),
+  title: text('title').notNull(),
+  version: text('version').notNull().default('1.00'),
+  theme: text('theme'),
+  rules: text('rules').notNull(),
+  places: text('places'),
+  history: text('history'),
+  npcs: text('npcs'),
+  monsters: text('monsters'),
+  items: text('items'),
+  groups: text('groups'),
+  plots: text('plots'),
+});
+
 // ---------- worlds ----------
 
 export const worlds = sqliteTable('worlds', {
-  id: integer('id').primaryKey({autoIncrement: true}),
+  room: text('room').notNull().primaryKey().references(() => campaigns.room),
   title: text('title').notNull(),
   version: text('version').notNull().default('1.00'),
   theme: text('theme'),
@@ -37,8 +53,7 @@ export const worlds = sqliteTable('worlds', {
 // ---------- masters ----------
 
 export const masters = sqliteTable('masters', {
-  id: integer('id').primaryKey({autoIncrement: true}),
-  room: text('room').notNull().references(() => campaigns.room),
+  room: text('room').notNull().primaryKey().references(() => campaigns.room),
   system: text('system'),               // "ollama/gemini"
   model: text('model'),                 // "qwen2-5:7b/gemini-flash-3.6"
   modelImg: text('model_img'),          // "gemma4/gemini-flash"
@@ -48,20 +63,18 @@ export const masters = sqliteTable('masters', {
   numPredict: integer('num_predict'),   // tamanho da resposta
   temperature: real('temperature'),     // criatividade
   repeatPenalty: real('repeat_penalty'),// repetir palavras
-  personality: text('personality'),     // personalidade padrão
-}, (table) => [
-  index('masters_room_index').on(table.room),
-]);
+  personality: text('personality'),
+});
 
 // ---------- characters ----------
 
 export const characters = sqliteTable('characters', {
-  id: text('id').primaryKey().notNull(), //"id = nome_12caracteres" 
+  id: integer('id').primaryKey({autoIncrement: true}),
   room: text('room').notNull().references(() => campaigns.room),
   name: text('name'),
   age: integer('age'),
   race: text('race'),
-  class: text('class'),
+  role: text('role'),
   appearance: text('appearance'),
   history: text('history'),
 }, (table) => [
@@ -72,7 +85,7 @@ export const characters = sqliteTable('characters', {
 
 export const characterStatus = sqliteTable('character_status', {
   id: integer('id').primaryKey({autoIncrement: true}),
-  charId: text('char_id').notNull().references(() => characters.id),
+  charId: integer('char_id').notNull().references(() => characters.id),
   type: text('type').notNull(),         // 'attribute' | 'resource'
   name: text('name').notNull(),
   value: integer('value').notNull(),
@@ -83,21 +96,21 @@ export const characterStatus = sqliteTable('character_status', {
 
 export const characterItems = sqliteTable('character_items', {
   id: integer('id').primaryKey({autoIncrement: true}),
-  charId: text('char_id').notNull().references(() => characters.id),
+  charId: integer('char_id').notNull().references(() => characters.id),
   name: text('name').notNull(),
   slot: text('slot').notNull(), // 'equip' | 'backpack'
   quantity: integer('quantity').notNull().default(1),
-  wight: integer('weight'),
+  weight: integer('weight'),
 });
 
-// ---------- campaign_log ----------
+// ---------- campaign_logs ----------
 
 export const campaignLogs = sqliteTable('campaign_logs', {
   id: integer('id').primaryKey({autoIncrement: true}),
   room: text('room').notNull().references(() => campaigns.room),
   sender: text('sender').notNull(),
-  charId: text('char_id'),
-  charName: text('char_name'),
+  charId: integer('char_id').references(() => characters.id),
+  charName: text('char_name').notNull(),
   type: text('type').notNull(),
   text: text('text').notNull(),
   sentAt: integer('sent_at', {mode: 'timestamp'}).notNull(),

@@ -20,18 +20,13 @@ export async function POST(request: Request) {
 
     // verifica se os campos estão preenchidos
     if (!room || !pass || !playerName) {
-      return NextResponse.json({ error: 'Sala, senha e nome do jogador são obrigatórios.' }, {status: 400});
-    }
-
-    // verifica se o playerName é válido
-    if (!playerName || playerName.trim() === '') {
-      return NextResponse.json({error: 'Insira seu nome, jogador.'}, {status: 400});
+      return NextResponse.json({error: 'Preencha todos os campos.'}, {status: 400});
     }
 
     // verifica a sala na db
     const [roomRow] = await db.select().from(campaigns).where(eq(campaigns.room, room));
     if (!roomRow) {
-      return NextResponse.json({error: 'Sala ou senha incorretos.'}, {status: 404});
+      return NextResponse.json({error: 'Sala ou senha incorretos.'}, {status: 401});
     }
 
     // verifica a senha
@@ -40,7 +35,11 @@ export async function POST(request: Request) {
       return NextResponse.json({error: 'Sala ou senha incorretos.'}, {status: 401});
     }
 
+
     // configura a chave secreta codificada
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET não configurado.');
+    }
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
     
     // Cria o token incluindo os dados necessários para a sessão

@@ -76,21 +76,18 @@ export interface Chat {
 }
 
 export interface Campaign {
-  data: {
-    room?: string
-    title?: string
-    pass?: string
-    worldId?: number
-    state?: State | null
-    context?: Context | null
-    timeline?: string | null
-    createdAt?: Date | null
-    lastActivityAt?: Date | null
-  };
-  world?: World | null
+  room?: string
+  title?: string
+  pass?: string
+  worldId?: number
+  state?: State
+  context?: Context
+  timeline?: string
+  createdAt?: Date
+  lastActivityAt?: Date
+  world?: World | number
   master?: Master
   chars?: Character[]
   log?: Log[]
-  chat?: any[]
+  chat?: Chat[]
 }
-

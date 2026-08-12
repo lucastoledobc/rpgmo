@@ -5,7 +5,7 @@ import {notFound} from 'next/navigation';
 import {getCampaign} from '@/lib/getCampaign';
 import RoomHeader from '@/components/RoomHeader';
 import RoomChars from '@/components/RoomChars';
-import RoomInAdventure from '@/components/RoomAdventure';
+import RoomInAdventure from '@/components/Adventure';
 import RoomOutAdventure from '@/components/RoomOutAdventure';
 import RoomChat from '@/components/RoomChat';
 import RoomLog from '@/components/RoomLog';

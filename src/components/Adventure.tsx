@@ -17,7 +17,7 @@ export default function RoomInAdventure({campaign}: {campaign: Campaign}) {
   const [loading, setLoading] = useState(0);
 
   const [masterModal, setMasterModal] = useState(false);
-  const [npcModal, setNPCModal] = useState<{npcName: string;} | null>(null);
+  const [npcModal, setNPCModal] = useState<{npcName: string} | null>(null);
   const [combatModal, setCombatModal] = useState<{dice: string} | null>(null);
   const [diceModal, setDiceModal] = useState<{dice: string} | null>(null);
 
@@ -28,7 +28,7 @@ export default function RoomInAdventure({campaign}: {campaign: Campaign}) {
   useEffect(() => {
     const fetchLog = async () => {
       try {
-        const res = await fetch(`/api/room/${campaign.data?.room}/adventure?type=ic`);
+        const res = await fetch(`/api/room/${campaign.data.room}/adventure?type=ic`);
         const data = await res.json();
         if (data.log) setLog(data.log);
         setLoading(data.loading);

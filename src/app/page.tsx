@@ -19,7 +19,7 @@ export default function Home() {
   // atualiza a escrita na tela
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const {name, value} = e.target;
-    const finalValue = name === 'room' ? value.trim().toUpperCase() : value.trim();
+    const finalValue = name === 'room' ? value.trim().toUpperCase() : value;
     setFormData((prev) => ({...prev, [name]: finalValue}));
   };
   

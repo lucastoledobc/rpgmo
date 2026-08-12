@@ -10,14 +10,22 @@ export async function middleware(request: NextRequest) {
 
   // retira a URL: ["", "room", "SALA123"]
   const segments = pathname.split('/');
-  const roomFromUrl = segments[2]; // Pega o código da sala
+  const roomIndex = segments.indexOf('room') + 1;
+  const roomFromUrl = segments[roomIndex];
 
   // sem token -> manda de volta para a Home
+  const isApiRoute = pathname.startsWith('/api/');
   if (!token) {
+    if (isApiRoute) {
+      return NextResponse.json({error: 'Não autenticado.'}, {status: 401});
+    }
     return NextResponse.redirect(new URL('/', request.url));
   }
 
   try {
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET não configurado.');
+    }
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
     
     // Verifica e decodifica o token
@@ -42,5 +50,5 @@ export async function middleware(request: NextRequest) {
 
 // Configura o middleware para rodar APENAS nas rotas das salas
 export const config = {
-  matcher: '/room/:path*',
+  matcher: ['/room/:path*', '/api/room/:path*'],
 };
