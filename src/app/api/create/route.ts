@@ -1,163 +1,167 @@
-// arquivo: route da criação da sala
+// arquivo: route de criação/restauração de campanha
 // local: src\app\api\create\route.ts
 
 import {NextResponse} from 'next/server';
 import {eq} from 'drizzle-orm';
 import {db} from '@/db';
-import {campaigns, worlds, masters, characters, characterStatus, characterItems, campaignLogs, chatMessages} from '@/db/schema';
-import {generateCharId} from '@/lib/generateCharId';
-import bcrypt from 'bcryptjs';
+import {campaigns, worldTemplates, worlds, masters, characters, characterStatus, characterItems, campaignLogs, chatMessages} from '@/db/schema';
 import {encrypt} from '@/lib/crypto';
+import bcrypt from 'bcryptjs';
+import type {Campaign} from '@/types/campaign';
+
+
+async function generateRoomCode(): Promise<string> {
+  let room = '';
+  let available = false;
+
+  while (!available) {
+    room = Array.from({length: 6}, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'[Math.floor(Math.random() * 36)]).join('');
+    const [existing] = await db.select().from(campaigns).where(eq(campaigns.room, room));
+    if (!existing) available = true;
+  }
+
+  return room;
+}
+
 
 export async function POST(request: Request) {
   try {
-    // recebe do front
-    let {data, world, master, chars, charStatus, charItems, log, chat} = await request.json();
+    const body: Campaign = await request.json();
+    const {title, pass, state, context, timeline, createdAt, worldId, world, master, chars, log, chat} = body;
 
-    // verifica se nome da sala e senha foram preenchidos
-    if (!data?.title?.trim() || !data?.pass?.trim()) {
-      return NextResponse.json({error: 'Nome da sala e senha são obrigatórios.'}, {status: 400});
+    if (!title?.trim() || !pass?.trim()) {
+      return NextResponse.json({error: 'Título e senha são obrigatórios.'}, {status: 400});
+    }
+    if (chars && !Array.isArray(chars)) {
+      throw new Error('Campo "chars" da campanha está em formato inválido.');
     }
 
-    // gera um Id único para sala
-    let room = '';
-    let sId = false;
-    while (!sId) {
-      room = Array.from({length: 12}, () => "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"[Math.floor(Math.random() * 36)]).join('');
-      const [exist] = await db.select().from(campaigns).where(eq(campaigns.room, room));
-      if (!exist) sId = true; // se não existe é preenchido, caso contrário, repete o loop
-    }
+    const room = await generateRoomCode();
+    const passHash = await bcrypt.hash(pass, 10);
 
-    // mundo
-    let sourceWorld: any;
-    if (data.worldId === 0 && !world) {
-      return NextResponse.json({error: 'Mundo personalizado não fornecido.'}, {status: 400});
-    }
-    else if (data.worldId !== 0) {
-      // aventura nova -> pega o livro no db
-      [sourceWorld] = await db.select().from(worlds).where(eq(worlds.id, data.worldId));
-      if (!sourceWorld) {
-        return NextResponse.json({error: 'Mundo de origem não encontrado.'}, {status: 404});
-      }
-
-      // seleciona um plot aleatório do livro, caso haja
-      const plotsArray = sourceWorld.plots ? JSON.parse(sourceWorld.plots) : [];
-      if (plotsArray.length > 0) {
-        data.context.plot = Math.floor(Math.random() * plotsArray.length);
-      }
-    }
-    else {
-      // aventura antiga -> pega o mundo do json recebido
-      sourceWorld = {
-        title: world.title ?? 'Mundo Personalizado',
-        version: world.version ?? '1.00',
-        theme: world.theme,
-        rules: world.rules ? JSON.stringify(world.rules) : 'rpg simples, qualquer problema se resolve com d20',
-        places: world.places ? JSON.stringify(world.places) : null,
-        history: world.history ? JSON.stringify(world.history) : null,
-        chars: world.chars ? JSON.stringify(world.chars) : null,
-        monsters: world.monsters ? JSON.stringify(world.monsters) : null,
-        items: world.items ? JSON.stringify(world.items) : null,
-        groups: world.groups ? JSON.stringify(world.groups) : null,
-        plots: world.plots ? JSON.stringify(world.plots) : null,
-      };
-    }
-
-    // criptografa a senha da sala e apiKey do mestre
-    const passHash = await bcrypt.hash(data.pass, 10);
-    const encryptedKey = master.apiKey ? encrypt(master.apiKey) : null;
-
-    // preenche o banco de dados
     await db.transaction(async (tx) => {
 
-      // mundo
-      const {id: _templateId, ...worldFields} = sourceWorld;
-      const [worldCopy] = await tx.insert(worlds).values({...worldFields}).returning({id: worlds.id});
-
-      // aventura
-      const [newCampaign] = await tx.insert(campaigns).values({
+      // ---------- campanha ----------
+      await tx.insert(campaigns).values({
         room,
-        title: data.title,
+        title,
         passHash,
-        worldId: worldCopy.id,
-        state: data.state,
-        context: data.context,
-        timeline: data.timeline,
-        createdAt: data.createdAt ? new Date(data.createdAt) : new Date(),
-        lastActivityAt: data.lastActivityAt ? new Date(data.lastActivityAt) :new Date(),
-      }).returning({room: campaigns.room});
-
-      // mestre (IA)
-      await tx.insert(masters).values({
-        room,
-        system: master.system,
-        model: master.model,
-        apiKey: encryptedKey,
-        url: master.system === 'ollamaLocal' ? master.apiKey : 'http://127.0.0.1:11434',
-        contextSize: 4096,
-        numPredict: 400,
-        temperature: 0.85,
-        repeatPenalty: 1.3,
-        personality: master.personality || 'Mestre clássico de RPG, descritivo e justo.',
+        state: state ? JSON.stringify(state) : null,
+        context: context ? JSON.stringify(context) : null,
+        timeline: timeline ?? null,
+        createdAt: createdAt ? new Date(createdAt) : new Date(),
+        lastActivityAt: new Date(),
       });
 
-      // restaura os personagens de uma aventura antiga e gera ids únicos para cada um
-      const idMap = new Map<string, string>();
+      // ---------- mundo ----------
+      if (worldId) {
+        const templateId = Number(worldId);
+        const [template] = await tx.select().from(worldTemplates).where(eq(worldTemplates.id, templateId));
 
-      const restoredChars = chars && chars.length > 0
-        ? await Promise.all(chars.map(async (c: any) => {
-            const newId = await generateCharId();
-            idMap.set(c.id, newId);
-            return {...c, id: newId};
-          }))
-        : [];
+        if (!template) {
+          throw new Error('Mundo não encontrado.');
+        }
 
-      if (restoredChars.length > 0) {
-        await tx.insert(characters).values(restoredChars.map((c: any) => ({...c, room: newCampaign.room})));
+        const {id: _templateId, ...templateFields} = template;
+        await tx.insert(worlds).values({room, ...templateFields});
+      }
+      else if (world) {
+        await tx.insert(worlds).values({
+          room,
+          title: world.title ?? 'Mundo Personalizado',
+          version: world.version ?? '1.00',
+          theme: world.theme ?? null,
+          rules: JSON.stringify(world.rules) ?? 'Regra básica: d20 para qualquer situação.',
+          places: world.places ? JSON.stringify(world.places) : null,
+          history: world.history ? JSON.stringify(world.history) : null,
+          npcs: world.npcs ? JSON.stringify(world.npcs) : null,
+          monsters: world.monsters ? JSON.stringify(world.monsters) : null,
+          items: world.items ? JSON.stringify(world.items) : null,
+          groups: world.groups ? JSON.stringify(world.groups) : null,
+          plots: world.plots ? JSON.stringify(world.plots) : null,
+        });
       }
 
-      if (charStatus && charStatus.length > 0) {
-        const mappedStatus = charStatus.map((s: any) => ({
-          ...s,
-          id: undefined,
-          charId: idMap.get(s.charId) ?? s.charId,
-        }));
-        await tx.insert(characterStatus).values(mappedStatus);
+      // ---------- mestre ----------
+      await tx.insert(masters).values({
+        room,
+        system: master?.system ?? null,
+        model: master?.model ?? null,
+        modelImg: master?.modelImg ?? null,
+        apiKey: master?.apiKey ? encrypt(master.apiKey) : null,
+        url: master?.url ?? null,
+        contextSize: master?.contextSize ?? null,
+        numPredict: master?.numPredict ?? null,
+        temperature: master?.temperature ?? null,
+        repeatPenalty: master?.repeatPenalty ?? null,
+        personality: master?.personality ?? null,
+      });
+
+      // ---------- personagens restaurados (com status/itens) ----------
+      // idMap: liga o id ANTIGO (string, do JSON restaurado) ao id NOVO 
+      const idMap = new Map<number, number>();
+
+      if (chars && chars.length > 0) {
+        for (const c of chars) {
+          const [inserted] = await tx.insert(characters).values({
+            room,
+            name: c.name ?? null,
+            age: c.age ?? null,
+            race: c.race ?? null,
+            role: c.role ?? null,
+            appearance: c.appearance ?? null,
+            history: c.history ?? null,
+          }).returning({id: characters.id});
+
+          if (c.id) {
+            idMap.set(c.id, inserted.id);
+          }
+
+          if (c.status && c.status.length > 0) {
+            await tx.insert(characterStatus).values(
+              c.status.map((s) => ({charId: inserted.id, type: s.type, name: s.name, value: s.value, max: s.max ?? null}))
+            );
+          }
+
+          if (c.items && c.items.length > 0) {
+            await tx.insert(characterItems).values(
+              c.items.map((i) => ({charId: inserted.id, name: i.name, slot: i.slot, quantity: i.quantity, weight: i.weight ?? null}))
+            );
+          }
+        }
       }
 
-      if (charItems && charItems.length > 0) {
-        const mappedItems = charItems.map((i: any) => ({
-          ...i,
-          id: undefined,
-          charId: idMap.get(i.charId) ?? i.charId,
-        }));
-        await tx.insert(characterItems).values(mappedItems);
-      }
-
-      // restaura o log
+      // ---------- log e chat restaurados ----------
       if (log && log.length > 0) {
-        const mappedLogs = log.map((entry: any) => ({
-          ...entry,
-          id: undefined,
-          room: newCampaign.room,
-        }));
-        await tx.insert(campaignLogs).values(mappedLogs);
+        await tx.insert(campaignLogs).values(
+          log.map((entry) => ({
+            room,
+            sender: entry.sender,
+            charId: entry.charId != null ? idMap.get(entry.charId) ?? null : null,
+            charName: entry.charName,
+            type: entry.type,
+            text: entry.text,
+            sentAt: new Date(entry.sentAt)
+          }))
+        );
       }
 
-      // restaura o chat
       if (chat && chat.length > 0) {
-        const mappedChats = chat.map((entry: any) => ({
-          ...entry,
-          id: undefined,
-          room: newCampaign.room,
-        }));
-        await tx.insert(chatMessages).values(mappedChats);
+        await tx.insert(chatMessages).values(
+          chat.map((entry) => ({
+            room, 
+            sender: entry.sender, 
+            text: entry.text, 
+            sentAt: new Date(entry.sentAt)}))
+        );
       }
     });
 
     return NextResponse.json({success: true, room}, {status: 201});
   }
   catch (error) {
-    return NextResponse.json({error: `Erro ao criar sala: ${error}`}, {status: 500});
+    console.error('Erro ao criar campanha:', error);
+    const message = error instanceof Error ? error.message : 'Erro ao criar sala.';
+    return NextResponse.json({error: message}, {status: 500});
   }
 }

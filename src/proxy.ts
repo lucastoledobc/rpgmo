@@ -1,10 +1,10 @@
 // arquivo: intercepta as requisições para as salas e valida o token JWT
-// local: src/middleware.ts (ou na raiz do projeto)
+// local: src/proxy.ts (ou na raiz do projeto)
 
 import {NextRequest, NextResponse} from 'next/server';
 import {jwtVerify} from 'jose';
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const token = request.cookies.get('rpg_session')?.value;
   const {pathname} = request.nextUrl;
 
@@ -48,7 +48,7 @@ export async function middleware(request: NextRequest) {
   }
 }
 
-// Configura o middleware para rodar APENAS nas rotas das salas
+// Configura o proxy para rodar APENAS nas rotas das salas
 export const config = {
   matcher: ['/room/:path*', '/api/room/:path*'],
 };

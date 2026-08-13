@@ -48,16 +48,16 @@ export interface Plot {
 }
 
 export interface World {
-  id: number;
-  title: string;
-  version: string;
-  theme: string | null;
-  rules: any;
-  places: Place[] | null;
-  history: any | null;
-  npcs: Npc[] | null;
-  monsters: Monster[] | null;
-  items: Item[] | null;
-  groups: Group[] | null;
-  plots: Plot[] | null;
+  id: number
+  title: string
+  version: string
+  theme?: string
+  rules: any
+  places?: Place[]
+  history?: any
+  npcs?: Npc[]
+  monsters?: Monster[]
+  items?: Item[]
+  groups?: Group[]
+  plots?: Plot[]
 }

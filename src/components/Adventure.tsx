@@ -28,7 +28,7 @@ export default function RoomInAdventure({campaign}: {campaign: Campaign}) {
   useEffect(() => {
     const fetchLog = async () => {
       try {
-        const res = await fetch(`/api/room/${campaign.data.room}/adventure?type=ic`);
+        const res = await fetch(`/api/room/${campaign.room}/adventure?type=ic`);
         const data = await res.json();
         if (data.log) setLog(data.log);
         setLoading(data.loading);
@@ -58,7 +58,7 @@ export default function RoomInAdventure({campaign}: {campaign: Campaign}) {
     fetchLog();
     const interval = setInterval(fetchLog, 3000);
     return () => clearInterval(interval);
-  }, [campaign.data?.room]);
+  }, [campaign.room]);
 
   useEffect(() => {
     endRef.current?.scrollIntoView({behavior: 'smooth'});

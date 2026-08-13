@@ -3,18 +3,18 @@
 
 import {eq, inArray} from 'drizzle-orm';
 import {db} from '@/db';
-import {campaigns, worlds, masters, characters, characterStatus, characterItems, campaignLogs, chatMessages} from '@/db/schema';
+import {campaigns, worlds, masters, characters, characterStatus, characterItems} from '@/db/schema';
+import {cache} from 'react';
 import {resolveWorld} from '@/lib/resolveWorld';
 import type {Campaign} from '@/types/campaign';
 
-export async function getCampaign(room: string): Promise<Campaign | null> {
+export const getCampaign = cache(async (room: string): Promise<Campaign | null> => {
   const [campaignRow] = await db.select().from(campaigns).where(eq(campaigns.room, room));
 
   if (!campaignRow) return null;
 
   const [masterRow] = await db.select().from(masters).where(eq(masters.room, room));
-  const [worldRow] = await db.select().from(worlds).where(eq(worlds.id, campaignRow.worldId));
-  const world = worldRow ? resolveWorld(worldRow) : null;
+  const [worldRow] = await db.select().from(worlds).where(eq(worlds.room, room));
 
   const characterRows = await db.select().from(characters).where(eq(characters.room, campaignRow.room));
   const charIds = characterRows.map((c) => c.id);
@@ -31,7 +31,7 @@ export async function getCampaign(room: string): Promise<Campaign | null> {
     name: char.name,
     age: char.age,
     race: char.race,
-    class: char.class,
+    role: char.role,
     history: char.history,
     appearance: char.appearance,
     status: statusRows.filter((s) => s.charId === char.id) as any,
@@ -39,26 +39,24 @@ export async function getCampaign(room: string): Promise<Campaign | null> {
   }));
 
   return {
-    data: {
-      room: campaignRow.room,
-      title: campaignRow.title,
-      worldId: campaignRow.worldId,
-      timeline: campaignRow.timeline,
-      createdAt: campaignRow.createdAt,
-    },
-    world: world,
-    master: {
+    room: campaignRow.room,
+    title: campaignRow.title,
+    state: campaignRow.state ? JSON.parse(campaignRow.state) : undefined,
+    context: campaignRow.context ? JSON.parse(campaignRow.context) : undefined,
+    timeline: campaignRow.timeline ?? undefined,
+    createdAt: campaignRow.createdAt,
+    world: worldRow ? resolveWorld(worldRow) : undefined,
+    master: masterRow ? {
       system: masterRow.system,
       model: masterRow.model,
       modelImg: masterRow.modelImg,
-      apiKey: masterRow.apiKey,
       url: masterRow.url,
       contextSize: masterRow.contextSize,
       temperature: masterRow.temperature,
       repeatPenalty: masterRow.repeatPenalty,
       numPredict: masterRow.numPredict,
       personality: masterRow.personality,
-    },
+    } : undefined,
     chars: charactersWithDetails,
   };
-}
+});

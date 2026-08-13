@@ -3,12 +3,8 @@
 
 import {notFound} from 'next/navigation';
 import {getCampaign} from '@/lib/getCampaign';
-import RoomHeader from '@/components/RoomHeader';
-import RoomChars from '@/components/RoomChars';
-import RoomInAdventure from '@/components/Adventure';
-import RoomOutAdventure from '@/components/RoomOutAdventure';
-import RoomChat from '@/components/RoomChat';
-import RoomLog from '@/components/RoomLog';
+import Adventure from '@/components/Adventure';
+import Header from '@/components/Header';
 
 interface Props {
   params: Promise<{room: string}>;
@@ -19,7 +15,7 @@ export async function generateMetadata({params}: Props) {
   const campaign = await getCampaign(room);
 
   return {
-    title: campaign ? `RPGMO: ${campaign.data?.title}` : 'Sala não encontrada',
+    title: campaign ? `RPGMO: ${campaign.title}` : 'Sala não encontrada',
     description: 'Se divirta.',
   };
 }
@@ -34,14 +30,10 @@ export default async function RoomPage({params}: Props) {
 
   return (
     <div className='room'>
-      <RoomHeader campaign={campaign}/>
+      <Header campaign={campaign}/>
 
       <main className="roomMain">
-        {/* <RoomChars roomId={id} adveId={roomDetails.adventure.id} characters={roomDetails.characters}/> */}
-        <RoomInAdventure campaign={campaign}/>
-        {/* <RoomOutAdventure roomId={id} characters={roomDetails.characters}/> */}
-        {/* <RoomChars roomId={id} adveId={roomDetails.adventure.id} characters={roomDetails.characters}/> */}
-        {/* <RoomLog roomId={id}/> */}
+        <Adventure campaign={campaign}/>
       </main>
     </div>
   );

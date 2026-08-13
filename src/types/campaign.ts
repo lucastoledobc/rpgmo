@@ -51,11 +51,11 @@ export interface CharacterItem {
 }
 
 export interface Character {
-  id: string;
+  id: number;
   name: string | null;
   age: number | null;
   race: string | null;
-  class: string | null;
+  role: string | null;
   history: string | null;
   appearance: string | null;
   status?: CharacterStatus[];
@@ -63,29 +63,33 @@ export interface Character {
 }
 
 export interface Log {
+  room: string
   sender: string
-  charId: string | null
+  charId: number | null
   charName: string | null
   type: 'system' | 'ic' | 'oc' | 'npc' | 'combat' | 'error'
   text: string
+  sentAt: Date
 }
 
 export interface Chat {
+  room: string
   sender: string
   text: string
+  sentAt: Date
 }
 
 export interface Campaign {
   room?: string
   title?: string
   pass?: string
-  worldId?: number
   state?: State
   context?: Context
   timeline?: string
   createdAt?: Date
   lastActivityAt?: Date
-  world?: World | number
+  worldId?: string
+  world?: World
   master?: Master
   chars?: Character[]
   log?: Log[]

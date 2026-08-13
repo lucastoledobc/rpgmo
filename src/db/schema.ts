@@ -110,7 +110,7 @@ export const campaignLogs = sqliteTable('campaign_logs', {
   room: text('room').notNull().references(() => campaigns.room),
   sender: text('sender').notNull(),
   charId: integer('char_id').references(() => characters.id),
-  charName: text('char_name').notNull(),
+  charName: text('char_name'),
   type: text('type').notNull(),
   text: text('text').notNull(),
   sentAt: integer('sent_at', {mode: 'timestamp'}).notNull(),

@@ -322,6 +322,7 @@ hr {
   align-items: center;
   transition: color 0.2s;
   cursor: pointer;
+  text-decoration: none;
 }
 .button::before {
   content: '▶';
