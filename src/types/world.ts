@@ -9,6 +9,15 @@ export interface Place {
   places?: Place[];
 }
 
+export interface History {
+  id: string;
+  name: string;
+  period: string;
+  tone: string;
+  key_events: {year: string; event: string; impact: string}[];
+  chronicle: string;
+}
+
 export interface Npc {
   id: string;
   name: string;
@@ -54,7 +63,7 @@ export interface World {
   theme?: string
   rules: any
   places?: Place[]
-  history?: any
+  history?: History[]
   npcs?: Npc[]
   monsters?: Monster[]
   items?: Item[]
