@@ -27,11 +27,11 @@ export interface Master {
   modelImg?: string | null;
   apiKey?: string | null;
   url?: string | null;
+  personality?: string | null;
   contextSize?: number | null;
   numPredict?: number | null;
   temperature?: number | null;
   repeatPenalty?: number | null;
-  personality?: string | null;
 }
 
 export interface CharacterStatus {
@@ -63,6 +63,7 @@ export interface Character {
 }
 
 export interface Log {
+  id: number
   room: string
   sender: string
   charId: number | null

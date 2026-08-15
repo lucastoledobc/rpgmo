@@ -51,11 +51,11 @@ export const getCampaign = cache(async (room: string): Promise<Campaign | null> 
       model: masterRow.model,
       modelImg: masterRow.modelImg,
       url: masterRow.url,
+      personality: masterRow.personality,
       contextSize: masterRow.contextSize,
       temperature: masterRow.temperature,
       repeatPenalty: masterRow.repeatPenalty,
       numPredict: masterRow.numPredict,
-      personality: masterRow.personality,
     } : undefined,
     chars: charactersWithDetails,
   };

@@ -59,11 +59,11 @@ export const masters = sqliteTable('masters', {
   modelImg: text('model_img'),          // "gemma4/gemini-flash"
   apiKey: text('api_key'),
   url: text('url'),
+  personality: text('personality'),
   contextSize: integer('context_size'), // tamanho do contexto
   numPredict: integer('num_predict'),   // tamanho da resposta
   temperature: real('temperature'),     // criatividade
   repeatPenalty: real('repeat_penalty'),// repetir palavras
-  personality: text('personality'),
 });
 
 // ---------- characters ----------

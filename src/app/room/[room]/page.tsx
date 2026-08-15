@@ -3,8 +3,9 @@
 
 import {notFound} from 'next/navigation';
 import {getCampaign} from '@/lib/getCampaign';
-import Adventure from '@/components/Adventure';
-import Header from '@/components/Header';
+import RoomAdventure from '@/components/RoomAdventure';
+import RoomHeader from '@/components/RoomHeader';
+import RoomStatus from '@/components/RoomStatus';
 
 interface Props {
   params: Promise<{room: string}>;
@@ -28,12 +29,15 @@ export default async function RoomPage({params}: Props) {
     notFound();
   }
 
+  const isConfigured = Boolean(campaign.master?.system) && Boolean(campaign.world);
+
   return (
     <div className='room'>
-      <Header campaign={campaign}/>
+      <RoomHeader campaign={campaign}/>
+      <RoomStatus campaign={campaign}/>
 
       <main className="roomMain">
-        <Adventure campaign={campaign}/>
+        <RoomAdventure campaign={campaign} disabled={!isConfigured}/>
       </main>
     </div>
   );

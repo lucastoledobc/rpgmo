@@ -4,11 +4,11 @@
 import {NextResponse} from 'next/server';
 import {eq, asc, and, desc, inArray} from 'drizzle-orm';
 import {db} from '@/db';
-import {rooms, adventures, worlds, masters, adventureLogs} from '@/db/schema';
+import {campaigns, worlds, masters, campaignLogs} from '@/db/schema';
 import {decrypt} from '@/lib/crypto';
 
-import {ActionPayload, State, Context} from '@/types/master';
-import {Master} from '@/types/campaign';
+import {ActionPayload} from '@/types/master';
+import {State, Context, Master} from '@/types/campaign';
 
 import {classifyAction} from '@/lib/master/classifyAction';
 import {handlingError} from '@/lib/master/handlingError';
@@ -19,28 +19,28 @@ let loading: number;
 
 // ---------- GET: histórico (filtrado por type) ----------
 
-export async function GET(request: Request, {params}: {params: Promise<{id: string}>}) {
+export async function GET(request: Request, {params}: {params: Promise<{room: string}>}) {
   try {
-    const {id: roomId} = await params;
+    const {room} = await params;
     const {searchParams} = new URL(request.url);
     const requestedType = searchParams.get('type') === 'oc' ? 'oc' : 'ic';
     const typesToInclude = requestedType === 'ic' ? ['ic', 'error'] : ['oc'];
 
-    const [adventureRow] = await db.select().from(adventures).where(eq(adventures.roomId, roomId));
-    if (!adventureRow) {
-      return NextResponse.json({error: 'Aventura não encontrada.'}, {status: 404});
+    const [campaignRow] = await db.select().from(campaigns).where(eq(campaigns.room, room));
+    if (!campaignRow) {
+      return NextResponse.json({error: 'Campanha não encontrada.'}, {status: 404});
     }
     let state: State;
-    state = adventureRow?.state ? JSON.parse(adventureRow.state) : null;
+    state = campaignRow?.state ? JSON.parse(campaignRow.state) : null;
 
     const log = await db
       .select({
-        charName: adventureLogs.charName,
-        text: adventureLogs.text,
+        charName: campaignLogs.charName,
+        text: campaignLogs.text,
       })
-      .from(adventureLogs)
-      .where(and(eq(adventureLogs.adveId, adventureRow.id), inArray(adventureLogs.type, typesToInclude)))
-      .orderBy(asc(adventureLogs.sentAt));
+      .from(campaignLogs)
+      .where(and(eq(campaignLogs.room, campaignRow.room), inArray(campaignLogs.type, typesToInclude)))
+      .orderBy(asc(campaignLogs.sentAt));
 
     return NextResponse.json({log, loading, state});
   }
@@ -52,30 +52,26 @@ export async function GET(request: Request, {params}: {params: Promise<{id: stri
 
 // ---------- POST: nova ação (ic) ou pergunta de bastidor (oc) ----------
 
-export async function POST(request: Request, {params}: {params: Promise<{id: string}>}) {
+export async function POST(request: Request, {params}: {params: Promise<{room: string}>}) {
   try {
     loading = 1 // preparação
     // importações e verificadores
-    const {id: roomId} = await params;
+    const {room} = await params;
     const payload: ActionPayload = await request.json();
     if (!(payload?.action && payload?.playerName)) {
       return NextResponse.json({error: 'Ação ou nome do jogador inválido.'}, {status: 400});
     }
 
-    // pega no db: sala, aventura, mundo e mestre
-    const [roomRow] = await db.select().from(rooms).where(eq(rooms.id, roomId));
-    if (!roomRow) {
-      return NextResponse.json({error: 'Sala não encontrada.'}, {status: 404});
+    // pega no db: campanha, mundo e mestre
+    const [campaignRow] = await db.select().from(campaigns).where(eq(campaigns.room, room));
+    if (!campaignRow) {
+      return NextResponse.json({error: 'Campanha não encontrada.'}, {status: 404});
     }
-    const [adventureRow] = await db.select().from(adventures).where(eq(adventures.roomId, roomId));
-    if (!adventureRow) {
-      return NextResponse.json({error: 'Aventura não encontrada.'}, {status: 404});
-    }
-    const [worldRow] = await db.select().from(worlds).where(eq(worlds.id, adventureRow.worldId));
+    const [worldRow] = await db.select().from(worlds).where(eq(worlds.room, room));
     if (!worldRow) {
       return NextResponse.json({error: 'Sala sem Livro configurado.'}, {status: 400});
     }
-    const [masterRow] = await db.select().from(masters).where(eq(masters.roomId, roomId));
+    const [masterRow] = await db.select().from(masters).where(eq(masters.room, room));
     if (!masterRow) {
       return NextResponse.json({error: 'Sala sem Mestre (IA) configurado.'}, {status: 400});
     }
@@ -84,16 +80,16 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
     
     // pega o estado e contexto atual do jogo
     let state: State;
-    state = adventureRow?.state ? JSON.parse(adventureRow.state) : {id: true, category: "START", object: "", objectType: "none", dice: 0, interactionId: ''};
+    state = campaignRow?.state ? JSON.parse(campaignRow.state) : {id: true, category: "START", object: "", objectType: "none", dice: 0, interactionId: ''};
     console.log("\nstate: "+JSON.stringify(state)+"\n")
     let context: Context;
-    context = adventureRow?.context ? JSON.parse(adventureRow.context) : {id: '', objects: []};
+    context = campaignRow?.context ? JSON.parse(campaignRow.context) : {id: '', objects: []};
     console.log("\ncontext: "+JSON.stringify(context)+"\n")
 
 
     // insere a fala do jogador no adventure_logs
-    await db.insert(adventureLogs).values({
-      adveId: adventureRow.id,
+    await db.insert(campaignLogs).values({
+      room,
       sender: payload.playerName,
       charId: payload.char?.id ?? null,
       charName:  payload.char?.name ?? null,
@@ -104,9 +100,9 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
     // pega o log das últimas falas
     const logRow = await db
       .select()
-      .from(adventureLogs)
-      .where(eq(adventureLogs.adveId, adventureRow.id))
-      .orderBy(desc(adventureLogs.sentAt));
+      .from(campaignLogs)
+      .where(eq(campaignLogs.room, room))
+      .orderBy(desc(campaignLogs.sentAt));
 
 
     loading = 2 // mestre escutou, agora vai pensar
@@ -136,8 +132,8 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
     
     if (payload.response) {
       // salva a mensagem do mestre
-      await db.insert(adventureLogs).values({
-        adveId: adventureRow.id,
+      await db.insert(campaignLogs).values({
+        room,
         sender: master.model ?? 'Mestre',
         charId: null,
         charName: payload.playerName,
@@ -147,8 +143,7 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
       });
 
       // atualiza o horario da sala e outros
-      await db.update(rooms).set({lastActivityAt: new Date()}).where(eq(rooms.id, roomId));
-      await db.update(adventures).set({state: JSON.stringify(state)}).where(eq(adventures.roomId, roomId));
+      await db.update(campaigns).set({lastActivityAt: new Date()}).where(eq(campaigns.room, room));
     }
 
     loading = 0
