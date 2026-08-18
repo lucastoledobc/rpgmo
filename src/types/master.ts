@@ -15,10 +15,10 @@ export interface ActionPayload {
 export interface ActionType {
   category: string;
   object: string;
-  objectType: 'rules' | 'place' | 'person' | 'monster' | 'none';
+  objectType: 'rules' | 'place' | 'person' | 'monster' | 'item' | 'none';
 }
 
 export interface ChatMessage {
-  role: 'player' | 'master';
+  type: 'player' | 'master';
   text: string;
 }

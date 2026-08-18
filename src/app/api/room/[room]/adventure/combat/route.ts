@@ -4,40 +4,40 @@
 import {NextResponse} from 'next/server';
 import {eq, desc} from 'drizzle-orm';
 import {db} from '@/db';
-import {rooms, adventures, worlds, masters, adventureLogs} from '@/db/schema';
+import {campaigns, worlds, masters, campaignLogs} from '@/db/schema';
 import {decrypt} from '@/lib/crypto';
 
-import type {ActionPayload, State} from '@/types/master';
-import type {Master} from '@/types/campaign';
+import type {ActionPayload} from '@/types/master';
+import type {Status, Master, Log} from '@/types/campaign';
 
 import {buildHistory} from '@/lib/master/history';
 import {narrate} from '@/lib/master/narrate';
 import {deleteGeminiChat} from '@/lib/master/masterGemini';
 
-export async function POST(request: Request, {params}: {params: Promise<{id: string}>}) {
+export async function POST(request: Request, {params}: {params: Promise<{room: string}>}) {
   try {
-    const {id: roomId} = await params;
+    const {room} = await params;
     const payload: ActionPayload = await request.json();
     if (!(payload?.action && payload?.playerName)) {
       return NextResponse.json({error: 'Ação ou nome do jogador inválido.'}, {status: 400});
     }
 
     // pega no db a aventura e verifica se o estado é CONVERSA
-    const [adventureRow] = await db.select().from(adventures).where(eq(adventures.roomId, roomId));
-    if (!adventureRow) return NextResponse.json({error: 'Aventura não encontrada.'}, {status: 404});
-    const state: State = adventureRow.state ? JSON.parse(adventureRow.state) : null;
-    if (!state || state.category !== 'COMBATE') {
+    const [campaignRow] = await db.select().from(campaigns).where(eq(campaigns.room, room));
+    if (!campaignRow) return NextResponse.json({error: 'Campanha não encontrada.'}, {status: 404});
+    const status: Status = campaignRow.status ? JSON.parse(campaignRow.status) : null;
+    if (!status || status.category !== 'COMBATE') {
       return NextResponse.json({error: 'Não há combate ativo nesta sala.'}, {status: 409});
     }
 
     // pega os dados do mestre
-    const [masterRow] = await db.select().from(masters).where(eq(masters.roomId, roomId));
+    const [masterRow] = await db.select().from(masters).where(eq(masters.room, room));
     if (!masterRow) return NextResponse.json({error: 'Sala sem Mestre (IA) configurado.'}, {status: 400});
     const master = {...masterRow, apiKey: masterRow.apiKey ? decrypt(masterRow.apiKey) : null};
 
-    // insere a fala do jogador no adventure_logs
-    await db.insert(adventureLogs).values({
-      adveId: adventureRow.id,
+    // insere a fala do jogador no campaign_logs
+    await db.insert(campaignLogs).values({
+      room,
       sender: payload.playerName,
       charId: payload.char?.id ?? null,
       charName: payload.char?.name ?? null,
@@ -47,34 +47,34 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
     });
 
     // pega o log das últimas falas
-    const log = await db
+    const log: Log[] = await db
       .select()
-      .from(adventureLogs)
-      .where(eq(adventureLogs.adveId, adventureRow.id))
-      .orderBy(desc(adventureLogs.sentAt))
+      .from(campaignLogs)
+      .where(eq(campaignLogs.room, room))
+      .orderBy(desc(campaignLogs.sentAt))
       .limit(100);
 
     // otimiza para o mestre
     const chatHistory = buildHistory(log, ['combat'], 2000, true);
 
     // chama o mestre
-    const res = await narrate({type: 'chat', master, chatHistory, instruction: state?.instruction ?? undefined, interactionId: state?.interactionId ?? undefined});
-    if (res.interactionId) {state.interactionId = res.interactionId;}
+    const res = await narrate({type: 'chat', master, chatHistory, instruction: status?.instruction ?? undefined, interactionId: status?.interactionId ?? undefined});
+    if (res.interactionId) {status.interactionId = res.interactionId;}
     
     // salva a mensagem do mestre
-    await db.insert(adventureLogs).values({
-      adveId: adventureRow.id,
+    await db.insert(campaignLogs).values({
+      room,
       sender: master.model ?? 'Mestre',
       charId: null,
-      charName: state.object,
+      charName: status.object,
       type: payload.mode,
       text: res.text,
       sentAt: new Date(),
     });
 
     // atualiza o horario da sala e outros
-    await db.update(rooms).set({lastActivityAt: new Date()}).where(eq(rooms.id, roomId));
-    await db.update(adventures).set({state: JSON.stringify(state)}).where(eq(adventures.roomId, roomId));
+    await db.update(campaigns).set({lastActivityAt: new Date()}).where(eq(campaigns.room, room));
+    await db.update(campaigns).set({status: JSON.stringify(status)}).where(eq(campaigns.room, room));
 
     return NextResponse.json({success: true, text: res.text});
   }
@@ -84,27 +84,27 @@ export async function POST(request: Request, {params}: {params: Promise<{id: str
   }
 }
 
-export async function DELETE(request: Request, {params}: {params: Promise<{id: string}>}) {
+export async function DELETE(request: Request, {params}: {params: Promise<{room: string}>}) {
   try {
-    const {id: roomId} = await params;
+    const {room} = await params;
 
-    const [adventureRow] = await db.select().from(adventures).where(eq(adventures.roomId, roomId));
-    if (!adventureRow) return NextResponse.json({error: 'Aventura não encontrada.'}, {status: 404});
-    const state: State = adventureRow.state ? JSON.parse(adventureRow.state) : null;
-    if (!state || state.category !== 'CONVERSA') {
+    const [campaignRow] = await db.select().from(campaigns).where(eq(campaigns.room, room));
+    if (!campaignRow) return NextResponse.json({error: 'Campanha não encontrada.'}, {status: 404});
+    const status: Status = campaignRow.status ? JSON.parse(campaignRow.status) : null;
+    if (!status || status.category !== 'CONVERSA') {
       return NextResponse.json({error: 'Não há conversa ativa nesta sala.'}, {status: 409});
     }
 
-    const [masterRow] = await db.select().from(masters).where(eq(masters.roomId, roomId));
+    const [masterRow] = await db.select().from(masters).where(eq(masters.room, room));
     if (!masterRow) return NextResponse.json({error: 'Sala sem Mestre (IA) configurado.'}, {status: 400});
     const master: Master = {...masterRow, apiKey: masterRow.apiKey ? decrypt(masterRow.apiKey) : null};
-    if (master.system == 'gemini' && state.interactionId) {
-      deleteGeminiChat({master, previousInteractionId: state.interactionId})
+    if (master.system == 'gemini' && status.interactionId) {
+      deleteGeminiChat({master, previousInteractionId: status.interactionId})
     }
-    state.id = false;
-    state.interactionId = null
+    status.id = false;
+    status.interactionId = null
 
-    await db.update(adventures).set({state: JSON.stringify(state)}).where(eq(adventures.roomId, roomId));
+    await db.update(campaigns).set({status: JSON.stringify(status)}).where(eq(campaigns.room, room));
 
     return NextResponse.json({success: true});
   }

@@ -2,19 +2,13 @@
 // local: src\lib\master\history.ts
 
 import type {ChatMessage} from '@/types/master';
-
-interface LogRow {
-  charId: string | null;
-  charName: string | null;
-  type: string;
-  text: string;
-}
+import type {Log} from '@/types/campaign';
 
 // Reconstrói o histórico da conversa ATUAL com o NPC — necessário pro Ollama
-export function buildHistory(logRows: LogRow[] | null, types: string[], charBudget: number = 2000,contiguousOnly: boolean = false): ChatMessage[] {
+export function buildHistory(logRows: Log[] | null, types: string[], charBudget: number = 2000,contiguousOnly: boolean = false): ChatMessage[] {
 
   // filtra pelos tipos pedidos, respeitando o modo
-  const filtered: LogRow[] = [];
+  const filtered: Log[] = [];
   for (const entry of logRows ?? []) {
     const matches = types.includes(entry.type);
 
@@ -28,7 +22,7 @@ export function buildHistory(logRows: LogRow[] | null, types: string[], charBudg
 
   // monta as mensagens (mais recente primeiro, igual veio)
   const messagesDesc: ChatMessage[] = filtered.map((entry) => ({
-    role: entry.charId ? 'player' : 'master',
+    type: entry.charId ? 'player' : 'master',
     text: `${entry.charName}: ${entry.text}`,
   }));
 
@@ -36,7 +30,7 @@ export function buildHistory(logRows: LogRow[] | null, types: string[], charBudg
   const trimmedDesc: ChatMessage[] = [];
   let used = 0;
   for (const entry of messagesDesc) {
-    if (used + entry.text.length + entry.role.length > charBudget) break;
+    if (used + entry.text.length + entry.type.length > charBudget) break;
     trimmedDesc.push(entry);
     used += entry.text.length;
   }

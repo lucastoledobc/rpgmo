@@ -5,22 +5,9 @@ import {NextResponse} from 'next/server';
 import {eq} from 'drizzle-orm';
 import {db} from '@/db';
 import {characters, characterStatus, characterItems} from '@/db/schema';
-import {generateCharId} from '@/lib/generateCharId';
+import type {CharacterStatus, CharacterItem} from '@/types/campaign';
 
-interface StatusInput {
-  name: string;
-  value: number;
-  max: number | null;
-  type: 'attribute' | 'resource';
-}
-
-interface ItemInput {
-  name: string;
-  slot: 'equip' | 'backpack';
-  quantity: number;
-}
-
-async function replaceStatusAndItems(charId: string, status: StatusInput[], items: ItemInput[]) {
+async function replaceStatusAndItems(charId: number, status: CharacterStatus[], items: CharacterItem[]) {
   await db.delete(characterStatus).where(eq(characterStatus.charId, charId));
   await db.delete(characterItems).where(eq(characterItems.charId, charId));
 
@@ -40,28 +27,25 @@ async function replaceStatusAndItems(charId: string, status: StatusInput[], item
 // Criação 
 export async function POST(request: Request) {
   try {
-    const {adveId, name, age, race, class: charClass, history, appearance, status, items} = await request.json();
+    const {room, name, age, race, role, history, appearance, status, items} = await request.json();
 
-    if (!adveId) {
-      return NextResponse.json({error: 'Id da Aventura nulo.'}, {status: 400});
+    if (!room) {
+      return NextResponse.json({error: 'Sala não encontrada.'}, {status: 400});
     }
 
-    const charId = await generateCharId();
-
-    await db.insert(characters).values({
-      id: charId,
+    const [char] = await db.insert(characters).values({
+      room,
       name: name?.trim() || null,
-      adveId,
       age: age ?? null,
       race: race ?? null,
-      class: charClass ?? null,
-      history: history ?? null,
+      role: role ?? null,
       appearance: appearance ?? null,
-    });
+      history: history ?? null,
+    }).returning({id: characters.id});
 
-    await replaceStatusAndItems(charId, status ?? [], items ?? []);
+    await replaceStatusAndItems(char.id, status ?? [], items ?? []);
 
-    return NextResponse.json({success: true, charId}, {status: 201});
+    return NextResponse.json({success: true, charId: char.id}, {status: 201});
   }
   catch (error) {
     console.error('Erro ao criar personagem:', error);
@@ -72,7 +56,7 @@ export async function POST(request: Request) {
 // Edição 
 export async function PUT(request: Request) {
   try {
-    const {charId, name, age, race, class: charClass, history, appearance, status, items} = await request.json();
+    const {charId, name, age, race, role, history, appearance, status, items} = await request.json();
 
     if (!charId) {
       return NextResponse.json({error: 'charId é obrigatório para edição.'}, {status: 400});
@@ -88,7 +72,7 @@ export async function PUT(request: Request) {
         name: name?.trim() || null,
         age: age ?? null,
         race: race ?? null,
-        class: charClass ?? null,
+        role: role ?? null,
         history: history ?? null,
         appearance: appearance ?? null,
       })

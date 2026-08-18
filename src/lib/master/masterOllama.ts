@@ -42,7 +42,7 @@ export async function callOllamaLocalChat({master, systemPrompt, messages}: {mas
     model: master.model,
     messages: [
       {role: 'system', content: systemPrompt},
-      ...messages.map((m) => ({role: m.role === 'player' ? 'user' : 'assistant', content: m.text})),
+      ...messages.map((m) => ({role: m.type === 'player' ? 'user' : 'assistant', content: m.text})),
     ],
     stream: false,
     keep_alive: '10m',
@@ -155,7 +155,7 @@ export async function callOllamaChatOnline({master, systemPrompt, messages}: {ma
       model: master.model ?? '',
       messages: [
         {role: 'system', content: systemPrompt},
-        ...messages.map((m) => ({role: m.role === 'player' ? 'user' : 'assistant', content: m.text})),
+        ...messages.map((m) => ({role: m.type === 'player' ? 'user' : 'assistant', content: m.text})),
       ],
       stream: false,
       keep_alive: '10m',

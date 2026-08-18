@@ -7,96 +7,129 @@ import type {ChatMessage} from '@/types/master';
 import type {Master} from '@/types/campaign';
 
 export async function narrate({type, master, chatHistory, instruction, format, interactionId}: {type: string, master: Master, chatHistory: ChatMessage[], instruction?: string, format?: object, interactionId?: string}): Promise<{text: string; interactionId?: string}> {
-  if (type == 'chat') {
-    switch (master.system) {
-      case 'gemini':
-        try {
-        const res = await callGeminiChat({
-          master: master,
-          systemPrompt: instruction ?? undefined,
-          message: chatHistory[0],
-          previousInteractionId: interactionId ?? undefined,
-        });
-        return {text: res.text, interactionId: res.interactionId}
+  switch (type) {
+    case 'img': {
+      switch (master.system) {
+        case 'gemini':
+          try {
+            const res = await callGeminiImg({
+              master: master,
+              prompt: chatHistory[0].text,
+              format: format ? format : null,
+            });
+            return {text: res.text}
+          }
+          catch (error) {
+            return {text: "Erro ao chamar o Mestre Gemini"};
+          }
+        case 'ollamaLocal':
+          try {
+            const res = await callOllamaLocalImg({
+              master: master,
+              prompt: chatHistory[0].text,
+              format: format ? format : null,
+            });
+            return {text: res.text}
+          }
+          catch (error) {
+            return {text: "Erro ao chamar o Mestre Ollama"};
+          }
       }
-      catch (error) {
-        return {text: "Erro ao chamar o Mestre Gemini"};
-      }
-
-      case 'ollamaLocal':
-        try {
-          const res = await callOllamaLocalChat({
-            master: master,
-            systemPrompt: instruction ?? '',
-            messages: chatHistory,
-          });
-          return {text: res.text}
-        }
-        catch (error) {
-          return {text: "Erro ao chamar o Mestre Ollama"};
-        }
-
-      case 'ollamaOnline':
-        try {
-          const res = await callOllamaChatOnline({
-            master: master,
-            systemPrompt: instruction ?? '',
-            messages: chatHistory,
-          });
-          return {text: res.text}
-        }
-        catch (error) {
-          return {text: "Erro ao chamar o Mestre Ollama"};
-        }
-        default:
-          return {text: `Master system "${master.system}" ainda não implementado.`};
     }
-  }
-  else {
-    switch (master.system) {
-      case 'gemini':
-        try {
-          const res = await callGemini({
+
+    case 'chat': {
+      switch (master.system) {
+        case 'gemini':
+          try {
+          const res = await callGeminiChat({
             master: master,
-            systemPrompt: instruction ?? '',
-            messages: chatHistory,
-            format: format ? format : null,
+            systemPrompt: instruction ?? undefined,
+            message: chatHistory[0],
+            previousInteractionId: interactionId ?? undefined,
           });
-          return {text: res.text}
+          return {text: res.text, interactionId: res.interactionId}
         }
         catch (error) {
           return {text: "Erro ao chamar o Mestre Gemini"};
         }
-      
-      case 'ollamaLocal':
-        try {
-          const res = await callOllamaLocal({
-            master: master,
-            systemPrompt: instruction ?? '',
-            message: chatHistory[0],
-            format: format ? format : null,
-          });
-          return {text: res.text}
-        }
-        catch (error) {
-          return {text: "Erro ao chamar o Mestre Ollama2"};
-        }
-      case 'ollamaOnline':
-        try {
-        const res = await callOllamaOnline({
-            master: master,
-            systemPrompt: instruction ?? '',
-            message: chatHistory[0],
-            format: format ? format : null,
-          });
-          return {text: res.text}
-        }
-        catch (error) {
-          return {text: "Erro ao chamar o Mestre Ollama2"};
-        }
-      
-      default:
-        return {text: `Master system "${master.system}" ainda não implementado.`};
+
+        case 'ollamaLocal':
+          try {
+            const res = await callOllamaLocalChat({
+              master: master,
+              systemPrompt: instruction ?? '',
+              messages: chatHistory,
+            });
+            return {text: res.text}
+          }
+          catch (error) {
+            return {text: "Erro ao chamar o Mestre Ollama"};
+          }
+
+        case 'ollamaOnline':
+          try {
+            const res = await callOllamaChatOnline({
+              master: master,
+              systemPrompt: instruction ?? '',
+              messages: chatHistory,
+            });
+            return {text: res.text}
+          }
+          catch (error) {
+            return {text: "Erro ao chamar o Mestre Ollama"};
+          }
+        default:
+          return {text: `Master system "${master.system}" ainda não implementado.`};
+      }
+    }
+
+    default: {
+      switch (master.system) {
+        case 'gemini':
+          try {
+            const res = await callGemini({
+              master: master,
+              systemPrompt: instruction ?? '',
+              messages: chatHistory,
+              format: format ? format : null,
+            });
+            return {text: res.text}
+          }
+          catch (error) {
+            return {text: "Erro ao chamar o Mestre Gemini"};
+          }
+        
+        case 'ollamaLocal':
+          try {
+            const res = await callOllamaLocal({
+              master: master,
+              systemPrompt: instruction ?? '',
+              message: chatHistory[0],
+              format: format ? format : null,
+            });
+            return {text: res.text}
+          }
+          catch (error) {
+            return {text: "Erro ao chamar o Mestre Ollama2"};
+          }
+        
+        case 'ollamaOnline':
+          try {
+          const res = await callOllamaOnline({
+              master: master,
+              systemPrompt: instruction ?? '',
+              message: chatHistory[0],
+              format: format ? format : null,
+            });
+            return {text: res.text}
+          }
+          catch (error) {
+            return {text: "Erro ao chamar o Mestre Ollama2"};
+          }
+        
+        default:
+          return {text: `Master system "${master.system}" ainda não implementado.`};
+      }
     }
   }
 }

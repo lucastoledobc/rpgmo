@@ -8,7 +8,7 @@ import {campaigns, worlds, masters, campaignLogs} from '@/db/schema';
 import {decrypt} from '@/lib/crypto';
 
 import {ActionPayload} from '@/types/master';
-import {State, Context, Master} from '@/types/campaign';
+import {Status, Master} from '@/types/campaign';
 
 import {classifyAction} from '@/lib/master/classifyAction';
 import {handlingError} from '@/lib/master/handlingError';
@@ -30,8 +30,8 @@ export async function GET(request: Request, {params}: {params: Promise<{room: st
     if (!campaignRow) {
       return NextResponse.json({error: 'Campanha não encontrada.'}, {status: 404});
     }
-    let state: State;
-    state = campaignRow?.state ? JSON.parse(campaignRow.state) : null;
+    let status: Status;
+    status = campaignRow?.status ? JSON.parse(campaignRow.status) : null;
 
     const log = await db
       .select({
@@ -42,7 +42,7 @@ export async function GET(request: Request, {params}: {params: Promise<{room: st
       .where(and(eq(campaignLogs.room, campaignRow.room), inArray(campaignLogs.type, typesToInclude)))
       .orderBy(asc(campaignLogs.sentAt));
 
-    return NextResponse.json({log, loading, state});
+    return NextResponse.json({log, loading, status});
   }
   catch (error) {
     console.error('Erro ao buscar histórico da aventura:', error);
@@ -79,12 +79,9 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
     const master: Master = {...masterRow, apiKey: masterRow.apiKey ? decrypt(masterRow.apiKey) : null};
     
     // pega o estado e contexto atual do jogo
-    let state: State;
-    state = campaignRow?.state ? JSON.parse(campaignRow.state) : {id: true, category: "START", object: "", objectType: "none", dice: 0, interactionId: ''};
-    console.log("\nstate: "+JSON.stringify(state)+"\n")
-    let context: Context;
-    context = campaignRow?.context ? JSON.parse(campaignRow.context) : {id: '', objects: []};
-    console.log("\ncontext: "+JSON.stringify(context)+"\n")
+    let status: Status;
+    status = campaignRow?.status ? JSON.parse(campaignRow.status) : {id: true, category: "START", object: "", objectType: "none", dice: 0, interactionId: ''};
+    console.log("\nstatus: "+JSON.stringify(status)+"\n")
 
 
     // insere a fala do jogador no adventure_logs
@@ -93,8 +90,8 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
       sender: payload.playerName,
       charId: payload.char?.id ?? null,
       charName:  payload.char?.name ?? null,
-      type: state.category === 'OUTRO' ? payload.mode : 'error',
-      text: typeof(state.dice) === 'string' ? payload.action : String(state.dice),
+      type: status.category === 'OUTRO' ? payload.mode : 'error',
+      text: typeof(status.dice) === 'string' ? payload.action : String(status.dice),
       sentAt: new Date(),
     });
     // pega o log das últimas falas
@@ -107,13 +104,13 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
 
     loading = 2 // mestre escutou, agora vai pensar
 
-    if (!state.id) {
+    if (!status.id) {
       // analisa a mensagem e classifica
       const actionAnalyzed = await classifyAction(master, payload);
       handlingError(payload, actionAnalyzed);
       console.log("\actionAnalyzed: "+JSON.stringify(actionAnalyzed)+"\n")
 
-      state = {
+      status = {
         id: true,
         category: actionAnalyzed.category,
         object: actionAnalyzed.object,
@@ -127,7 +124,7 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
     loading = 3 // mestre pensou, agora vai digitar
 
     // chama o mestre
-    payload.response = await callMaster({payload, state, context, master, worldRow, logRow});
+    payload.response = await callMaster({payload, status, master, worldRow, logRow});
     console.log("\nresponse: "+payload.response+"\n")
     
     if (payload.response) {
@@ -148,7 +145,7 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
 
     loading = 0
 
-    return NextResponse.json({success: true, state: state});
+    return NextResponse.json({success: true, status: status});
   }
   catch (error) {
     console.error("ERRO NO BACKEND DA AVENTURA:", error);

@@ -41,9 +41,7 @@ export const getCampaign = cache(async (room: string): Promise<Campaign | null> 
   return {
     room: campaignRow.room,
     title: campaignRow.title,
-    state: campaignRow.state ? JSON.parse(campaignRow.state) : undefined,
-    context: campaignRow.context ? JSON.parse(campaignRow.context) : undefined,
-    timeline: campaignRow.timeline ?? undefined,
+    status: campaignRow.status ? JSON.parse(campaignRow.status) : undefined,
     createdAt: campaignRow.createdAt,
     world: worldRow ? resolveWorld(worldRow) : undefined,
     master: masterRow ? {

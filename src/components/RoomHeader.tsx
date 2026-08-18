@@ -26,12 +26,6 @@ export default function Header({campaign}: {campaign: Campaign}) {
           <p><strong>Mundo:</strong> {campaign.world?.title ?? ''}</p>
           <p><strong>Versão do mundo:</strong> {campaign.world?.version}</p>
           <p><strong>Criada em:</strong> {campaign.createdAt?.toLocaleDateString('pt-BR')}</p>
-          {campaign.timeline && (
-            <div>
-              <strong>Linha do tempo:</strong>
-              <p>{campaign.timeline}</p>
-            </div>
-          )}
         </div>
       )}
     </header>

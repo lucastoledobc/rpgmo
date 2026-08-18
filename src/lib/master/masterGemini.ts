@@ -15,7 +15,7 @@ export async function callGemini({master, systemPrompt, messages, format}: {mast
 
   // Organiza as mensagens no formato correto
   const inputSteps: Array<{type: 'user_input' | 'model_output'; content: {type: 'text'; text: string}[]}> = messages.map((m) => ({
-    type: m.role === 'player' ? 'user_input' : 'model_output',
+    type: m.type === 'player' ? 'user_input' : 'model_output',
     content: [{type: 'text', text: m.text}],
   }));
 
@@ -129,7 +129,7 @@ export async function callGeminiImg({master, prompt, format}: {master: Master; p
 
   try {
     const interaction = await ai.interactions.create({
-      model: master?.modelImg ?? '',
+      model: master?.modelImg ?? 'gemini-3.1-flash-lite-image',
       input: prompt,
       response_format: {
         type: "image",

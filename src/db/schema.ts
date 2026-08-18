@@ -9,9 +9,7 @@ export const campaigns = sqliteTable('campaigns', {
   room: text('room').notNull().primaryKey(),
   title: text('title').notNull(),
   passHash: text('pass_hash').notNull(),
-  state: text('state'),
-  context: text('context'),
-  timeline: text('timeline'),
+  status: text('status'),
   createdAt: integer('created_at', {mode: 'timestamp'}).notNull(),
   lastActivityAt: integer('last_activity_at', {mode: 'timestamp'}).notNull(),
 });

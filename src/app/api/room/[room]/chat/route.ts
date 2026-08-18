@@ -4,22 +4,22 @@
 import {NextResponse} from 'next/server';
 import {eq, asc} from 'drizzle-orm';
 import {db} from '@/db';
-import {rooms, adventures, chatMessages} from '@/db/schema';
+import {campaigns, chatMessages} from '@/db/schema';
 
 // GET: histórico do chat
-export async function GET(request: Request, {params}: {params: Promise<{id: string}>}) {
+export async function GET(request: Request, {params}: {params: Promise<{room: string}>}) {
   try {
-    const {id: roomId} = await params;
+    const {room} = await params;
 
-    const [adventureRow] = await db.select().from(adventures).where(eq(adventures.roomId, roomId));
-    if (!adventureRow) {
-      return NextResponse.json({error: 'Aventura não encontrada.'}, {status: 404});
+    const [campaignRow] = await db.select().from(campaigns).where(eq(campaigns.room, room));
+    if (!campaignRow) {
+      return NextResponse.json({error: 'Campanha não encontrada.'}, {status: 404});
     }
 
     const messages = await db
       .select()
       .from(chatMessages)
-      .where(eq(chatMessages.adveId, adventureRow.id))
+      .where(eq(chatMessages.room, room))
       .orderBy(asc(chatMessages.sentAt));
 
     return NextResponse.json({messages});
@@ -31,28 +31,28 @@ export async function GET(request: Request, {params}: {params: Promise<{id: stri
 }
 
 // POST: nova mensagem
-export async function POST(request: Request, {params}: {params: Promise<{id: string}>}) {
+export async function POST(request: Request, {params}: {params: Promise<{room: string}>}) {
   try {
-    const {id: roomId} = await params;
+    const {room} = await params;
     const {sender, text} = await request.json();
 
     if (!sender?.trim() || !text?.trim()) {
       return NextResponse.json({error: 'Remetente e mensagem são obrigatórios.'}, {status: 400});
     }
 
-    const [adventureRow] = await db.select().from(adventures).where(eq(adventures.roomId, roomId));
-    if (!adventureRow) {
-      return NextResponse.json({error: 'Aventura não encontrada.'}, {status: 404});
+    const [campaignRow] = await db.select().from(campaigns).where(eq(campaigns.room, room));
+    if (!campaignRow) {
+      return NextResponse.json({error: 'Campanha não encontrada.'}, {status: 404});
     }
 
     await db.insert(chatMessages).values({
-      adveId: adventureRow.id,
+      room,
       sender: sender.trim(),
       text: text.trim(),
       sentAt: new Date(),
     });
 
-    await db.update(rooms).set({lastActivityAt: new Date()}).where(eq(rooms.id, roomId));
+    await db.update(campaigns).set({lastActivityAt: new Date()}).where(eq(campaigns.room, room));
 
     return NextResponse.json({success: true});
   }

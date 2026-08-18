@@ -1,8 +1,8 @@
 // arquivo: mantém o contexto da situação atual
 // local: src\lib\contextMaker.ts
 
-import type {ActionPayload, State} from '@/types/master'
-import type {Master} from '@/types/master'
+import type {Status, Master} from '@/types/campaign'
+import type {ActionPayload} from '@/types/master'
 
 // Escolhe um plot aleatório entre os disponíveis no mundo de origem
 export function pickRandomPlot(plotsJson: string | null): string | null {
@@ -20,8 +20,8 @@ export function pickRandomPlot(plotsJson: string | null): string | null {
   }
 }
 
-export function contextMaker(payload: ActionPayload, state: State, master: Master) {
-  if (state.category == 'START') {
+export function contextMaker(payload: ActionPayload, status: Status, master: Master) {
+  if (status.category == 'START') {
     
   }
 }

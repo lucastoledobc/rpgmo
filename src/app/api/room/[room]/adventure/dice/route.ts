@@ -4,47 +4,47 @@
 import {NextResponse} from 'next/server';
 import {eq, desc, and} from 'drizzle-orm';
 import {db} from '@/db';
-import {adventures, characters, adventureLogs} from '@/db/schema';
-import type {State} from '@/types/master';
+import {campaigns, characters, campaignLogs} from '@/db/schema';
+import type {Status} from '@/types/campaign';
 
-export async function POST(request: Request, {params}: {params: Promise<{id: string}>}) {
+export async function POST(request: Request, {params}: {params: Promise<{room: string}>}) {
   try {
-    const {id: roomId} = await params;
+    const {room} = await params;
     const {diceValue} = await request.json();
 
     // pega a aventura, chars e log da aventura
-    const [adventureRow] = await db.select().from(adventures).where(eq(adventures.roomId, roomId));
-    if (!adventureRow) {
-      return NextResponse.json({error: 'Aventura não encontrada.'}, {status: 404});
+    const [campaignRow] = await db.select().from(campaigns).where(eq(campaigns.room, room));
+    if (!campaignRow) {
+      return NextResponse.json({error: 'Campanha não encontrada.'}, {status: 404});
     }    
-    const characterRows = await db.select().from(characters).where(eq(characters.adveId, adventureRow.id));
+    const characterRows = await db.select().from(characters).where(eq(characters.room, room));
     if (!characterRows) {
       return NextResponse.json({error: 'Personagem não encontrado.'}, {status: 404});
     }
-    const [logRow] = await db.select().from(adventureLogs).where(and(eq(adventureLogs.adveId, adventureRow.id),eq(adventureLogs.type, 'ic'))).orderBy(desc(adventureLogs.id)).limit(1);
+    const [logRow] = await db.select().from(campaignLogs).where(and(eq(campaignLogs.room, room),eq(campaignLogs.type, 'ic'))).orderBy(desc(campaignLogs.id)).limit(1);
     if (!logRow) {
       return NextResponse.json({error: 'Log da Aventura não encontrado.'}, {status: 404});
     }
 
     // registra o valor do dado
-    let state: State = adventureRow.state ? JSON.parse(adventureRow.state) : {};
-    state.dice = diceValue;
+    let status: Status = campaignRow.status ? JSON.parse(campaignRow.status) : {};
+    status.dice = diceValue;
     // e salva no db
-    await db.update(adventures)
-      .set({state: JSON.stringify(state)})
-      .where(eq(adventures.roomId, roomId));
+    await db.update(campaigns)
+      .set({status: JSON.stringify(status)})
+      .where(eq(campaigns.room, room));
 
     // pega o char em específico e refaz a ação (mas agora tem o valor do dado)
     const selectedChar = characterRows.find((c) => c.id === logRow.charId) ?? null;
 
     const origin = new URL(request.url).origin;
-    fetch(`${origin}/api/room/${roomId}/adventure`, {
+    fetch(`${origin}/api/room/${room}/adventure`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
         body: JSON.stringify({action: logRow.text, playerName: logRow.sender, char: selectedChar, mode: 'ic'}),
     });
 
-    return NextResponse.json({success: true, state});
+    return NextResponse.json({success: true, status});
   }
   catch (error) {
     console.error('Erro na rota de dados:', error);

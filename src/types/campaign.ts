@@ -4,21 +4,18 @@
 import type {World} from "./world";
 
 
-export interface State {
-  id: boolean;
-  category: string;
-  object: string;
-  objectType: 'rules' | 'place' | 'person' | 'monster' | 'none';
-  dice: string | number;
-  instruction: string | null;
-  interactionId: string | null;
-}
-
-export interface Context {
-  plot: number;
-  plotPhase: number;
-  text: string;
-  objects: any[];
+export interface Status {
+  id?: boolean;
+  category?: string;
+  object?: string;
+  objectType?: 'rules' | 'place' | 'person' | 'monster' | 'item' | 'none';
+  dice?: string | number;
+  instruction?: string | null;
+  interactionId?: string | null;
+  plot?: number;
+  plotPhase?: number;
+  text?: string;
+  objects?: any[];
 }
 
 export interface Master {
@@ -68,7 +65,7 @@ export interface Log {
   sender: string
   charId: number | null
   charName: string | null
-  type: 'system' | 'ic' | 'oc' | 'npc' | 'combat' | 'error'
+  type: string
   text: string
   sentAt: Date
 }
@@ -84,9 +81,7 @@ export interface Campaign {
   room?: string
   title?: string
   pass?: string
-  state?: State
-  context?: Context
-  timeline?: string
+  status?: Status
   createdAt?: Date
   lastActivityAt?: Date
   worldId?: string
