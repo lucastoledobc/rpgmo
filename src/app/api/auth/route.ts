@@ -1,4 +1,4 @@
-// arquivo: route do login
+// arquivo: rota do login
 // local: src\app\api\auth\route.ts
 
 import {NextResponse} from 'next/server';
@@ -35,22 +35,20 @@ export async function POST(request: Request) {
       return NextResponse.json({error: 'Sala ou senha incorretos.'}, {status: 401});
     }
 
-
     // configura a chave secreta codificada
     if (!process.env.JWT_SECRET) {
       throw new Error('JWT_SECRET não configurado.');
     }
     const secret = new TextEncoder().encode(process.env.JWT_SECRET);
     
-    // Cria o token incluindo os dados necessários para a sessão
+    // Cria o token no lado do servidor
     const token = await new SignJWT({playerName, room})
       .setProtectedHeader({alg: 'HS256'})
-      .setExpirationTime('20h') // Tempo de duração da sessão do jogo
+      .setExpirationTime('20h')
       .sign(secret);
 
-    const response = NextResponse.json({success: true});
-
     // Salva o token em um cookie HTTP-Only (inacessível via JavaScript do front)
+    const response = NextResponse.json({success: true});
     response.cookies.set('rpg_session', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',

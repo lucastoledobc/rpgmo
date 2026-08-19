@@ -55,6 +55,7 @@ export async function GET(request: Request, {params}: {params: Promise<{room: st
 export async function POST(request: Request, {params}: {params: Promise<{room: string}>}) {
   try {
     loading = 1 // preparação
+
     // importações e verificadores
     const {room} = await params;
     const payload: ActionPayload = await request.json();
@@ -90,17 +91,18 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
       sender: payload.playerName,
       charId: payload.char?.id ?? null,
       charName:  payload.char?.name ?? null,
-      type: status.category === 'OUTRO' ? payload.mode : 'error',
+      type: status.category === 'OUTRO' ? payload.type : 'error',
       text: typeof(status.dice) === 'string' ? payload.action : String(status.dice),
       sentAt: new Date(),
     });
     // pega o log das últimas falas
-    const logRow = await db
+    const logRows = await db
       .select()
       .from(campaignLogs)
       .where(eq(campaignLogs.room, room))
       .orderBy(desc(campaignLogs.sentAt));
 
+    const chatHistory = buildHistory({logRows, types: ['ic'], charBudget: 2000, contiguousOnly: false});
 
     loading = 2 // mestre escutou, agora vai pensar
 
@@ -124,7 +126,7 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
     loading = 3 // mestre pensou, agora vai digitar
 
     // chama o mestre
-    payload.response = await callMaster({payload, status, master, worldRow, logRow});
+    payload.response = await callMaster({payload, status, master, worldRow, chatHistory});
     console.log("\nresponse: "+payload.response+"\n")
     
     if (payload.response) {
@@ -134,13 +136,13 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
         sender: master.model ?? 'Mestre',
         charId: null,
         charName: payload.playerName,
-        type: payload.mode,
+        type: payload.type,
         text: payload.response,
         sentAt: new Date(),
       });
 
       // atualiza o horario da sala e outros
-      await db.update(campaigns).set({lastActivityAt: new Date()}).where(eq(campaigns.room, room));
+      await db.update(campaigns).set({status: JSON.stringify(status), lastActivityAt: new Date()}).where(eq(campaigns.room, room));
     }
 
     loading = 0

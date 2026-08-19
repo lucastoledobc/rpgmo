@@ -16,10 +16,10 @@ function isAuthorized(request: Request): boolean {
 function buildValues(body: any) {
   const {title, version, theme, rules, places, history, npcs, monsters, items, groups, plots} = body;
   return {
-    title,
-    version,
+    title: title ?? 'Mundo Personalizado',
+    version: version ?? '1.00',
     theme: theme ?? null,
-    rules: JSON.stringify(rules),
+    rules: rules ? JSON.stringify(rules) : 'Regra básica: d20 para qualquer situação.',
     places: places ? JSON.stringify(places) : null,
     history: history ? JSON.stringify(history) : null,
     npcs: npcs ? JSON.stringify(npcs) : null,
@@ -37,13 +37,6 @@ export async function POST(request: Request) {
 
   try {
     const body = await request.json();
-
-    if (!body.title?.trim() || !body.version?.trim()) {
-      return NextResponse.json({error: 'Título e versão são obrigatórios.'}, {status: 400});
-    }
-    if (!body.rules) {
-      return NextResponse.json({error: 'Regras (rules) são obrigatórias.'}, {status: 400});
-    }
 
     const [template] = await db.insert(worldTemplates).values(buildValues(body)).returning({id: worldTemplates.id});
 

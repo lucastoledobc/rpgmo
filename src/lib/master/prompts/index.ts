@@ -34,15 +34,13 @@ const PROMPT_BUILDERS: Record<string, (status: Status, payload: ActionPayload, c
 };
 
 
-export async function callMaster({payload, status, master, worldRow, logRow}: {payload: ActionPayload, status: Status, master: Master, worldRow: any, logRow: any}): Promise<string> {
+export async function callMaster({payload, status, master, worldRow, chatHistory}: {payload: ActionPayload, status: Status, master: Master, worldRow: any, chatHistory: ChatMessage[]}): Promise<string> {
 
   let type = '';
   let instruction = '';
   let res: {text: string, interactionId?: string}
 
   const world = resolveWorld(worldRow);
-
-  const chatHistory: ChatMessage[] = [{type: 'player', text: payload.action}]
 
   if ((status.category === 'AÇÃO_COMPLEXA'
     || status.category === 'USO_ITEM')
@@ -55,7 +53,7 @@ export async function callMaster({payload, status, master, worldRow, logRow}: {p
     res = await narrate({type, master, chatHistory, instruction});
     
     status.dice = res.text
-    payload.mode = 'system';
+    payload.type = 'system';
     return 'Dados necessários';
   }
 
@@ -76,7 +74,7 @@ export async function callMaster({payload, status, master, worldRow, logRow}: {p
 
     if (res.interactionId) {status.interactionId = res.interactionId;}
 
-    payload.mode = 'system'
+    payload.type = 'system'
 
     return `Modal de ${status.category} iniciado`;
   }

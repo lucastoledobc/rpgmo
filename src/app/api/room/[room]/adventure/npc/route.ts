@@ -41,13 +41,13 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
       sender: payload.playerName,
       charId: payload.char?.id ?? null,
       charName: payload.char?.name ?? null,
-      type: payload.mode,
+      type: payload.type,
       text: payload.action,
       sentAt: new Date(),
     });
 
     // pega o log das últimas falas
-    const log = await db
+    const logRows = await db
       .select()
       .from(campaignLogs)
       .where(eq(campaignLogs.room, room))
@@ -55,7 +55,7 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
       .limit(100);
 
     // otimiza para o mestre
-    const chatHistory = buildHistory(log, ['npc'], 2000, true);
+    const chatHistory = buildHistory({logRows, types: ['npc'], charBudget: 2000, contiguousOnly: true});
 
     // chama o mestre
     const res = await narrate({type: 'chat', master, chatHistory, instruction: status?.instruction ?? undefined, interactionId: status?.interactionId ?? undefined});
@@ -67,14 +67,13 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
       sender: master.model ?? 'Mestre',
       charId: null,
       charName: status.object,
-      type: payload.mode,
+      type: payload.type,
       text: res.text,
       sentAt: new Date(),
     });
 
     // atualiza o horario da sala e outros
-    await db.update(campaigns).set({lastActivityAt: new Date()}).where(eq(campaigns.room, room));
-    await db.update(campaigns).set({status: JSON.stringify(status)}).where(eq(campaigns.room, room));
+    await db.update(campaigns).set({status: JSON.stringify(status), lastActivityAt: new Date()}).where(eq(campaigns.room, room));
 
     return NextResponse.json({success: true, text: res.text});
   }

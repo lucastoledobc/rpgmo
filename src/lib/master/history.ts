@@ -5,7 +5,7 @@ import type {ChatMessage} from '@/types/master';
 import type {Log} from '@/types/campaign';
 
 // Reconstrói o histórico da conversa ATUAL com o NPC — necessário pro Ollama
-export function buildHistory(logRows: Log[] | null, types: string[], charBudget: number = 2000,contiguousOnly: boolean = false): ChatMessage[] {
+export function buildHistory({logRows, types, charBudget, contiguousOnly}: {logRows: Log[] | null, types: string[], charBudget: number, contiguousOnly: boolean}): ChatMessage[] {
 
   // filtra pelos tipos pedidos, respeitando o modo
   const filtered: Log[] = [];

@@ -1,4 +1,4 @@
-// arquivo: route de combate
+// arquivo: rota de combate
 // local: src\app\api\room\[id]\adventure\combat\route.ts
 
 import {NextResponse} from 'next/server';
@@ -22,9 +22,10 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
       return NextResponse.json({error: 'Ação ou nome do jogador inválido.'}, {status: 400});
     }
 
-    // pega no db a aventura e verifica se o estado é CONVERSA
+    // pega no db a aventura e verifica se o estado é COMBATE
     const [campaignRow] = await db.select().from(campaigns).where(eq(campaigns.room, room));
     if (!campaignRow) return NextResponse.json({error: 'Campanha não encontrada.'}, {status: 404});
+
     const status: Status = campaignRow.status ? JSON.parse(campaignRow.status) : null;
     if (!status || status.category !== 'COMBATE') {
       return NextResponse.json({error: 'Não há combate ativo nesta sala.'}, {status: 409});
@@ -33,7 +34,7 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
     // pega os dados do mestre
     const [masterRow] = await db.select().from(masters).where(eq(masters.room, room));
     if (!masterRow) return NextResponse.json({error: 'Sala sem Mestre (IA) configurado.'}, {status: 400});
-    const master = {...masterRow, apiKey: masterRow.apiKey ? decrypt(masterRow.apiKey) : null};
+    const master: Master = {...masterRow, apiKey: masterRow.apiKey ? decrypt(masterRow.apiKey) : null};
 
     // insere a fala do jogador no campaign_logs
     await db.insert(campaignLogs).values({
@@ -41,13 +42,13 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
       sender: payload.playerName,
       charId: payload.char?.id ?? null,
       charName: payload.char?.name ?? null,
-      type: payload.mode,
+      type: payload.type,
       text: payload.action,
       sentAt: new Date(),
     });
 
     // pega o log das últimas falas
-    const log: Log[] = await db
+    const logRows: Log[] = await db
       .select()
       .from(campaignLogs)
       .where(eq(campaignLogs.room, room))
@@ -55,10 +56,10 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
       .limit(100);
 
     // otimiza para o mestre
-    const chatHistory = buildHistory(log, ['combat'], 2000, true);
+    const chatHistory = buildHistory({logRows, types: ['combat'], charBudget: 2000, contiguousOnly: true});
 
     // chama o mestre
-    const res = await narrate({type: 'chat', master, chatHistory, instruction: status?.instruction ?? undefined, interactionId: status?.interactionId ?? undefined});
+    const res = await narrate({type: 'chat', master, chatHistory, instruction: status.instruction ?? undefined, interactionId: status.interactionId ?? undefined});
     if (res.interactionId) {status.interactionId = res.interactionId;}
     
     // salva a mensagem do mestre
@@ -67,20 +68,19 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
       sender: master.model ?? 'Mestre',
       charId: null,
       charName: status.object,
-      type: payload.mode,
+      type: payload.type,
       text: res.text,
       sentAt: new Date(),
     });
 
     // atualiza o horario da sala e outros
-    await db.update(campaigns).set({lastActivityAt: new Date()}).where(eq(campaigns.room, room));
-    await db.update(campaigns).set({status: JSON.stringify(status)}).where(eq(campaigns.room, room));
+    await db.update(campaigns).set({status: JSON.stringify(status), lastActivityAt: new Date()}).where(eq(campaigns.room, room));
 
     return NextResponse.json({success: true, text: res.text});
   }
   catch (error) {
-    console.error('Erro no chat com NPC:', error);
-    return NextResponse.json({error: 'Erro ao conversar com o NPC.'}, {status: 500});
+    console.error('Erro no chat de COMBATE: ', error);
+    return NextResponse.json({error: 'Erro no servidor de combate.'}, {status: 500});
   }
 }
 
@@ -90,6 +90,7 @@ export async function DELETE(request: Request, {params}: {params: Promise<{room:
 
     const [campaignRow] = await db.select().from(campaigns).where(eq(campaigns.room, room));
     if (!campaignRow) return NextResponse.json({error: 'Campanha não encontrada.'}, {status: 404});
+
     const status: Status = campaignRow.status ? JSON.parse(campaignRow.status) : null;
     if (!status || status.category !== 'CONVERSA') {
       return NextResponse.json({error: 'Não há conversa ativa nesta sala.'}, {status: 409});

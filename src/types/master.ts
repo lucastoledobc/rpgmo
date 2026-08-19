@@ -9,7 +9,7 @@ export interface ActionPayload {
   action: string;
   dice: number;
   response: string;
-  mode: 'system' | 'ic' | 'oc' | 'npc' | 'combat' | 'error'
+  type: 'system' | 'ic' | 'oc' | 'npc' | 'combat' | 'error'
 }
 
 export interface ActionType {

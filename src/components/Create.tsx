@@ -108,7 +108,7 @@ export default function Create() {
 
             <div className="formGroup">
               <label className="label">Título da Aventura</label>
-              <input type='text' name="title" className="input" value={formData.title ?? ''} onChange={handleChange} placeholder="Título da Aventura" required/>
+              <input type='text' name="title" className="input" value={formData.title ?? ''} onChange={handleChange} placeholder="Título da Aventura"/>
             </div>
 
             <div className="formGroup">
@@ -127,7 +127,7 @@ export default function Create() {
                 <option value="1">Fantasia Medieval</option>
                 <option value="2">Cyberpunk</option>
                 <option value="3">Terror</option>
-                <option value="">Personalizado</option>
+                <option value="">Personalizado / Decidir depois</option>
               </select>
             </div>
           </section>

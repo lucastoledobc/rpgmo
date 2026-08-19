@@ -1,11 +1,10 @@
-// arquivo: route de criação/restauração de campanha
+// arquivo: cria uma sala para uma campanha
 // local: src\app\api\create\route.ts
 
 import {NextResponse} from 'next/server';
 import {eq} from 'drizzle-orm';
 import {db} from '@/db';
 import {campaigns, worldTemplates, worlds, masters, characters, characterStatus, characterItems, campaignLogs, chatMessages} from '@/db/schema';
-import {encrypt} from '@/lib/crypto';
 import bcrypt from 'bcryptjs';
 import type {Campaign} from '@/types/campaign';
 
@@ -27,10 +26,10 @@ async function generateRoomCode(): Promise<string> {
 export async function POST(request: Request) {
   try {
     const body: Campaign = await request.json();
-    const {title, pass, state, context, timeline, createdAt, worldId, world, master, chars, log, chat} = body;
+    const {title, pass, status, createdAt, worldId, world, master, chars, log, chat} = body;
 
-    if (!title?.trim() || !pass?.trim()) {
-      return NextResponse.json({error: 'Título e senha são obrigatórios.'}, {status: 400});
+    if (!pass?.trim()) {
+      return NextResponse.json({error: 'Senha é obrigatória.'}, {status: 400});
     }
     if (chars && !Array.isArray(chars)) {
       throw new Error('Campo "chars" da campanha está em formato inválido.');
@@ -44,11 +43,9 @@ export async function POST(request: Request) {
       // ---------- campanha ----------
       await tx.insert(campaigns).values({
         room,
-        title,
+        title: title ?? 'Campanha sem título',
         passHash,
-        state: state ? JSON.stringify(state) : null,
-        context: context ? JSON.stringify(context) : null,
-        timeline: timeline ?? null,
+        status: status ? JSON.stringify(status) : null,
         createdAt: createdAt ? new Date(createdAt) : new Date(),
         lastActivityAt: new Date(),
       });
@@ -71,7 +68,7 @@ export async function POST(request: Request) {
           title: world.title ?? 'Mundo Personalizado',
           version: world.version ?? '1.00',
           theme: world.theme ?? null,
-          rules: JSON.stringify(world.rules) ?? 'Regra básica: d20 para qualquer situação.',
+          rules: world.rules ? JSON.stringify(world.rules) : 'Regra básica: d20 para qualquer situação.',
           places: world.places ? JSON.stringify(world.places) : null,
           history: world.history ? JSON.stringify(world.history) : null,
           npcs: world.npcs ? JSON.stringify(world.npcs) : null,
@@ -88,7 +85,7 @@ export async function POST(request: Request) {
         system: master?.system ?? null,
         model: master?.model ?? null,
         modelImg: master?.modelImg ?? null,
-        apiKey: master?.apiKey ? encrypt(master.apiKey) : null,
+        apiKey: null,
         url: master?.url ?? null,
         contextSize: master?.contextSize ?? null,
         numPredict: master?.numPredict ?? null,

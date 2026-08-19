@@ -41,7 +41,7 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
     fetch(`${origin}/api/room/${room}/adventure`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({action: logRow.text, playerName: logRow.sender, char: selectedChar, mode: 'ic'}),
+        body: JSON.stringify({action: logRow.text, playerName: logRow.sender, char: selectedChar, type: logRow.type}),
     });
 
     return NextResponse.json({success: true, status});

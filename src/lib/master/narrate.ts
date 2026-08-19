@@ -22,6 +22,7 @@ export async function narrate({type, master, chatHistory, instruction, format, i
           catch (error) {
             return {text: "Erro ao chamar o Mestre Gemini"};
           }
+
         case 'ollamaLocal':
           try {
             const res = await callOllamaLocalImg({
@@ -34,6 +35,9 @@ export async function narrate({type, master, chatHistory, instruction, format, i
           catch (error) {
             return {text: "Erro ao chamar o Mestre Ollama"};
           }
+          
+        default:
+          return {text: `Master system "${master.system}" ainda não implementado.`};
       }
     }
 
