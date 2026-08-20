@@ -2,7 +2,8 @@
 // local: src\lib\master\classifyAction.ts
 
 import type {ActionPayload, ActionType} from '@/types/master';
-import {Master, ChatMessage} from '@/types/master';
+import {Master} from '@/types/campaign';
+import {ChatMessage} from '@/types/master';
 import {narrate} from './narrate';
 
 const CLASSIFICATION_PROMPT = `Você é um classificador de ações de RPG. Analise a ação do jogador e retorne APENAS um JSON.
@@ -31,7 +32,9 @@ Ação: "quero dormir" -> {"category": "PASSAGEM_DE_TEMPO", "object": "", "objec
 Retorne EXCLUSIVAMENTE o JSON, sem texto adicional, com as chaves "category" (string), "object" (string), "objectType" (string: rules|place|person|monster|item|none).`;
 
 export async function classifyAction(master: Master, payload: ActionPayload): Promise<ActionType> {
-  const chatHistory: ChatMessage[] = [{role: 'player', text: payload.action}]
+  const chatHistory: ChatMessage[] = [{type: 'player', text: payload.action}]
+  let parsed: ActionType = {category: "OUTRO", object: "", objectType: 'none'};
+
   const format = {
     type: "object",
     properties: {
@@ -41,6 +44,13 @@ export async function classifyAction(master: Master, payload: ActionPayload): Pr
     }
   }
   const res = await narrate({type: '', master, chatHistory, instruction: CLASSIFICATION_PROMPT, format: format})
-  const parsed: ActionType = JSON.parse(res.text);
+
+  if (res.error) {
+    payload.type = 'error'
+  }
+  else {
+    parsed = JSON.parse(res.text);
+  }
+
   return parsed
 }

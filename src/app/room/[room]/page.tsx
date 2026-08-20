@@ -4,6 +4,7 @@
 import {notFound} from 'next/navigation';
 import {getCampaign} from '@/lib/getCampaign';
 import RoomAdventure from '@/components/RoomAdventure';
+import RoomChars from '@/components/RoomChars';
 import RoomHeader from '@/components/RoomHeader';
 import RoomStatus from '@/components/RoomStatus';
 
@@ -38,6 +39,7 @@ export default async function RoomPage({params}: Props) {
 
       <main className="roomMain">
         <RoomAdventure campaign={campaign} disabled={!isConfigured}/>
+        <RoomChars campaign={campaign}/>
       </main>
     </div>
   );

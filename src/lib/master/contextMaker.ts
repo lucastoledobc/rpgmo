@@ -21,7 +21,11 @@ export function pickRandomPlot(plotsJson: string | null): string | null {
 }
 
 export function contextMaker(payload: ActionPayload, status: Status, master: Master) {
+
   if (status.category == 'START') {
-    
+    status.context = '';
+  }
+  if (status.category == 'NPC') {
+    status.context = 'Os jogadores estão conversando com um NPC.';
   }
 }

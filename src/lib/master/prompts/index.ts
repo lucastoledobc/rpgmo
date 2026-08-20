@@ -38,7 +38,7 @@ export async function callMaster({payload, status, master, worldRow, chatHistory
 
   let type = '';
   let instruction = '';
-  let res: {text: string, interactionId?: string}
+  let res: {text: string, interactionId?: string, error?: boolean}
 
   const world = resolveWorld(worldRow);
 
@@ -88,7 +88,7 @@ export async function callMaster({payload, status, master, worldRow, chatHistory
     status.dice = ''
   }
   else if (status.category === 'COMBATE') {
-    status.text = `${payload.char.name} entrou em combate com um ${status.object ? status.object : status.objectType}.`
+    status.context = `${payload.char.name} entrou em combate com um ${status.object ? status.object : status.objectType}.`
     status.objects = [payload.char, excerpt]
 
     return `Modal de ${status.category} iniciado`;
@@ -97,6 +97,8 @@ export async function callMaster({payload, status, master, worldRow, chatHistory
     res = await narrate({type, master, chatHistory, instruction});
     status.id = false;
   }
+
+  if (res.error) payload.type == 'error'
 
   return res.text;
 }

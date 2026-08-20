@@ -10,11 +10,11 @@ export interface Status {
   object?: string;
   objectType?: 'rules' | 'place' | 'person' | 'monster' | 'item' | 'none';
   dice?: string | number;
-  instruction?: string | null;
-  interactionId?: string | null;
+  instruction?: string;
+  interactionId?: string;
   plot?: number;
   plotPhase?: number;
-  text?: string;
+  context?: string;
   objects?: any[];
 }
 
@@ -31,7 +31,7 @@ export interface Master {
   repeatPenalty?: number | null;
 }
 
-export interface CharacterStatus {
+export interface CharStatus {
   id: number;
   type: 'attribute' | 'resource';
   name: string;
@@ -39,7 +39,7 @@ export interface CharacterStatus {
   max: number | null;
 }
 
-export interface CharacterItem {
+export interface CharItems {
   id: number;
   name: string;
   slot: 'equip' | 'backpack';
@@ -55,8 +55,8 @@ export interface Character {
   role: string | null;
   history: string | null;
   appearance: string | null;
-  status?: CharacterStatus[];
-  items?: CharacterItem[];
+  status?: CharStatus[];
+  items?: CharItems[];
 }
 
 export interface Log {

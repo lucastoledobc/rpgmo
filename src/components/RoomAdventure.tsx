@@ -4,6 +4,7 @@
 'use client';
 import {useState, useEffect, useRef} from 'react';
 import type {Campaign, Character, Log} from '@/types/campaign';
+import ModalMaster from '@/components/ModalMaster';
 
 interface RoomAdventureProps {
   campaign: Campaign;
@@ -16,11 +17,14 @@ export default function RoomAdventure({campaign, disabled}: RoomAdventureProps) 
   const endRef = useRef<HTMLDivElement>(null);
   const [selectedChar, setSelectedChar] = useState<Character | null>(null);
   const [action, setAction] = useState('');
-  const [loading, setLoading] = useState(0);
+  const [loading, setLoading] = useState('');
+  const [modalMaster, setModalMaster] = useState(false);
+
 
   useEffect(() => {
     setPlayerName(localStorage.getItem('playerName') || 'Jogador');
   }, []);
+
 
   useEffect(() => {
     if (disabled) return;
@@ -46,33 +50,33 @@ export default function RoomAdventure({campaign, disabled}: RoomAdventureProps) 
     endRef.current?.scrollIntoView({behavior: 'smooth'});
   }, [log]);
 
+
   const handleSend = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!action.trim() || loading > 0 || !selectedChar) return;
+    if (!action.trim() || loading || !selectedChar) return;
 
     const playerAction = action.trim();
     setAction('');
-    setLoading(1);
+    setLoading('O Mestre está ouvindo...');
 
     try {
       await fetch(`/api/room/${campaign.room}/adventure`, {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({action: playerAction, playerName, char: selectedChar, mode: 'ic'}),
+        body: JSON.stringify({action: playerAction, playerName, char: selectedChar, type: 'ic'}),
       });
     }
     catch (err) {
       console.error("Erro ao falar com o Mestre:", err);
     }
-    finally {
-      setLoading(0);
-    }
   };
+
 
   return (
     <aside className="roomBox">
       <header className="header">
         <h3 className='title3'>AVENTURA</h3>
+        <button type="button" className="settings" onClick={() => setModalMaster(true)}></button>
       </header>
 
       <div className='adventure'>
@@ -88,9 +92,7 @@ export default function RoomAdventure({campaign, disabled}: RoomAdventureProps) 
               </div>
             ))
           )}
-          {loading === 1 && <p style={{color: '#888'}}>Enviando mensagem...</p>}
-          {loading === 2 && <p style={{color: '#888'}}>O Mestre está pensando...</p>}
-          {loading === 3 && <p style={{color: '#888'}}>O Mestre está digitando...</p>}
+          {loading !== '' && <p style={{color: '#888'}}>{loading}</p>}
           <div ref={endRef} />
         </div>
 
@@ -114,14 +116,16 @@ export default function RoomAdventure({campaign, disabled}: RoomAdventureProps) 
             className="message"
             value={action}
             onChange={(e) => setAction(e.target.value)}
-            placeholder={disabled ? "Sala não configurada..." : loading > 0 ? "Aguardando o Mestre..." : "Digite sua ação..."}
+            placeholder={disabled ? "Sala não configurada..." : loading ? "Aguardando o Mestre..." : "Digite sua ação..."}
             rows={1}
             autoComplete="off"
-            disabled={disabled || loading > 0}
+            disabled={disabled}
           />
-          <button type="submit" className="enter" disabled={disabled || loading > 0}></button>
+          <button type="submit" className="enter" disabled={disabled}></button>
         </form>
       </div>
+      
+      {modalMaster && <ModalMaster campaign={campaign} onClose={() => setModalMaster(false)} />}
     </aside>
   );
 }

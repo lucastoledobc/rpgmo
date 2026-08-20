@@ -4,8 +4,8 @@
 'use client';
 import {useState} from 'react';
 import type {Campaign} from '@/types/campaign';
-import ModalMaster from './ModalMaster';
-import ModalWorld from './ModalWorld';
+import ModalMaster from '@/components/ModalMaster';
+import ModalWorld from '@/components/ModalWorld';
 
 interface RoomStatusBannerProps {
   campaign: Campaign;

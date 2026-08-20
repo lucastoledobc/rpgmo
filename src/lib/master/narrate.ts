@@ -6,7 +6,7 @@ import {callGemini, callGeminiChat, callGeminiDoc, callGeminiImg} from './master
 import type {ChatMessage} from '@/types/master';
 import type {Master} from '@/types/campaign';
 
-export async function narrate({type, master, chatHistory, instruction, format, interactionId}: {type: string, master: Master, chatHistory: ChatMessage[], instruction?: string, format?: object, interactionId?: string}): Promise<{text: string; interactionId?: string}> {
+export async function narrate({type, master, chatHistory, instruction, format, interactionId}: {type: string, master: Master, chatHistory: ChatMessage[], instruction?: string, format?: object, interactionId?: string}): Promise<{text: string; interactionId?: string; error?: boolean}> {
   switch (type) {
     case 'img': {
       switch (master.system) {
@@ -20,7 +20,7 @@ export async function narrate({type, master, chatHistory, instruction, format, i
             return {text: res.text}
           }
           catch (error) {
-            return {text: "Erro ao chamar o Mestre Gemini"};
+            return {text: "Erro ao chamar o Mestre Gemini img", error: true};
           }
 
         case 'ollamaLocal':
@@ -33,11 +33,11 @@ export async function narrate({type, master, chatHistory, instruction, format, i
             return {text: res.text}
           }
           catch (error) {
-            return {text: "Erro ao chamar o Mestre Ollama"};
+            return {text: "Erro ao chamar o Mestre Ollama img", error: true};
           }
           
         default:
-          return {text: `Master system "${master.system}" ainda não implementado.`};
+          return {text: `Master system "${master.system}" ainda não implementado.`, error: true};
       }
     }
 
@@ -54,7 +54,7 @@ export async function narrate({type, master, chatHistory, instruction, format, i
           return {text: res.text, interactionId: res.interactionId}
         }
         catch (error) {
-          return {text: "Erro ao chamar o Mestre Gemini"};
+          return {text: "Erro ao chamar o Mestre Gemini interaction", error: true};
         }
 
         case 'ollamaLocal':
@@ -67,7 +67,7 @@ export async function narrate({type, master, chatHistory, instruction, format, i
             return {text: res.text}
           }
           catch (error) {
-            return {text: "Erro ao chamar o Mestre Ollama"};
+            return {text: "Erro ao chamar o Mestre Ollama Local chat", error: true};
           }
 
         case 'ollamaOnline':
@@ -80,10 +80,10 @@ export async function narrate({type, master, chatHistory, instruction, format, i
             return {text: res.text}
           }
           catch (error) {
-            return {text: "Erro ao chamar o Mestre Ollama"};
+            return {text: "Erro ao chamar o Mestre Ollama chat", error: true};
           }
         default:
-          return {text: `Master system "${master.system}" ainda não implementado.`};
+          return {text: `Master system "${master.system}" ainda não implementado.`, error: true};
       }
     }
 
@@ -100,7 +100,7 @@ export async function narrate({type, master, chatHistory, instruction, format, i
             return {text: res.text}
           }
           catch (error) {
-            return {text: "Erro ao chamar o Mestre Gemini"};
+            return {text: "Erro ao chamar o Mestre Gemini generate", error: true};
           }
         
         case 'ollamaLocal':
@@ -114,7 +114,7 @@ export async function narrate({type, master, chatHistory, instruction, format, i
             return {text: res.text}
           }
           catch (error) {
-            return {text: "Erro ao chamar o Mestre Ollama2"};
+            return {text: "Erro ao chamar o Mestre Ollama Local generate", error: true};
           }
         
         case 'ollamaOnline':
@@ -128,11 +128,11 @@ export async function narrate({type, master, chatHistory, instruction, format, i
             return {text: res.text}
           }
           catch (error) {
-            return {text: "Erro ao chamar o Mestre Ollama2"};
+            return {text: "Erro ao chamar o Mestre Ollama generate", error: true};
           }
         
         default:
-          return {text: `Master system "${master.system}" ainda não implementado.`};
+          return {text: `Master system "${master.system}" ainda não implementado.`, error: true};
       }
     }
   }

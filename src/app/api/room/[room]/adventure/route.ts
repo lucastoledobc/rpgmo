@@ -15,7 +15,7 @@ import {handlingError} from '@/lib/master/handlingError';
 import {buildHistory} from '@/lib/master/history';
 import {callMaster} from '@/lib/master/prompts/index';
 
-let loading: number;
+let loading: string;
 
 // ---------- GET: histórico (filtrado por type) ----------
 
@@ -54,8 +54,6 @@ export async function GET(request: Request, {params}: {params: Promise<{room: st
 
 export async function POST(request: Request, {params}: {params: Promise<{room: string}>}) {
   try {
-    loading = 1 // preparação
-
     // importações e verificadores
     const {room} = await params;
     const payload: ActionPayload = await request.json();
@@ -79,9 +77,9 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
     // descriptografa a apiKey
     const master: Master = {...masterRow, apiKey: masterRow.apiKey ? decrypt(masterRow.apiKey) : null};
     
+    console.log("\npayload: "+JSON.stringify(payload)+"\n")
     // pega o estado e contexto atual do jogo
-    let status: Status;
-    status = campaignRow?.status ? JSON.parse(campaignRow.status) : {id: true, category: "START", object: "", objectType: "none", dice: 0, interactionId: ''};
+    let status: Status = campaignRow?.status ? JSON.parse(campaignRow.status) : {id: true, category: "START", dice: ''};
     console.log("\nstatus: "+JSON.stringify(status)+"\n")
 
 
@@ -104,7 +102,7 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
 
     const chatHistory = buildHistory({logRows, types: ['ic'], charBudget: 2000, contiguousOnly: false});
 
-    loading = 2 // mestre escutou, agora vai pensar
+    loading = 'O Mestre está pensando...'
 
     if (!status.id) {
       // analisa a mensagem e classifica
@@ -118,12 +116,12 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
         object: actionAnalyzed.object,
         objectType: actionAnalyzed.objectType,
         dice: '',
-        instruction: null,
-        interactionId: null,
+        instruction: '',
+        interactionId: '',
       }
     }
 
-    loading = 3 // mestre pensou, agora vai digitar
+    loading = 'O Mestre está digitando...'
 
     // chama o mestre
     payload.response = await callMaster({payload, status, master, worldRow, chatHistory});
@@ -145,7 +143,7 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
       await db.update(campaigns).set({status: JSON.stringify(status), lastActivityAt: new Date()}).where(eq(campaigns.room, room));
     }
 
-    loading = 0
+    loading = ''
 
     return NextResponse.json({success: true, status: status});
   }
@@ -157,7 +155,7 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
       return NextResponse.json({error: 'Erro de Conexão', details: 'O servidor do Ollama não está rodando. Abra o Ollama no seu PC.'}, {status: 500});
     }
 
-    loading = 0
+    loading = ''
 
     return NextResponse.json({error: 'Erro ao invocar o Mestre', details: errorMsg}, {status: 500});
   }
