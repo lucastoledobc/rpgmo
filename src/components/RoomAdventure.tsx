@@ -5,6 +5,9 @@
 import {useState, useEffect, useRef} from 'react';
 import type {Campaign, Character, Log} from '@/types/campaign';
 import ModalMaster from '@/components/ModalMaster';
+import ModalDice from '@/components/ModalDice';
+import ModalNPC from '@/components/ModalNPC';
+import ModalCombat from '@/components/ModalCombat';
 
 interface RoomAdventureProps {
   campaign: Campaign;
@@ -19,6 +22,9 @@ export default function RoomAdventure({campaign, disabled}: RoomAdventureProps) 
   const [action, setAction] = useState('');
   const [loading, setLoading] = useState('');
   const [modalMaster, setModalMaster] = useState(false);
+  const [modalDice, setModalDice] = useState<{dice: string} | null>(null);
+  const [modalNPC, setModalNPC] = useState<{npcName: string} | null>(null);
+  const [modalCombat, setModalCombat] = useState(false);
 
 
   useEffect(() => {
@@ -35,6 +41,12 @@ export default function RoomAdventure({campaign, disabled}: RoomAdventureProps) 
         const data = await res.json();
         if (data.log) setLog(data.log);
         setLoading(data.loading ?? 0);
+        
+        const status = data.status;
+        setModalDice(status?.dice && typeof status.dice === 'string' ? {dice: status.dice} : null);
+        setModalNPC(status?.category === 'CONVERSA' ? {npcName: status.object || 'NPC'} : null);
+        setModalCombat(status?.category === 'COMBATE')
+
       }
       catch (error) {
         console.error("Erro ao buscar aventura:", error);
@@ -126,6 +138,9 @@ export default function RoomAdventure({campaign, disabled}: RoomAdventureProps) 
       </div>
       
       {modalMaster && <ModalMaster campaign={campaign} onClose={() => setModalMaster(false)} />}
+      {modalDice && <ModalDice campaign={campaign} diceNotation={modalDice.dice} onClose={() => setModalDice(null)} />}
+      {modalNPC && <ModalNPC campaign={campaign} npcName={modalNPC.npcName} playerName={playerName} onClose={() => setModalNPC(null)} />}
+      {modalCombat && <ModalCombat campaign={campaign} playerName={playerName} onClose={() => setModalCombat(false)} />}
     </aside>
   );
 }

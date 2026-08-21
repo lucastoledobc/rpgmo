@@ -4,15 +4,15 @@
 import {NextResponse} from 'next/server';
 import {eq, asc, and, desc, inArray} from 'drizzle-orm';
 import {db} from '@/db';
-import {campaigns, worlds, masters, campaignLogs} from '@/db/schema';
+import {campaigns, worlds, masters, characters, campaignLogs} from '@/db/schema';
 import {decrypt} from '@/lib/crypto';
+import {getCampaign} from '@/lib/getCampaign'
 
-import {ActionPayload} from '@/types/master';
-import {Status, Master} from '@/types/campaign';
+import type {ActionPayload, ChatMessage} from '@/types/master';
+import type {Status, Master, Character, Campaign, Log} from '@/types/campaign';
 
 import {classifyAction} from '@/lib/master/classifyAction';
 import {handlingError} from '@/lib/master/handlingError';
-import {buildHistory} from '@/lib/master/history';
 import {callMaster} from '@/lib/master/prompts/index';
 
 let loading: string;
@@ -26,12 +26,12 @@ export async function GET(request: Request, {params}: {params: Promise<{room: st
     const requestedType = searchParams.get('type') === 'oc' ? 'oc' : 'ic';
     const typesToInclude = requestedType === 'ic' ? ['ic', 'error'] : ['oc'];
 
-    const [campaignRow] = await db.select().from(campaigns).where(eq(campaigns.room, room));
-    if (!campaignRow) {
+    const [campaign] = await db.select().from(campaigns).where(eq(campaigns.room, room));
+    if (!campaign) {
       return NextResponse.json({error: 'Campanha não encontrada.'}, {status: 404});
     }
     let status: Status;
-    status = campaignRow?.status ? JSON.parse(campaignRow.status) : null;
+    status = campaign?.status ? JSON.parse(campaign.status) : null;
 
     const log = await db
       .select({
@@ -39,7 +39,7 @@ export async function GET(request: Request, {params}: {params: Promise<{room: st
         text: campaignLogs.text,
       })
       .from(campaignLogs)
-      .where(and(eq(campaignLogs.room, campaignRow.room), inArray(campaignLogs.type, typesToInclude)))
+      .where(and(eq(campaignLogs.room, campaign.room), inArray(campaignLogs.type, typesToInclude)))
       .orderBy(asc(campaignLogs.sentAt));
 
     return NextResponse.json({log, loading, status});
@@ -56,61 +56,49 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
   try {
     // importações e verificadores
     const {room} = await params;
-    const payload: ActionPayload = await request.json();
-    if (!(payload?.action && payload?.playerName)) {
-      return NextResponse.json({error: 'Ação ou nome do jogador inválido.'}, {status: 400});
-    }
+    let payload: ActionPayload = await request.json();
+    // if (!(payload?.action && payload?.playerName)) {
+    //   return NextResponse.json({error: 'Ação ou nome do jogador inválido.'}, {status: 400});
+    // }
 
     // pega no db: campanha, mundo e mestre
-    const [campaignRow] = await db.select().from(campaigns).where(eq(campaigns.room, room));
-    if (!campaignRow) {
+    const campaign = await getCampaign(room);
+    if (!campaign) {
       return NextResponse.json({error: 'Campanha não encontrada.'}, {status: 404});
     }
-    const [worldRow] = await db.select().from(worlds).where(eq(worlds.room, room));
-    if (!worldRow) {
+    if (!campaign.world) {
       return NextResponse.json({error: 'Sala sem Livro configurado.'}, {status: 400});
     }
-    const [masterRow] = await db.select().from(masters).where(eq(masters.room, room));
-    if (!masterRow) {
+    if (!campaign.master) {
       return NextResponse.json({error: 'Sala sem Mestre (IA) configurado.'}, {status: 400});
     }
     // descriptografa a apiKey
-    const master: Master = {...masterRow, apiKey: masterRow.apiKey ? decrypt(masterRow.apiKey) : null};
+    campaign.master = {...campaign.master, apiKey: campaign.master.apiKey ? decrypt(campaign.master.apiKey) : null};
     
-    console.log("\npayload: "+JSON.stringify(payload)+"\n")
     // pega o estado e contexto atual do jogo
-    let status: Status = campaignRow?.status ? JSON.parse(campaignRow.status) : {id: true, category: "START", dice: ''};
-    console.log("\nstatus: "+JSON.stringify(status)+"\n")
-
-
-    // insere a fala do jogador no adventure_logs
-    await db.insert(campaignLogs).values({
-      room,
-      sender: payload.playerName,
-      charId: payload.char?.id ?? null,
-      charName:  payload.char?.name ?? null,
-      type: status.category === 'OUTRO' ? payload.type : 'error',
-      text: typeof(status.dice) === 'string' ? payload.action : String(status.dice),
-      sentAt: new Date(),
-    });
-    // pega o log das últimas falas
-    const logRows = await db
-      .select()
-      .from(campaignLogs)
-      .where(eq(campaignLogs.room, room))
-      .orderBy(desc(campaignLogs.sentAt));
-
-    const chatHistory = buildHistory({logRows, types: ['ic'], charBudget: 2000, contiguousOnly: false});
-
-    loading = 'O Mestre está pensando...'
-
-    if (!status.id) {
-      // analisa a mensagem e classifica
-      const actionAnalyzed = await classifyAction(master, payload);
+    if (!campaign.status) {
+      campaign.status = {id: true, category: "START", dice: ''}
+    }
+    else if (payload.dice) {
+      const [logRow] = await db.select().from(campaignLogs)
+      .where(and(eq(campaignLogs.room, room), eq(campaignLogs.type, 'ic')))
+      .orderBy(desc(campaignLogs.sentAt)).limit(1);
+      payload = {
+        action: logRow.text, 
+        playerName: logRow.sender, 
+        char: payload.char,
+        dice: payload.dice,
+        response: '',
+        type: 'ic'
+      }
+    }
+    else {
+      loading = 'O Mestre está pensando...'
+      const actionAnalyzed = await classifyAction(campaign.master, payload);
       handlingError(payload, actionAnalyzed);
-      console.log("\actionAnalyzed: "+JSON.stringify(actionAnalyzed)+"\n")
+      console.log("\nactionAnalyzed: "+JSON.stringify(actionAnalyzed)+"\n")
 
-      status = {
+      campaign.status = {
         id: true,
         category: actionAnalyzed.category,
         object: actionAnalyzed.object,
@@ -121,31 +109,46 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
       }
     }
 
+    console.log("\npayload: "+JSON.stringify(payload)+"\n")
+    console.log("\nstatus: "+JSON.stringify(campaign.status)+"\n")
+
     loading = 'O Mestre está digitando...'
 
     // chama o mestre
-    payload.response = await callMaster({payload, status, master, worldRow, chatHistory});
+    payload.response = await callMaster({payload, campaign});
     console.log("\nresponse: "+payload.response+"\n")
-    
-    if (payload.response) {
-      // salva a mensagem do mestre
-      await db.insert(campaignLogs).values({
-        room,
-        sender: master.model ?? 'Mestre',
-        charId: null,
-        charName: payload.playerName,
-        type: payload.type,
-        text: payload.response,
-        sentAt: new Date(),
-      });
 
-      // atualiza o horario da sala e outros
-      await db.update(campaigns).set({status: JSON.stringify(status), lastActivityAt: new Date()}).where(eq(campaigns.room, room));
+
+    // atualiza o bd
+    if (payload.type !== 'error') {
+      await db.update(campaigns).set({status: JSON.stringify(campaign.status), lastActivityAt: new Date()}).where(eq(campaigns.room, room));
     }
+
+    // insere a fala do jogador no adventure_logs
+    await db.insert(campaignLogs).values({
+      room,
+      sender: payload.playerName,
+      charId: payload.char?.id ?? null,
+      charName:  payload.char?.name ?? null,
+      type: payload.type ?? '',
+      text: typeof(campaign.status.dice) === 'string' ? payload?.action : String(campaign.status.dice),
+      sentAt: new Date(),
+    });
+
+    // insere a fala do mestre no adventure_logs
+    await db.insert(campaignLogs).values({
+      room,
+      sender: campaign.master.model ?? 'Master',
+      charId: null,
+      charName: 'Mestre',
+      type: payload.type ?? '',
+      text: payload.response,
+      sentAt: new Date(),
+    })
 
     loading = ''
 
-    return NextResponse.json({success: true, status: status});
+    return NextResponse.json({success: true, status: campaign.status});
   }
   catch (error) {
     console.error("ERRO NO BACKEND DA AVENTURA:", error);

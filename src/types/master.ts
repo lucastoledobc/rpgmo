@@ -7,7 +7,7 @@ export interface ActionPayload {
   playerName: string;
   char: Character;
   action: string;
-  dice: number;
+  dice?: number;
   response: string;
   type: 'system' | 'ic' | 'oc' | 'npc' | 'combat' | 'error'
 }

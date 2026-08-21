@@ -1,9 +1,9 @@
 // arquivo: centralização da busca db
 // local: src\lib\getCampaign.ts
 
-import {eq, inArray} from 'drizzle-orm';
+import {eq, inArray, desc} from 'drizzle-orm';
 import {db} from '@/db';
-import {campaigns, worlds, masters, characters, characterStatus, characterItems} from '@/db/schema';
+import {campaigns, worlds, masters, characters, characterStatus, characterItems, campaignLogs} from '@/db/schema';
 import {cache} from 'react';
 import {resolveWorld} from '@/lib/resolveWorld';
 import type {Campaign} from '@/types/campaign';
@@ -38,6 +38,9 @@ export const getCampaign = cache(async (room: string): Promise<Campaign | null> 
     items: itemRows.filter((i) => i.charId === char.id) as any,
   }));
 
+  
+  const logRows = await db.select().from(campaignLogs).where(eq(campaignLogs.room, room)).orderBy(desc(campaignLogs.sentAt));
+
   return {
     room: campaignRow.room,
     title: campaignRow.title,
@@ -56,5 +59,6 @@ export const getCampaign = cache(async (room: string): Promise<Campaign | null> 
       numPredict: masterRow.numPredict,
     } : undefined,
     chars: charactersWithDetails,
+    log: logRows,
   };
 });

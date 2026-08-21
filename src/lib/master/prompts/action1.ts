@@ -7,8 +7,7 @@ import type {ChatMessage} from '@/types/master';
 
 export function action1(status: Status, payload: ActionPayload, chatHistory: ChatMessage[], world: any): string {
   return `Você é um narrador de RPG e o jogador ${payload.char?.name} tenta algo arriscado com ${status.object || 'o ambiente'} e tirou ${payload.dice}.
-  \nHISTÓRICO DAS ÚLTIMAS JOGADAS: ${history}.
-  \nCONXTEXTO DA CENA ${world}.
+  \nHISTÓRICO DAS ÚLTIMAS JOGADAS: ${JSON.stringify(chatHistory)}.
   \nVerifique se é possível fazer essa ação.
   \nSe sim: Continue a narração como consequência.
   \nSe não: Explique o porquê é impossível fazer isso agora.`;
