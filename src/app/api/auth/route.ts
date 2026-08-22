@@ -60,6 +60,7 @@ export async function POST(request: Request) {
     return response;
   }
   catch (error) {
+    console.error("Erro capturado:", error);
     return NextResponse.json({error: 'Erro do servidor ao autenticar.'}, {status: 500});
   }
 }
