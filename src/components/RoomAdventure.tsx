@@ -1,0 +1,146 @@
+// arquivo: componente da aventura (chat da aventura)
+// local: src\components\RoomAdventure.tsx
+
+'use client';
+import {useState, useEffect, useRef} from 'react';
+import type {Campaign, Character, Log} from '@/types/campaign';
+import ModalMaster from '@/components/ModalMaster';
+import ModalDice from '@/components/ModalDice';
+import ModalNPC from '@/components/ModalNPC';
+import ModalCombat from '@/components/ModalCombat';
+
+interface RoomAdventureProps {
+  campaign: Campaign;
+  disabled?: boolean;
+}
+
+export default function RoomAdventure({campaign, disabled}: RoomAdventureProps) {
+  const [playerName, setPlayerName] = useState('');
+  const [log, setLog] = useState<Log[]>([]);
+  const endRef = useRef<HTMLDivElement>(null);
+  const [selectedChar, setSelectedChar] = useState<Character | null>(null);
+  const [action, setAction] = useState('');
+  const [loading, setLoading] = useState('');
+  const [modalMaster, setModalMaster] = useState(false);
+  const [modalDice, setModalDice] = useState<{dice: string} | null>(null);
+  const [modalNPC, setModalNPC] = useState<{npcName: string} | null>(null);
+  const [modalCombat, setModalCombat] = useState(false);
+
+
+  useEffect(() => {
+    setPlayerName(localStorage.getItem('playerName') || 'Jogador');
+  }, []);
+
+
+  useEffect(() => {
+    if (disabled) return;
+
+    const fetchLog = async () => {
+      try {
+        const res = await fetch(`/api/room/${campaign.room}/adventure?type=ic`);
+        const data = await res.json();
+        if (data.log) setLog(data.log);
+        setLoading(data.loading ?? 0);
+        
+        const status = data.status;
+        setModalDice(status?.dice && typeof status.dice === 'string' ? {dice: status.dice} : null);
+        setModalNPC(status?.category === 'CONVERSA' ? {npcName: status.object || 'NPC'} : null);
+        setModalCombat(status?.category === 'COMBATE')
+
+      }
+      catch (error) {
+        console.error("Erro ao buscar aventura:", error);
+      }
+    };
+
+    fetchLog();
+    const interval = setInterval(fetchLog, 3000);
+    return () => clearInterval(interval);
+  }, [campaign.room, disabled]);
+
+  useEffect(() => {
+    endRef.current?.scrollIntoView({behavior: 'smooth'});
+  }, [log]);
+
+
+  const handleSend = async (e: React.SubmitEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!action.trim() || loading || !selectedChar) return;
+
+    const playerAction = action.trim();
+    setAction('');
+    setLoading('O Mestre está ouvindo...');
+
+    try {
+      await fetch(`/api/room/${campaign.room}/adventure`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({action: playerAction, playerName, char: selectedChar, type: 'ic'}),
+      });
+    }
+    catch (err) {
+      console.error("Erro ao falar com o Mestre:", err);
+    }
+  };
+
+
+  return (
+    <aside className="roomBox">
+      <header className="header">
+        <h3 className='title3'>AVENTURA</h3>
+        <button type="button" className="settings" onClick={() => setModalMaster(true)}></button>
+      </header>
+
+      <div className='adventure'>
+        <div className="adventureLog">
+          {disabled ? (
+            <p>Configure o Mestre e o Mundo desta sala antes de começar.</p>
+          ) : (log?.length ?? 0) === 0 ? (
+            <p>O Mestre está aguardando você iniciar a jornada...</p>
+          ) : (
+            log?.map((entry, i) => (
+              <div className='messageRow' key={i}>
+                <p><span className="charTag">{entry.charName}</span>: {entry.text}</p>
+              </div>
+            ))
+          )}
+          {loading !== '' && <p style={{color: '#888'}}>{loading}</p>}
+          <div ref={endRef} />
+        </div>
+
+        <form onSubmit={handleSend} className="messageBox">
+          <div className='charSelectorWrapper'>
+            <select
+              className="hiddenSelect"
+              value={selectedChar?.id ?? ''}
+              onChange={(e) => setSelectedChar(campaign.chars?.find((c) => c.id === Number(e.target.value)) || null)}
+              disabled={disabled}
+            >
+              <option value="">-- Sem personagem --</option>
+              {campaign.chars?.map((c) => (
+                <option key={c.id} value={c.id}>{c.name} ({c.id})</option>
+              ))}
+            </select>
+            <span className="charLabel">@{selectedChar ? selectedChar.name : ''}</span>
+          </div>
+
+          <textarea
+            className="message"
+            value={action}
+            onChange={(e) => setAction(e.target.value)}
+            placeholder={disabled ? "Sala não configurada..." : loading ? "Aguardando o Mestre..." : "Digite sua ação..."}
+            rows={1}
+            autoComplete="off"
+            disabled={disabled}
+          />
+          <button type="submit" className="enter" disabled={disabled}></button>
+        </form>
+      </div>
+      
+      {modalMaster && <ModalMaster campaign={campaign} onClose={() => setModalMaster(false)} />}
+      {modalDice && <ModalDice campaign={campaign} diceNotation={modalDice.dice} onClose={() => setModalDice(null)} />}
+      {modalNPC && <ModalNPC campaign={campaign} npcName={modalNPC.npcName} playerName={playerName} onClose={() => setModalNPC(null)} />}
+      {modalCombat && <ModalCombat campaign={campaign} playerName={playerName} onClose={() => setModalCombat(false)} />}
+    </aside>
+  );
+}

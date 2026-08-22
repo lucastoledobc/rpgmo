@@ -269,3 +269,6 @@ a segunda camada com IA teria 3 fases: identificação, seleção, narração.
 - a IA recebe a ação do player e um mestre identifica 
 - uma seleção escolhe o tipo de ação "ação simples, combate, conversar, etc" e avisa a outra camada o estado do jogo
 - baseado nesse estado, um prompt específico para essa ação específica. Se for combate, o prompt vai ter as regras do jogo, se for conversa, o prompt vai ter a personalidade do npc
+
+Lembrar: passaHash e worldId será nulo quando baixar
+

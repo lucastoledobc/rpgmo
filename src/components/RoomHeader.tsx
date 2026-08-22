@@ -1,23 +1,17 @@
 // arquivo: componente do header da sala
-// local: src\components\RoomHeader.tsx
+// local: src\components\Header.tsx
 
 'use client';
 import {useState} from 'react';
-import type {RoomDetails} from '@/types/room';
+import type {Campaign} from '@/types/campaign';
 
-interface RoomHeaderProps {
-  room: RoomDetails['room'];
-  adventure: RoomDetails['adventure'];
-  world: RoomDetails['world'];
-}
-
-export default function RoomHeader({room, adventure, world}: RoomHeaderProps) {
+export default function Header({campaign}: {campaign: Campaign}) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <header className="roomHeader">
       <div>
-        <h1 className='title2'>SALA: {adventure.title}</h1>
+        <h1 className='title2'>SALA: {campaign.title}</h1>
         <button
           className="button"
           onClick={() => setIsExpanded(!isExpanded)}
@@ -28,19 +22,10 @@ export default function RoomHeader({room, adventure, world}: RoomHeaderProps) {
 
       {isExpanded && (
         <div className="headerDetails">
-          <p><strong>Código da sala:</strong> {room.id}</p>
-          <p><strong>Mundo:</strong> {world.title} {world.theme && `— ${world.theme}`}</p>
-          <p><strong>Versão do mundo:</strong> {world.version}</p>
-          <p><strong>Criada em:</strong> {room.createdAt.toLocaleDateString('pt-BR')}</p>
-          {adventure.createdAt && (
-            <p><strong>Aventura iniciada em:</strong> {adventure.createdAt.toLocaleDateString('pt-BR')}</p>
-          )}
-          {adventure.timeline && (
-            <div>
-              <strong>Linha do tempo:</strong>
-              <p>{adventure.timeline}</p>
-            </div>
-          )}
+          <p><strong>Código da sala:</strong> {campaign.room}</p>
+          <p><strong>Mundo:</strong> {campaign.world?.title ?? ''}</p>
+          <p><strong>Versão do mundo:</strong> {campaign.world?.version}</p>
+          <p><strong>Criada em:</strong> {campaign.createdAt?.toLocaleDateString('pt-BR')}</p>
         </div>
       )}
     </header>

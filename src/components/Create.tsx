@@ -4,123 +4,61 @@
 'use client';
 import {useState, useRef} from 'react';
 import {useRouter} from 'next/navigation';
-
-interface FormDataState {
-  title: string;
-  pass: string;
-  worldId: string;
-  state: string;
-  context: string;
-  timeline: string;
-  createdAt: string | null;
-  plot: {title: string; phase: number; phases: string[]} | null;
-  masterSystem: string;
-  masterModel: string;
-  masterKey: string;
-  personality: string;
-  chars: any[];
-  log: any[];
-  chat: any[];
-}
+import type {Campaign} from '@/types/campaign';
 
 export default function Create() {
   const router = useRouter();
-  const bookInputRef = useRef<HTMLInputElement>(null);
-  const adventureInputRef = useRef<HTMLInputElement>(null);
-  const [room, setRoom] = useState('');
+  const campaignInputRef = useRef<HTMLInputElement>(null);
   const [alert, setAlert] = useState({text: '', type: ''});
-  const [formData, setFormData] = useState<FormDataState>({
+  const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState<Campaign>({
+    room: '',
     title: '',
     pass: '',
-    worldId: "1",
-    state: '',
-    context: '',
-    timeline: '',
-    createdAt: null,
-    plot: null,
-    masterSystem: 'ollama',
-    masterModel: 'qwen2.5:3b',
-    masterKey: '',
-    personality: '',
-    chars: [],
-    log: [],
-    chat: []
+    worldId: '1',
   });
 
-  // atualiza a escrita na tela
+  // atualiza os campos na tela
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const {name, value} = e.target;
     setFormData((prev) => ({...prev, [name]: value}));
   };
 
-  // Carrega livro (upload de mundo personalizado)
-  const handleBook = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Carrega campanha antiga (upload pra continuar de onde parou)
+  const handleCampaign = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      setAlert({text: 'Nenhuma campanha selecionada.', type: 'error'});
+      return;
+    }
 
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-      try {
-        const resultText = event.target?.result as string;
-        const json = JSON.parse(resultText);
-
-        const uploadRes = await fetch('/api/create/book', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify(json),
-        });
-
-        const result = await uploadRes.json();
-
-        if (uploadRes.ok) {
-          setFormData((prev) => ({
-            ...prev,
-            worldId: result.worldId,
-            worldTitle: 'custom'
-          }));
-        }
-        else {
-          setAlert({text: result.error, type: 'error'});
-        }
-      }
-      catch (err) {
-        setAlert({text: 'Erro ao receber o livro.', type: 'error'});
-      }
-    };
-    reader.readAsText(file);
-  };
-
-  // Carrega aventura antiga
-  const handleJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setAlert({text: 'Preenchendo dados a partir da aventura...', type: 'info'});
+    setIsLoading(true);
+    setAlert({text: 'Preenchendo dados a partir da campanha...', type: 'info'});
 
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
         const resultText = event.target?.result as string;
-        const json = JSON.parse(resultText);
+        const json: Campaign = JSON.parse(resultText);
+
+        if (!json.title || !json.world) {
+          setAlert({text: 'Campanha inválida ou incompleta.', type: 'error'});
+          return;
+        }
 
         setFormData((prev) => ({
           ...prev,
-          title: json.title,
-          worldId: json.worldId,
-          state: json.state,
-          context: json.context,
-          timeline: json.timeline,
-          createdAt: json.createdAt,
-          plot: json.plot,
-          chars: json.chars,
-          log: json.log,
-          chat: json.chat
+          ...json,
+          master: {...prev.master, ...json.master}
         }));
 
-        setAlert({text: 'Dados preenchidos. Confirme nome da sala e senha antes de criar.', type: 'info'});
+        setAlert({text: 'Dados preenchidos. Confirme a senha antes de criar.', type: 'info'});
       }
       catch (err) {
-        setAlert({text: 'Erro ao receber a aventura.', type: 'error'});
+        setAlert({text: 'Erro ao ler a campanha — verifique se é um JSON válido.', type: 'error'});
+      }
+      finally {
+        setIsLoading(false);
       }
     };
     reader.readAsText(file);
@@ -130,22 +68,31 @@ export default function Create() {
   const create = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    setIsLoading(true);
     setAlert({text: 'Criando a sala...', type: 'info'});
 
-    const response = await fetch('/api/create', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(formData),
-    });
+    try {
+      const response = await fetch('/api/create', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(formData),
+      });
 
-    const result = await response.json();
+      const result = await response.json();
 
-    if (response.ok) {
-      setRoom(result.roomId);
-      setAlert({text: 'Sala criada!', type: 'success'});
-    } 
-    else {
-      setAlert({text: result.error, type: 'error'});
+      if (response.ok) {
+        setFormData((prev) => ({...prev, room: result.room}));
+        setAlert({text: 'Sala criada!', type: 'success'});
+      }
+      else {
+        setAlert({text: result.error, type: 'error'});
+      }
+    }
+    catch (error) {
+      setAlert({text: 'Erro de conexão com o servidor.', type: 'error'});
+    }
+    finally {
+      setIsLoading(false);
     }
   };
 
@@ -156,92 +103,58 @@ export default function Create() {
 
       <main className="rpgBox">
         <form onSubmit={create}>
-        <section className='section'>
-          <h2 className='title2'>SALA</h2>
+          <section className='section'>
+            <h2 className='title2'>SALA</h2>
 
-          <div className="formGroup">
-            <label className="label">Título da Aventura</label>
-            <input type='text' name="title" className="input" value={formData.title} onChange={handleChange} placeholder="Título da Aventura" required/>
+            <div className="formGroup">
+              <label className="label">Título da Aventura</label>
+              <input type='text' name="title" className="input" value={formData.title ?? ''} onChange={handleChange} placeholder="Título da Aventura"/>
+            </div>
+
+            <div className="formGroup">
+              <label className="label">Senha da Sala</label>
+              <input type="password" name="pass" className="input" value={formData.pass ?? ''} onChange={handleChange} placeholder="******" required/>
+            </div>
+          </section>
+          <hr />
+
+          <section className='section'>
+            <h2 className='title2'>MUNDO</h2>
+
+            <div className="formGroup">
+              <label className="label">Sistema</label>
+              <select name="worldId" className="input" value={formData.worldId} onChange={handleChange}>
+                <option value="1">Fantasia Medieval</option>
+                <option value="2">Cyberpunk</option>
+                <option value="3">Terror</option>
+                <option value="">Personalizado / Decidir depois</option>
+              </select>
+            </div>
+          </section>
+          <hr />
+
+          <div className="buttonContainer">
+            <button type="button" className="button" onClick={() => campaignInputRef.current?.click()}>[CARREGAR CAMPANHA]</button>
+            <input type="file" ref={campaignInputRef} onChange={handleCampaign} style={{display: 'none'}} accept=".json"/>
+
+            <button type="submit" className="button" disabled={isLoading}>
+              {isLoading ? 'ESPERE...' : 'CRIAR SALA'}
+            </button>
           </div>
-
-          <div className="formGroup">
-            <label className="label">Senha</label>
-            <input type="password" name="pass" className="input" value={formData.pass} onChange={handleChange} placeholder="******" required/>
-          </div>
-        </section>
-        <hr />
-
-        <section className='section'>
-          <h2 className='title2'>MUNDO</h2>
-
-          <div className="formGroup">
-            <label className="label">Sistema</label>
-            <select name="worldId" className="input" value={formData.worldId} onChange={handleChange}>
-              <option value="1">Fantasia Medieval</option>
-              <option value="2">Cyberpunk</option>
-              <option value="3">Terror</option>
-              <option value="0">Personalizado (seu sistema)</option>
-            </select>
-          </div>
-
-          <div className="formGroup">
-            <label className="label">Livro</label>
-            <button type="button" className="button" onClick={() => bookInputRef.current?.click()}>[CARREGAR LIVRO]</button>
-            <input type="file" ref={bookInputRef} onChange={handleBook} style={{display: 'none'}} accept=".json"/>
-          </div>
-        </section>
-        <hr />
-
-        <section className='section'>
-          <h2 className='title2'>MESTRE</h2>
-
-          <div className="formGroup">
-            <label className="label">Sistema</label>
-            <select name="masterSystem" className="input" value={formData.masterSystem} onChange={handleChange}>
-              <option value="ollama">Ollama (local)</option>
-              <option value="claude">Claude</option>
-              <option value="gemini">Gemini</option>
-              <option value="gpt">ChatGPT</option>
-            </select>
-          </div>
-
-          <div className="formGroup">
-            <label className="label">Modelo</label>
-            <input type='text' name="masterModel" className="input" value={formData.masterModel} onChange={handleChange} placeholder="qwen2.5:3b / gemini-flash / gpt-o4" required/>
-          </div>          
-
-          <div className="formGroup">
-            <label className="label">API Key</label>
-            <input type="password" name="masterKey" className="input" value={formData.masterKey} onChange={handleChange} placeholder="Senha API da sua IA"/>
-          </div>          
-
-          <div className="formGroup">
-            <label className="label">Personalidade</label>
-            <input type='text' name="personality" className="input" value={formData.personality} onChange={handleChange} placeholder={"Mestre clássico de RPG, descritivo e justo."}/>
-          </div>
-        </section>
-        <hr />
-
-        <div className="buttonContainer">
-          <button type="button" className="button" onClick={() => adventureInputRef.current?.click()}>[CARREGAR AVENTURA]</button>
-          <input type="file" ref={adventureInputRef} onChange={handleJSON} style={{display: 'none'}} accept=".json"/>
-
-          <button type="submit" className="button">CRIAR SALA</button>
-        </div>
         </form>
 
         {alert.text && (
           <div className={`alertBox alertBox--${alert.type}`}>
             <h3 className='subTile'>{alert.text}</h3>
-            {alert.type=="success" && (
-            <>
-            <p>ID da sala: <strong>{room}</strong></p>
-            <div className="buttonContainer">
-              <button className="button" onClick={() => navigator.clipboard.writeText(room)}>COPIAR ID</button>
-              <button className="button" onClick={() => router.push(`/`)}>VOLTAR</button>
-            </div>
-            <h3 className='subTile'>Boa Aventura!</h3>
-            </>
+            {alert.type === "success" && (
+              <>
+                <p>ID da sala: <strong>{formData.room}</strong></p>
+                <div className="buttonContainer">
+                  <button className="button" onClick={() => navigator.clipboard.writeText(formData.room || '')}>COPIAR ID</button>
+                  <button className="button" onClick={() => router.push(`/`)}>VOLTAR</button>
+                </div>
+                <h3 className='subTile'>Boa Aventura!</h3>
+              </>
             )}
           </div>
         )}

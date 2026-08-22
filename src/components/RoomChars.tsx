@@ -1,55 +1,43 @@
-// arquivo: componente de personagens da sala
+// arquivo: acompanhamento de personagens da sala
 // local: src\components\RoomChars.tsx
 
 'use client';
 import {useState, useEffect} from 'react';
-import type {CharacterWithDetails} from '@/types/room';
-import Char from './Char';
+import type {Campaign, Character} from '@/types/campaign';
+import ModalChars from '@/components/ModalChars';
 
 interface RoomCharsProps {
-  roomId: string;
-  adveId: number;
-  characters: CharacterWithDetails[];
+  campaign: Campaign;
 }
 
-export default function RoomChars({roomId, adveId, characters}: RoomCharsProps) {
+export default function RoomChars({campaign}: RoomCharsProps) {
   const [selectedToAdd, setSelectedToAdd] = useState('');
-  const [trackedIds, setTrackedIds] = useState<string[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingCharId, setEditingCharId] = useState<string | null>(null);
+  const [trackedIds, setTrackedIds] = useState<number[]>([]);
+  const [editingChar, setEditingChar] = useState<Character | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
-  // carrega quais personagens o jogador estava acompanhando nessa sala
+  const chars = campaign.chars ?? [];
+
   useEffect(() => {
-    const saved = localStorage.getItem(`trackedChars_${roomId}`);
+    const saved = localStorage.getItem(`trackedChars_${campaign.room}`);
     if (saved) setTrackedIds(JSON.parse(saved));
-  }, [roomId]);
+  }, [campaign.room]);
 
-  // salva sempre que a lista de acompanhados mudar
   useEffect(() => {
-    localStorage.setItem(`trackedChars_${roomId}`, JSON.stringify(trackedIds));
-  }, [trackedIds, roomId]);
+    localStorage.setItem(`trackedChars_${campaign.room}`, JSON.stringify(trackedIds));
+  }, [trackedIds, campaign.room]);
 
-  const availableToSelect = characters.filter((c) => !trackedIds.includes(c.id));
-  const trackedCharacters = characters.filter((c) => trackedIds.includes(c.id));
+  const availableToSelect = chars.filter((c) => !trackedIds.includes(c.id));
+  const trackedChars = chars.filter((c) => trackedIds.includes(c.id));
 
   const handleTrack = () => {
     if (!selectedToAdd) return;
-    setTrackedIds((prev) => [...prev, selectedToAdd]);
+    setTrackedIds((prev) => [...prev, Number(selectedToAdd)]);
     setSelectedToAdd('');
   };
 
-  const handleUntrack = (charId: string) => {
-    setTrackedIds((prev) => prev.filter((id) => id !== charId));
-  };
-
-  const handleEdit = (charId: string) => {
-    setEditingCharId(charId);
-    setIsModalOpen(true);
-  };
-
-  const handleCreate = () => {
-    setEditingCharId(null);
-    setIsModalOpen(true);
+  const handleUntrack = (id: number) => {
+    setTrackedIds((prev) => prev.filter((trackedId) => trackedId !== id));
   };
 
   return (
@@ -64,7 +52,7 @@ export default function RoomChars({roomId, adveId, characters}: RoomCharsProps) 
           <select className="input" value={selectedToAdd} onChange={(e) => setSelectedToAdd(e.target.value)}>
             <option value="">-- Selecione --</option>
             {availableToSelect.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
+              <option key={c.id} value={c.id}>{c.name ?? `Personagem #${c.id}`}</option>
             ))}
           </select>
           <button type="button" className="button" onClick={handleTrack} disabled={!selectedToAdd}>
@@ -74,24 +62,23 @@ export default function RoomChars({roomId, adveId, characters}: RoomCharsProps) 
       )}
 
       <div className="chars">
-        {trackedCharacters.length === 0 ? (
+        {trackedChars.length === 0 ? (
           <p>Nenhum personagem sendo acompanhado ainda.</p>
         ) : (
-          trackedCharacters.map((char) => (
-            <div key={char.id} className="charCard">              
-              <button type="button" className="close" onClick={() => handleUntrack(char.id)}></button>
-              <p><strong>{char.name}</strong> {char.class && `(${char.class})`}</p>
+          trackedChars.map((char) => (
+            <div key={char.id} className="charCard">
+              <p><strong>{char.name ?? `Personagem #${char.id}`}</strong> {char.role && `(${char.role})`}</p>
               {char.race && <p>{char.race}{char.age ? `, ${char.age} anos` : ''}</p>}
 
               <div className="stats">
-                {char.status.map((s) => (
+                {char.status?.map((s) => (
                   <span key={s.id}>
                     {s.name}: {s.value}{s.max !== null ? `/${s.max}` : ''} <br />
                   </span>
                 ))}
               </div>
 
-              {char.items.length > 0 && (
+              {char.items && char.items.length > 0 && (
                 <div className="items">
                   <strong>Inventário:</strong>
                   {char.items.map((i) => (
@@ -103,22 +90,24 @@ export default function RoomChars({roomId, adveId, characters}: RoomCharsProps) 
               )}
 
               <div className="buttonContainer">
-                <button type="button" className="button" onClick={() => handleEdit(char.id)}>Editar</button>
+                <button type="button" className="button" onClick={() => setEditingChar(char)}>Editar</button>
+                <button type="button" className="button" onClick={() => handleUntrack(char.id)}>Remover da vista</button>
               </div>
             </div>
           ))
         )}
       </div>
 
-      <button type="button" className="button" onClick={handleCreate}>CRIAR PERSONAGEM</button>
+      <button type="button" className="button" onClick={() => setIsCreating(true)}>CRIAR PERSONAGEM</button>
 
-      {isModalOpen && (
-        <Char
-          roomId={roomId}
-          adveId={adveId}
-          charId={editingCharId}
-          existingChar={characters.find((c) => c.id === editingCharId) ?? null}
-          onClose={() => setIsModalOpen(false)}
+      {(isCreating || editingChar) && (
+        <ModalChars
+          campaign={campaign}
+          existingChar={editingChar}
+          onClose={() => {
+            setIsCreating(false);
+            setEditingChar(null);
+          }}
         />
       )}
     </aside>

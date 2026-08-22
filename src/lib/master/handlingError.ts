@@ -1,8 +1,8 @@
 // arquivo: lida com os erros possíveis
 // local: 
 
-import type {ActionPayload} from '@/types/adventure';
-import type {ActionType} from '@/types/adventure';
+import type {ActionPayload} from '@/types/master';
+import type {ActionType} from '@/types/master';
 
 export function handlingError(payload: ActionPayload, actionAnalyzed: ActionType) {
   payload.playerName = "Mestre";
@@ -15,7 +15,7 @@ export function handlingError(payload: ActionPayload, actionAnalyzed: ActionType
   if (actionAnalyzed.category === 'CONVERSA') {
     if ( actionAnalyzed.object === '') {
     actionAnalyzed.category = 'OUTRO';
-    payload.mode = 'error';
+    payload.type = 'error';
     payload.response = 'Erro: o mestre não entendeu com quem você quer conversar.'
       return
     }
@@ -26,7 +26,7 @@ export function handlingError(payload: ActionPayload, actionAnalyzed: ActionType
 
   // OUTRO
   if (actionAnalyzed.category === 'OUTRO') {
-    payload.mode = 'error';
+    payload.type = 'error';
     return
   }
 

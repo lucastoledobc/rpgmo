@@ -1,13 +1,13 @@
 // arquivo: Instrução para uma ação complexa
 // local: src\lib\master\prompts\action1.ts
 
-import type {ActionPayload} from '@/types/adventure';
-import type {ActionType} from '@/types/adventure';
+import type {Status} from '@/types/campaign';
+import type {ActionPayload} from '@/types/master';
+import type {ChatMessage} from '@/types/master';
 
-export function action1(actionAnalyzed: ActionType, payload: ActionPayload, history: string, world: any): string {
-  return `Você é um narrador de RPG e o jogador ${payload.char?.name} tenta algo arriscado com ${actionAnalyzed.object || 'o ambiente'} e tirou ${payload.dice}.
-  \nHISTÓRICO DAS ÚLTIMAS JOGADAS: ${history}.
-  \nCONXTEXTO DA CENA ${world}.
+export function action1(status: Status, payload: ActionPayload, chatHistory: ChatMessage[], world: any): string {
+  return `Você é um narrador de RPG e o jogador ${payload.char?.name} tenta algo arriscado com ${status.object || 'o ambiente'} e tirou ${payload.dice}.
+  \nHISTÓRICO DAS ÚLTIMAS JOGADAS: ${JSON.stringify(chatHistory)}.
   \nVerifique se é possível fazer essa ação.
   \nSe sim: Continue a narração como consequência.
   \nSe não: Explique o porquê é impossível fazer isso agora.`;

@@ -25,6 +25,8 @@
 *.pem
 .roo/
 .roomodes
+*.zip
+*.http
 
 # debug
 npm-debug.log*

@@ -5,7 +5,7 @@ import Create from '@/components/Create';
 
 export const metadata = {
   title: 'Criar Sala RPGMO',
-  description: 'Criar uma sala de RPG.',
+  description: 'Cria uma sala de RPG.',
 };
 
 export default function CreatePage() {

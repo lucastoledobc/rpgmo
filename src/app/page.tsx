@@ -2,11 +2,13 @@
 // local: src\app\page.tsx
 
 'use client';
+import Link from 'next/link';
 import {useState} from 'react';
 import {useRouter} from 'next/navigation';
 
 export default function Home() {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const [alert, setAlert] = useState({text: '', type: ''});
   const [formData, setFormData] = useState({
     room: '',
@@ -24,24 +26,34 @@ export default function Home() {
   // login
   const login = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    setIsLoading(true);
     setAlert({text: 'Verificando...', type: 'info'});
 
-    const response = await fetch('/api/auth', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify(formData),
-    });
+    try {
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(formData),
+      });
 
-    const result = await response.json();
+      const result = await response.json();
 
-    if (response.ok) {
-      localStorage.setItem('playerName', formData.playerName);
-      router.push(`/room/${formData.room}`);
+      if (response.ok) {
+        localStorage.setItem('playerName', formData.playerName);
+        router.push(`/room/${formData.room}`);
+      }
+      else {
+        setAlert({text: result.error || 'Erro ao entrar na sala.', type: 'error'});
+      }
     }
-    else {
-      setAlert({text: result.error, type: 'error'});
+    catch (error) {
+      setAlert({text: 'Erro de conexão com o servidor.', type: 'error'});
     }
-  }
+    finally {
+      setIsLoading(false);
+    }
+  };
 
   // página html
   return (
@@ -53,7 +65,8 @@ export default function Home() {
           <div className="formGroup">
             <label className="label" htmlFor="room">Sala</label>
             <input 
-              type="text" 
+              type="text"
+              id="room"
               name="room"
               className="input"
               value={formData.room}
@@ -67,8 +80,9 @@ export default function Home() {
           <div className="formGroup">
             <label className="label" htmlFor="pass">Senha</label>
             <input 
-              type="password" 
-              name="pass" 
+              type="password"
+              id="pass"
+              name="pass"
               className="input"
               value={formData.pass}
               onChange={handleChange}
@@ -80,7 +94,8 @@ export default function Home() {
           <div className="formGroup">
             <label className="label" htmlFor="playerName">Jogador</label>
             <input 
-              type="text" 
+              type="text"
+              id="playerName"
               name="playerName"
               className="input"
               value={formData.playerName}
@@ -92,8 +107,10 @@ export default function Home() {
           </div>
 
           <div className="buttonContainer">
-            <button type="button" className="button" onClick={() => router.push('/create')}>CRIAR SALA</button>
-            <button type="submit" className="button">ENTRAR</button>
+            <Link href="/create" className="button">CRIAR SALA</Link>
+            <button type="submit" className="button" disabled={isLoading}>
+              {isLoading ? 'ENTRANDO...' : 'ENTRAR'}
+            </button>
           </div>
         </form>
         {/* Caixa de Alertas */}

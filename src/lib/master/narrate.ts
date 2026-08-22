@@ -3,70 +3,91 @@
 
 import {callOllama, callOllamaChat, callOllamaImg} from './masterOllama';
 import {callGemini, callGeminiChat, callGeminiDoc, callGeminiImg} from './masterGemini';
-import {Master} from '@/types/master';
+import {callGroq} from './masterGroq';
+import {callMistral} from './masterMistral';
+import type {ChatMessage} from '@/types/master';
+import type {Master} from '@/types/campaign';
+import { error } from 'node:console';
 
-export async function narrate({type, master, chatHistory, instruction, interactionId}: {type: string, master: Master, chatHistory: any, instruction?: string, interactionId?: string}): Promise<{text: string; interactionId?: string}> {
-  if (type == 'chat') {
+export async function narrate({type, master, chatHistory, instruction, format, interactionId}: {type: string, master: Master, chatHistory: ChatMessage[], instruction?: string, format?: object, interactionId?: string}): Promise<{text: string; interactionId?: string; error?: boolean}> {
+  let res;
+  try {
     if (master.system === 'ollama') {
-      try {
-        const res = await callOllamaChat({
+      if (type === 'text') {
+        res = await callOllama({
+          master: master,
+          systemPrompt: instruction ?? '',
+          message: chatHistory[0],
+          format: format,
+        });
+      }
+      if (type === 'chat') {
+        res = await callOllamaChat({
           master: master,
           systemPrompt: instruction ?? '',
           messages: chatHistory,
         });
-        return {text: res.text}
       }
-      catch (error) {
-        return {text: "Erro ao chamar o Mestre Ollama"};
+      else if (type === 'img') {
+        res = await callOllamaImg({
+          master: master,
+          prompt: chatHistory[0].text,
+          format: format ? format : null,
+        });
       }
     }
-
-    if (master.system === 'gemini') {
-      try {
-        const res = await callGeminiChat({
+    else if (master.system === 'gemini') {
+      if (type === 'text') {
+        res = await callGemini({
+          master: master,
+          systemPrompt: instruction ?? '',
+          messages: chatHistory,
+          format: format,
+        });
+      }
+      else if (type === 'chat') {
+        res = await callGeminiChat({
           master: master,
           systemPrompt: instruction ?? undefined,
-          message: chatHistory,
+          message: chatHistory[0],
           previousInteractionId: interactionId ?? undefined,
         });
-        return {text: res.text, interactionId: res.interactionId}
       }
-      catch (error) {
-        return {text: "Erro ao chamar o Mestre Gemini"};
+      else if (type === 'img') {
+        res = await callGeminiImg({
+          master: master,
+          prompt: chatHistory[0].text,
+          format: format ? format : null,
+        });
       }
     }
-    return {text: `Master system "${master.system}" ainda não implementado.`};
-  }
-  else {
-    if (master.system === 'ollama') {
-      try {
-        const res = await callOllama({
+    else if (master.system === 'groq') {
+      if (type === 'text' || type === 'chat') {
+        res = await callGroq({
           master: master,
           systemPrompt: instruction ?? '',
-          message: {role: 'player', text: chatHistory},
-          format: null,
+          messages: chatHistory,
+          format: format,
         });
-        return {text: res.text}
-      }
-      catch (error) {
-        return {text: "Erro ao chamar o Mestre Ollama2"};
       }
     }
-
-    if (master.system === 'gemini') {
-      try {
-        const res = await callGemini({
+    else if (master.system === 'mistral') {
+      if (type === 'text' || type === 'chat') {
+        res = await callMistral({
           master: master,
           systemPrompt: instruction ?? '',
-          messages: [{role: 'player', text: chatHistory}],
-          format: null,
+          messages: chatHistory,
+          format: format,
         });
-        return {text: res.text}
-      }
-      catch (error) {
-        return {text: "Erro ao chamar o Mestre Gemini"};
       }
     }
-    return {text: `Master system "${master.system}" ainda não implementado.`};
+    else {
+      res = {text: `Master system "${master.system}" ainda não implementado.`, error: true};
+    }
+    if (!res) {res = {text: `Sistema ${master.system} não impementado para o tipo ${type}.`, error: true}}
   }
+  catch(error) {
+    res = {text: 'error', interactionId: interactionId ?? undefined, error: true}
+  }
+  return res;
 }

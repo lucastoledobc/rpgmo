@@ -1,113 +1,108 @@
 // arquivo: monta a instrução final
-// local: src\lib\master\prompts\index.ts
+// local: src\lib\campaign.master\prompts\index.ts
 
-import type {ActionPayload, State} from '@/types/adventure';
-import type {Master} from '@/types/master';
+import type {Status, Master, Campaign} from '@/types/campaign';
+import type {ActionPayload, ChatMessage} from '@/types/master';
 
 import {action0} from './action0';
 import {action1} from './action1';
 import {apresentation} from './apresentation';
 import {combat} from './combat';
 import {description} from './description';
-import {itemUse} from './itemUse';
+import {dice} from './dice';
 import {rules} from './rules';
 import {startAdventure} from './startAdventure';
 import {talk} from './talk';
 import {wait} from './wait';
 
-import {narrate} from '../narrate';
+import {findWorldExcerpt} from '@/lib/resolveWorld'
+import {buildHistory} from '@/lib/master/history';
+import {narrate} from '@/lib/master/narrate';
 
-
-function parseField<T>(value: string | null, fallback: T): T {
-  if (!value) return fallback;
-  try { return JSON.parse(value); } catch { return fallback; }
-}
-
-export function resolveWorld(worldRow: any): any {
-  const world = {
-    rules: worldRow.rules,
-    history: parseField(worldRow.history, {}),
-    places: parseField(worldRow.places, []),
-    chars: parseField(worldRow.chars, []),
-    monsters: parseField(worldRow.monsters, []),
-    items: parseField(worldRow.items, []),
-    groups: parseField(worldRow.groups, []),
-    plot: parseField(worldRow.plots, []),
-  };
-  return world
-}
 
 // Cada categoria de ação tem sua própria função que devolve uma instrução específica
-const PROMPT_BUILDERS: Record<string, (state: State, payload: ActionPayload, history: string, world: any) => string> = {
+const PROMPT_BUILDERS: Record<string, (status: Status, payload: ActionPayload, chatHistory: ChatMessage[], world: any) => string> = {
   AÇÃO_SIMPLES: action0,
   AÇÃO_COMPLEXA: action1,
   APRESENTAÇÃO: apresentation,
   DESCRIÇÃO: description,
   CONVERSA: talk,
   COMBATE: combat,
-  USO_ITEM: itemUse,
   PASSAGEM_DE_TEMPO: wait,
   REGRA: rules,
   START: startAdventure,
+  DICE: dice,
 };
 
-// Dado o tipo de objeto (pessoa, lugar, monstro, item) e o nome que o jogador mencionou, procura esse item específico dentro da lista correspondente do mundo. Se não achar nada específico, devolve a lista inteira como fallback.
-export function findWorldExcerpt(objectType: State['objectType'], objectName: string, world: any): any {
-  const searchIn = (list: any[] | undefined, nameFields: string[]) => {
-    if (!list) return null;
-    const target = objectName.toLowerCase();
-    return list.find((item) => nameFields.some((f) => item[f]?.toLowerCase()?.includes(target))) || null;
-  };
 
-  switch (objectType) {
-    case 'rules':
-      return world.rules;
-    case 'place':
-      return searchIn(world.places, ['name']) || world.places;
-    case 'person':
-      return searchIn(world.chars, ['name']) || null;
-    case 'monster':
-      return searchIn(world.monsters, ['type']) || world.monsters;
-    case 'item':
-      return searchIn(world.items, ['name']) || null;
-    default:
-      return null;
-  }
-}
-
-export async function callMaster({payload, state, master, worldRow, history}: {payload: ActionPayload, state: State, master: Master, worldRow: any, history: string}): Promise<string> {
+export async function callMaster({payload, campaign}: {payload: ActionPayload, campaign: Campaign}): Promise<string> {
 
   let type = '';
   let instruction = '';
-  let res;
+  let res: {text: string, interactionId?: string, error?: boolean}
 
-  const world = resolveWorld(worldRow);
+  campaign.status = campaign.status ?? ({} as Status)
+  campaign.master = campaign.master ?? ({} as Master)
+
+  const chatHistory = campaign.log ? buildHistory({logRows: campaign.log, types: ['ic'], charBudget: 2000, contiguousOnly: false}) : [];
+  
+  console.log("\nchatHistory: "+JSON.stringify(chatHistory)+"\n")
+
+  if (campaign.status.category === 'AÇÃO_COMPLEXA' && !payload.dice) {
+
+    const excerpt = findWorldExcerpt('rules', campaign.status.object ?? '', campaign.world);
+    const builder = PROMPT_BUILDERS['DICE'];
+    instruction = builder(campaign.status, payload, chatHistory, excerpt)
+
+    res = await narrate({type, master: campaign.master, chatHistory, instruction});
+    
+    campaign.status.dice = res.text
+    payload.type = 'system';
+    return 'Dados necessários';
+  }
 
   // Busca o trecho relevante (ex: o NPC específico que o jogador citou).
-  const excerpt = findWorldExcerpt(state.objectType, state.object, world);
+  const excerpt = findWorldExcerpt(campaign.status.objectType, campaign.status.object ?? '', campaign.world);
 
   // Pega a função certa pra essa categoria e gera a instrução específica
-  const builder = PROMPT_BUILDERS[state.category];
+  const builder = PROMPT_BUILDERS[campaign.status.category ?? ''];
   instruction = builder
-    ? builder(state, payload, history, {...world, excerpt})
+    ? builder(campaign.status, payload, chatHistory, {...campaign.world, excerpt})
     : 'O sistema não entendeu a ação do jogador, peça para ele enviar novamente com outras palavras.';
 
-  const chatHistory = {role: 'player', text: payload.action}
-
-  console.log(`Chamando Mestre ${master.system}, tipo ${state.category}`)
-  if (state.category == 'CONVERSA') {
+  console.log(`Chamando Mestre ${campaign.master.system} \ntipo ${campaign.status.category}\n${instruction} `)
+  if (campaign.status.category === 'CONVERSA' || campaign.status.category === 'COMBATE') {
     type = 'chat';
-    state.instruction = instruction;
-    res = await narrate({type, master, chatHistory, instruction});
-    if (res.interactionId) {state.interactionId = res.interactionId;}
+    campaign.status.instruction = instruction;
+    res = await narrate({type, master: campaign.master, chatHistory, instruction});
 
-    payload.mode = 'oc'
-    return 'Sala NPC aberta';
+    if (res.interactionId) {campaign.status.interactionId = res.interactionId;}
+
+    payload.type = 'system'
+
+    return `Modal de ${campaign.status.category} iniciado`;
+  }
+  else if (campaign.status.category === 'AÇÃO_COMPLEXA') {
+
+    res = await narrate({type, master: campaign.master, chatHistory, instruction});
+    
+    if (!res.error) {
+      campaign.status.id = false;
+      campaign.status.dice = ''
+    }
+  }
+  else if (campaign.status.category === 'COMBATE') {
+    campaign.status.context = `${payload.char.name} entrou em combate com um ${campaign.status.object ? campaign.status.object : campaign.status.objectType}.`
+    campaign.status.objects = [payload.char, excerpt]
+
+    return `Modal de ${campaign.status.category} iniciado`;
   }
   else {
-    res = await narrate({type, master, chatHistory, instruction});
+    res = await narrate({type, master: campaign.master, chatHistory, instruction});
+    campaign.status.id = false;
   }
-  if (state.category == 'START') state.id = false;
+
+  if (res.error) payload.type == 'error'
 
   return res.text;
 }

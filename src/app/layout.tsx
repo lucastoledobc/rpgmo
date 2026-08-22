@@ -1,3 +1,6 @@
+// arquivo: estrutura inicial
+// local: src\app\layout.tsx
+
 import type {Metadata} from "next";
 import "@/css/globals.css";
 import ThemeSwitcher from "@/components/ThemeSwitcher";

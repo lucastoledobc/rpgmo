@@ -4,63 +4,267 @@
   "version": "1.00",
   "theme": "Fantasia Medieval Clássica",
   "rules": {
-    "name": "d20-lite",
-    "status": "d20 + modificador",
-    "key_rules": [
-      "Sucesso em testes: 10 ou mais no dado",
-      "Morte: 3 falhas em testes de resistência"
-    ]
+    "system": "d20-lite",
+    "resolution": {
+      "formula": "d20 + modificador de atributo relevante >= número-alvo",
+      "attribute_modifier": "(valor do atributo - 10) / 2, arredondado para baixo",
+      "difficulty": {
+        "easy": 8,
+        "medium": 10,
+        "hard": 15
+      }
+    },
+    "combat": {
+      "initiative": "d20 + modificador de Destreza; ordem decrescente define quem age primeiro",
+      "attack": "d20 + modificador do atributo relevante (Força corpo-a-corpo / Destreza à distância) + bônus do item >= Defesa do alvo",
+      "defense": "10 + modificador de Destreza + bônus de armadura",
+      "damage": "dado da arma ou habilidade + modificador do atributo relevante"
+    },
+    "death": {
+      "trigger": "quando o HP chega a 0, o personagem cai inconsciente e começa a fazer testes de resistência a cada turno",
+      "resistance_test": "d20 >= 10, sem modificador",
+      "outcome": "3 falhas antes de 3 sucessos = morte; um 20 natural recupera 1 HP e acorda o personagem"
+    },
+    "resources": {
+      "mana": {
+        "initial": "10 + modificador de Inteligência",
+        "recovery": "recupera totalmente após um descanso completo"
+      }
+    },
+    "skills": "bônus fixo somado ao teste do atributo relevante quando aplicável (ex: Furtividade +4)",
+    "locations": {
+      "Reino": "Governado por um rei, tem leis próprias e subregiões.",
+      "Cidade": "Região sem monstros selvagens. Pode pertencer a um reino ou não.",
+      "Local": "Ambiente pequeno.",
+      "Selvagem": "Região com monstros selvagens. Pode pertencer a um reino ou não.",
+      "Calabouço": "Ambiente com armadilhas e monstros selvagens.",
+      "Covil": "Ambiente que pertence a um Chefe."
+    }
   },
   "places": [
     {
       "type": "Reino",
       "name": "Reino de Aethelgard",
-      "descricao": "O coração da civilização humana, governado pelo Rei Valerius II.",
-      "perigos": "Intrigas políticas e espionagem.",
-      "locais_interesse": ["Capital Áurea", "Vale dos Sussurros", "Montanhas do Norte"]
+      "description": "O coração da civilização humana, renascido das cinzas da Grande Queda. Governado pelo Rei Valerius II, reconstrói suas muralhas e sua fé enquanto ruínas antigas despertam nos limites de suas terras.",
+      "cities": [
+        {
+          "type": "Cidade",
+          "name": "Capital Áurea",
+          "description": "A cidade murada que se ergueu sobre os escombros da antiga capital. Seus telhados dourados escondem cicatrizes de guerra sob camadas de tinta nova.",
+          "locations": [
+            {
+              "type": "Local",
+              "name": "Castelo",
+              "description": "Sede do trono de Valerius II, reconstruído pedra por pedra após a Grande Queda. Reza a lenda que um fragmento do martelo de Aethel está selado sob seus alicerces."
+            },
+            {
+              "type": "Local",
+              "name": "Pátio Central",
+              "description": "Praça onde o povo se reúne para anúncios reais e julgamentos públicos. Foi aqui que um capitão da guarda foi despojado de sua patente diante de toda a cidade."
+            }
+          ]
+        },
+        {
+          "type": "Cidade",
+          "name": "Porto de Saltmarsh",
+          "description": "Uma cidade costeira agitada, famosa por seu comércio de especiarias e contrabandistas.",
+          "dangers": "Gangues locais e guardas corruptos.",
+          "points_of_interest": [
+            {
+              "name": "Mercado de Peixes",
+              "description": "Barracas apinhadas onde se compra desde bacalhau salgado até rumores frescos sobre navios desaparecidos."
+            },
+            {
+              "name": "Guilda dos Navegadores",
+              "description": "Sede dos capitães licenciados; quem quer um contrato de embarque honesto começa por aqui — os desonestos preferem a taverna."
+            },
+            {
+              "name": "Taverna do Bico de Águia",
+              "description": "Ponto de encontro de contrabandistas e ex-militares como Kaelen, que passa as noites observando o cais pela janela."
+            }
+          ]
+        }
+      ],
+      "territories": ["Vale dos Sussurros", "Montanhas do Norte"]
     },
     {
-      "type": "Cidade",
-      "name": "Porto de Saltmarsh",
-      "descricao": "Uma cidade costeira agitada, famosa por seu comércio de especiarias e contrabandistas.",
-      "perigos": "Gangues locais e guardas corruptos.",
-      "locais_interesse": ["Mercado de Peixes", "Guilda dos Navegadores", "Taverna do Bico de Águia"]
-    },
-    {
-      "type": "Região Selvagem",
+      "type": "Selvagem",
       "name": "Vale dos Sussurros",
-      "descricao": "Uma região florestal densa com névoa perene.",
-      "nivel_dificuldade": "Médio",
-      "perigos": "Lobos gigantes e plantas carnívoras.",
-      "locais_interesse": ["Taverna do Elmo Quebrado", "Ruínas do Templo Solar"]
+      "description": "Uma região florestal densa com névoa perene.",
+      "difficulty_level": "Médio",
+      "dangers": "Lobos gigantes e plantas carnívoras.",
+      "points_of_interest": [
+        {
+          "type": "Local",
+          "name": "Taverna do Elmo Quebrado",
+          "description": "Último posto seguro antes da névoa engolir o caminho. O elmo amassado pendurado sobre o balcão pertenceu a um caçador que nunca voltou pra buscá-lo."
+        },
+        {
+          "type": "Calabouço",
+          "name": "Ruínas do Templo Solar",
+          "description": "Um santuário dedicado a Solara, hoje engolido por raízes vivas. Lyra protege o que resta dele das mãos de alquimistas gananciosos.",
+          "difficulty_level": "Baixo",
+          "dangers": "Raízes que se movem sozinhas, esporos que induzem sono.",
+          "points_of_interest": [
+            {
+              "name": "Altar Coberto de Musgo",
+              "description": "O antigo altar de Solara, ainda quente ao toque mesmo sob camadas de vegetação."
+            },
+            {
+              "name": "Biblioteca Afogada",
+              "description": "Estantes de pedra meio submersas por raízes, guardando textos sagrados que ninguém mais consegue ler."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "Selvagem",
+      "name": "Montanhas do Norte",
+      "description": "Picos gélidos que marcam a fronteira norte do reino, açoitados por ventos que carregam neve o ano inteiro.",
+      "difficulty_level": "Médio",
+      "dangers": "Nevascas repentinas, harpias de gelo, passagens que desmoronam sob o peso da neve.",
+      "points_of_interest": [
+        {
+          "name": "Forte Gélido",
+          "description": "Pequena guarnição do reino que vigia a fronteira; os soldados destacados aqui juram nunca reclamar do frio, e sempre mentem."
+        },
+        {
+          "name": "Passo do Uivo",
+          "description": "Uma passagem estreita entre penhascos onde o vento sopra com um som que os locais juram ser o lamento de algo antigo."
+        }
+      ]
     },
     {
       "type": "Calabouço",
       "name": "Criptas dos Esquecidos",
-      "descricao": "Um labirinto subterrâneo abaixo da capital, lar de mortos-vivos antigos.",
-      "nivel_dificuldade": "Alto",
-      "perigos": "Armadilhas de lâminas, esqueletos arqueiros, maldições.",
-      "locais_interesse": ["Sala do Trono de Osso", "Arquivo dos Magos Mortos"]
+      "description": "Um labirinto subterrâneo abaixo da capital, lar de mortos-vivos antigos.",
+      "difficulty_level": "Alto",
+      "dangers": "Armadilhas de lâminas, esqueletos arqueiros, maldições.",
+      "points_of_interest": [
+        {
+          "name": "Sala do Trono de Osso",
+          "description": "Onde Sombra de Osso preside seus arquivos, sentado num trono soldado por décadas de negligência."
+        },
+        {
+          "name": "Arquivo dos Magos Mortos",
+          "description": "Prateleiras de pergaminhos proibidos que nenhum vivo tem permissão de tocar — segundo o próprio guardião."
+        }
+      ]
+    },
+    {
+      "type": "Calabouço",
+      "name": "Caverna do Infinito",
+      "description": "Um calabouço profundo, mas com o teto tão alto que nuvens se formam em seu interior.",
+      "difficulty_level": "Alto",
+      "dangers": "Quedas de estalactites, vertigem mística, criaturas aladas que nidificam no teto.",
+      "points_of_interest": [
+        {
+          "name": "Poço sem Fundo",
+          "description": "Uma fenda no chão da caverna da qual nenhuma pedra jogada jamais ecoou o impacto."
+        },
+        {
+          "name": "Nichos Flutuantes",
+          "description": "Formações de cristal que levitam alguns centímetros do chão, zumbindo baixinho quando alguém se aproxima."
+        }
+      ]
     },
     {
       "type": "Covil",
       "name": "Ninho do Dragão Cinzento",
-      "descricao": "Uma caverna vulcânica isolada no topo das Montanhas de Fogo.",
-      "nivel_dificuldade": "Extremo",
-      "perigos": "Calor sufocante, fumaça tóxica, o próprio Dragão.",
-      "locais_interesse": ["Pilha de Ouro", "Altar de Sacrifícios"]
+      "description": "Uma caverna vulcânica isolada no topo das Montanhas de Fogo.",
+      "difficulty_level": "Extremo",
+      "dangers": "Calor sufocante, fumaça tóxica, o próprio Dragão.",
+      "points_of_interest": [
+        {
+          "name": "Pilha de Ouro",
+          "description": "Um monte de tesouros saqueados de três reinos, sobre o qual Ignis dorme como se fosse uma cama."
+        },
+        {
+          "name": "Altar de Sacrifícios",
+          "description": "Pedra enegrecida onde, segundo lendas locais, aventureiros aprendem tarde demais que o Dragão prefere caçar."
+        }
+      ]
     }
   ],
-  "history": {
-    "era_atual": "Era da Cinza",
-    "mito_criacao": "O mundo foi forjado pelo martelo de Aethel em um mar de estrelas.",
-    "eventos_chave": [
-      { "ano": "102", "evento": "A Grande Queda da Capital Áurea", "impacto": "O reino perdeu 50% de sua população e magia." },
-      { "ano": "450", "evento": "O Despertar do Dragão Cinzento", "impacto": "A região vulcânica tornou-se um território proibido." }
-    ],
-    "cronica": "Aethelgard vive um período de reconstrução após séculos de guerra, onde antigas ruínas escondem segredos que podem mudar o destino dos reinos novamente."
-  },
-  "chars": [    
+  "history": [
+    {
+      "id": "era_0",
+      "name": "Era da Criação",
+      "playable": false,
+      "period": "Tempo mítico, anterior a qualquer contagem de anos",
+      "creation_myth": "O mundo foi forjado pelo martelo de Aethel em um mar de estrelas. Da primeira faísca nasceu Solara, sua criação mais devota, incumbida de vigiar a luz do mundo e impedir que a escuridão reinasse sozinha sobre o que fora criado.",
+      "key_events": [
+        {
+          "year": "?",
+          "event": "O Forjar do Mundo",
+          "impact": "Aethel molda terra, céu e mar a partir do vazio estelar."
+        },
+        {
+          "year": "?",
+          "event": "O Juramento de Solara",
+          "impact": "Solara jura proteger os fracos e nunca mentir, tornando-se a divindade mais próxima dos mortais."
+        }
+      ],
+      "chronicle": "Nenhum historiador vivo presenciou esta era. Tudo o que se sabe vem de textos religiosos e da tradição oral dos templos — por isso os estudiosos de Aethelgard tratam seus detalhes com reverência, não com certeza."
+    },
+    {
+      "id": "era_1",
+      "name": "Era Dourada",
+      "playable": true,
+      "period": "Anos 1 a 102",
+      "tone": "Intriga política e alta magia — um reino próspero onde o perigo vem de dentro dos salões do poder, não das sombras.",
+      "key_events": [
+        {
+          "year": "1",
+          "event": "Fundação de Aethelgard",
+          "impact": "As primeiras linhagens humanas se unem sob uma única coroa, com bênção declarada de Solara."
+        },
+        {
+          "year": "78",
+          "event": "O Concílio das Três Torres",
+          "impact": "Magos, ferreiros e clérigos formalizam o ensino da magia na Capital Áurea, iniciando seu auge cultural."
+        }
+      ],
+      "chronicle": "Um século de fartura e magia abundante. A Capital Áurea ainda não conhecia ruínas — seus telhados eram literalmente banhados a ouro, e dizem que era possível sentir o poder de Solara nas próprias pedras do Castelo. Ninguém em Aethelgard imaginava que tanta prosperidade pudesse ruir em um único dia."
+    },
+    {
+      "id": "era_2",
+      "name": "Era da Reconstrução",
+      "playable": true,
+      "period": "Anos 102 a 450",
+      "tone": "Sobrevivência e escassez — magia rara, superstição em alta, e o medo de que a Queda possa se repetir.",
+      "key_events": [
+        {
+          "year": "102",
+          "event": "A Grande Queda da Capital Áurea",
+          "impact": "O reino perde metade de sua população e da sua magia em uma única catástrofe cuja causa os registros oficiais nunca explicam com clareza."
+        },
+        {
+          "year": "205",
+          "event": "O Selamento das Criptas",
+          "impact": "Sobreviventes desaparecidos da Queda começam a retornar como mortos-vivos; a realeza ordena que os túneis sob a capital sejam lacrados."
+        }
+      ],
+      "chronicle": "Três séculos de reconstrução lenta e desconfiada. A magia que antes fluía livre agora é vista com receio — muitos culpam os magos do Concílio das Três Torres pela Queda, mesmo sem provas. É nesta era que as Criptas dos Esquecidos ganham seu nome e sua má fama."
+    },
+    {
+      "id": "era_3",
+      "name": "Era do Despertar",
+      "playable": true,
+      "period": "Ano 450 em diante — presente",
+      "tone": "Aventura clássica — o reino já se reconstruiu, mas ameaças antigas voltam a se mexer nos limites do mapa.",
+      "key_events": [
+        {
+          "year": "450",
+          "event": "O Despertar do Dragão Cinzento",
+          "impact": "A região vulcânica das Montanhas de Fogo torna-se território proibido, e rumores de outros despertares se espalham pelas tavernas do reino."
+        }
+      ],
+      "chronicle": "Aethelgard vive hoje sob o reinado de Valerius II, reconstruída mas ainda marcada. É a era em que o reino finalmente se sente seguro o bastante para olhar de novo para fora de suas muralhas — e perceber que nem tudo o que despertou nas ruínas e nas montanhas pretende ficar quieto."
+    }
+  ],
+  "npcs": [
     {
       "id": "god_00",
       "name": "Solara",
@@ -77,7 +281,9 @@
       "motivacao": "Recuperar a honra e o comando de um navio.",
       "status": [
         {"name": "Força", "valor": 16},
-        {"name": "HP", "valor": 30, "maximo": 30}
+        {"name": "Destreza", "valor": 10},
+        {"name": "Inteligencia", "valor": 12},
+        {"name": "HP", "valor": 30, "max": 30}
       ]
     },
     {
@@ -89,8 +295,10 @@
       "historia": "Uma guardiã que vive nas ruínas do Templo Solar. Ela consegue ouvir as árvores e sabe quando alguém mal-intencionado entra no vale.",
       "motivacao": "Proteger as plantas carnívoras da ganância dos alquimistas.",
       "status": [
-        {"name": "Sabedoria", "valor": 18},
-        {"name": "HP", "valor": 20, "maximo": 20}
+        {"name": "Força", "valor": 16},
+        {"name": "Destreza", "valor": 10},
+        {"name": "Inteligencia", "valor": 12},
+        {"name": "HP", "valor": 20, "max": 20}
       ]
     },
     {
@@ -102,8 +310,10 @@
       "historia": "Conhecido por forjar as espadas mais afiadas do Reino. Perdeu um olho em um acidente com uma forja mágica.",
       "motivacao": "Criar uma obra-prima que sobreviva ao fogo de um dragão.",
       "status": [
-        {"name": "Constituição", "valor": 17},
-        {"name": "HP", "valor": 25, "maximo": 25}
+        {"name": "Força", "valor": 16},
+        {"name": "Destreza", "valor": 10},
+        {"name": "Inteligencia", "valor": 12},
+        {"name": "HP", "valor": 25, "max": 25}
       ]
     },
     {
@@ -115,8 +325,10 @@
       "historia": "Um antigo mago que tentou vencer a morte através de rituais proibidos. Agora guarda os arquivos dos magos mortos.",
       "motivacao": "Guardar o conhecimento proibido e impedir que vivos profanem o túmulo.",
       "status": [
-        {"name": "Inteligência", "valor": 19},
-        {"name": "HP", "valor": 40, "maximo": 40}
+        {"name": "Força", "valor": 16},
+        {"name": "Destreza", "valor": 10},
+        {"name": "Inteligencia", "valor": 12},
+        {"name": "HP", "valor": 40, "max": 40}
       ]
     },
     {
@@ -128,8 +340,10 @@
       "historia": "Um ser ancestral que desperta a cada século para renovar suas chamas com o ouro dos reinos vizinhos.",
       "motivacao": "Acumular tesouros e manter seu território livre de aventureiros.",
       "status": [
-        {"name": "Força", "valor": 24},
-        {"name": "HP", "valor": 150, "maximo": 150}
+        {"name": "Força", "valor": 16},
+        {"name": "Destreza", "valor": 10},
+        {"name": "Inteligencia", "valor": 12},
+        {"name": "HP", "valor": 150, "max": 150}
       ]
     }
   ],

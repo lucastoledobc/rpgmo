@@ -1,3 +1,6 @@
+// arquivo: configurações do db Drizzle
+// local: drizzle.config.ts
+
 import {defineConfig} from 'drizzle-kit';
 import {config} from 'dotenv';
 

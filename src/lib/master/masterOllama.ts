@@ -1,16 +1,39 @@
 // arquivo: chamada para Ollama
 // local: src\lib\master\masterOllama.ts
 
-import {Master, ChatMessage} from "@/types/master";
+import type {ChatMessage} from '@/types/master';
+import type {Master} from '@/types/campaign';
 
+function resolveOllamaBaseUrl(master: Master): string {
+  const url = master.url?.trim();
+  if (!url) {
+    throw new Error('URL do Ollama não configurada. Configure o túnel ou selecione o modo Cloud nas configurações do Mestre.');
+  }
+  return url.replace(/\/$/, ''); // remove barra final, se houver, pra evitar "//api/generate"
+}
 
-// Chama Ollama generate
-export async function callOllama({master, systemPrompt, message, format, repeatPenalty, temperature}: {master: Master; systemPrompt: string; message: ChatMessage; format: string | null; repeatPenalty?: number | null; temperature?: number | null}): Promise<{text: string}> {
+// Monta os headers da requisição: local/online
+function buildOllamaHeaders(baseUrl: string, master: Master): Record<string, string> {
+  const headers: Record<string, string> = {'Content-Type': 'application/json'};
+
+  if (baseUrl.includes('ollama.com')) {
+    if (!master?.apiKey) {throw new Error("ApiKey incorreta.");}
+    headers['Authorization'] = `Bearer ${master.apiKey}`;
+  }
+
+  return headers;
+}
+
+// Chama Ollama generate (interação única, sem histórico)
+export async function callOllama({master, systemPrompt, message, format, repeatPenalty, temperature}: {master: Master; systemPrompt: string; message: ChatMessage; format?: object; repeatPenalty?: number | null; temperature?: number | null}): Promise<{text: string}> {
+  const baseUrl = resolveOllamaBaseUrl(master);
+  const headers = buildOllamaHeaders(baseUrl, master);
+
   const body = {
     model: master.model,
     system: systemPrompt,
     prompt: message.text,
-    format: format ?? null,
+    format: format,
     stream: false,
     options: {
       num_ctx: master.contextSize ?? 4096,
@@ -20,9 +43,9 @@ export async function callOllama({master, systemPrompt, message, format, repeatP
     }
   };
 
-  const response = await fetch('http://localhost:11434/api/generate', {
+  const response = await fetch(`${baseUrl}/api/generate`, {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
+    headers,
     body: JSON.stringify(body)
   });
 
@@ -34,13 +57,16 @@ export async function callOllama({master, systemPrompt, message, format, repeatP
   return {text: data.response};
 }
 
-// Chama Ollama chat (salva seção por 5 min)
+// Chama Ollama chat (com histórico)
 export async function callOllamaChat({master, systemPrompt, messages}: {master: Master; systemPrompt: string; messages: ChatMessage[]}): Promise<{text: string}> {
+  const baseUrl = resolveOllamaBaseUrl(master);
+  const headers = buildOllamaHeaders(baseUrl, master);
+
   const body = {
     model: master.model,
     messages: [
       {role: 'system', content: systemPrompt},
-      ...messages.map((m) => ({role: m.role === 'player' ? 'user' : 'assistant', content: m.text})),
+      ...messages.map((m) => ({role: m.type === 'player' ? 'user' : 'assistant', content: m.text})),
     ],
     stream: false,
     keep_alive: '10m',
@@ -55,18 +81,18 @@ export async function callOllamaChat({master, systemPrompt, messages}: {master: 
   // Warmup: É o aquecimento (Nenhuma mensagem do jogador ainda)
   if (messages.length === 0) {
     // Dispara em segundo plano, SEM usar o 'await' para não travar o jogo
-    fetch('http://localhost:11434/api/chat', {
+    fetch(`${baseUrl}/api/chat`, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
+      headers,
       body: JSON.stringify(body),
     }).catch(err => console.error("Erro no aquecimento:", err));
-    
+
     return {text: ''};
   }
 
-  const response = await fetch('http://localhost:11434/api/chat', {
+  const response = await fetch(`${baseUrl}/api/chat`, {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
+    headers,
     body: JSON.stringify(body),
   });
 
@@ -78,9 +104,11 @@ export async function callOllamaChat({master, systemPrompt, messages}: {master: 
   return {text: data.message?.content ?? 'Ollama não gerou texto.'};
 }
 
-
 // Chama Ollama generate Img
 export async function callOllamaImg({master, prompt, format}: {master: Master; prompt: string; format: any;}): Promise<{text: string}> {
+  const baseUrl = resolveOllamaBaseUrl(master);
+  const headers = buildOllamaHeaders(baseUrl, master);
+
   const body = {
     model: master.model,
     prompt: prompt,
@@ -94,10 +122,10 @@ export async function callOllamaImg({master, prompt, format}: {master: Master; p
       repeat_penalty: master.repeatPenalty ?? 1.3,
     }
   }
-  
-  const response = await fetch('http://localhost:11434/api/generate', {
+
+  const response = await fetch(`${baseUrl}/api/generate`, {
     method: 'POST',
-    headers: {'Content-Type': 'application/json'},
+    headers,
     body: JSON.stringify(body)
   });
 
