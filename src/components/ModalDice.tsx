@@ -21,15 +21,10 @@ function parseDice(notation: string): {count: number; sides: number} {
 
 export default function ModalDice({campaign, diceNotation, onClose}: ModalDiceProps) {
   const {count, sides} = parseDice(diceNotation);
-  const min = count;
-  const max = count * sides;
-
   const [rolling, setRolling] = useState(false);
   const [display, setDisplay] = useState<string>('?');
   const [manualValue, setManualValue] = useState('');
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const [selectedChar, setSelectedChar] = useState<Character | null>(null);
   
 
   useEffect(() => {
@@ -58,7 +53,7 @@ export default function ModalDice({campaign, diceNotation, onClose}: ModalDicePr
 
     let ticks = 0;
     intervalRef.current = setInterval(() => {
-      setDisplay(String(Math.floor(Math.random() * max) + min));
+      setDisplay(String(Math.floor(Math.random() * (count * sides)) + count));
       ticks++;
 
       if (ticks >= 10) {
@@ -79,7 +74,7 @@ export default function ModalDice({campaign, diceNotation, onClose}: ModalDicePr
   const handleSubmitManual = (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     const val = Number(manualValue);
-    if (val >= min && val <= max) {
+    if (val >= count && val <= (count * sides)) {
       sendDiceValue(val);
     }
   };
@@ -106,11 +101,11 @@ export default function ModalDice({campaign, diceNotation, onClose}: ModalDicePr
           <input
             type="number"
             className="input"
-            min={min}
-            max={max}
+            min={count}
+            max={count * sides}
             value={manualValue}
             onChange={(e) => setManualValue(e.target.value)}
-            placeholder={`${min}-${max}`}
+            placeholder={`${count}-${count * sides}`}
             disabled={rolling}
           />
           <button type="submit" className="button" disabled={rolling || !manualValue}>Enviar</button>

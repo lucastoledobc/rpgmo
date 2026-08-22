@@ -50,7 +50,6 @@ export const getCampaign = cache(async (room: string): Promise<Campaign | null> 
     master: masterRow ? {
       system: masterRow.system,
       model: masterRow.model,
-      modelImg: masterRow.modelImg,
       url: masterRow.url,
       personality: masterRow.personality,
       contextSize: masterRow.contextSize,

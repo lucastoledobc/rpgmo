@@ -18,7 +18,6 @@ export default function ModalMaster({campaign, onClose}: MasterProps) {
   const [formData, setFormData] = useState<Master>({
     system: campaign.master?.system,
     model: campaign.master?.model,
-    modelImg: campaign.master?.modelImg,
     apiKey: '',
     url: campaign.master?.url,
     personality: campaign.master?.personality,

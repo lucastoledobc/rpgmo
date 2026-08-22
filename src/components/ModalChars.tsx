@@ -51,12 +51,12 @@ export default function ModalChars({campaign, existingChar, onClose}: ModalChars
     setItems((prev) => prev.map((it, i) => {
       if (i !== index) return it;
       if (field === 'quantity') return {...it, quantity: Number(value) || 1};
-      if (field === 'weight') return {...it, weight: value === '' ? null : Number(value)};
+      if (field === 'weight') return {...it, weight: value === '' ? 0 : Number(value)};
       return {...it, [field]: value};
     }));
   };
 
-  const addItem = () => setItems((prev) => [...prev, {name: '', slot: 'backpack', quantity: 1, weight: null}]);
+  const addItem = () => setItems((prev) => [...prev, {name: '', slot: 'backpack', quantity: 1, weight: 0}]);
   const removeItem = (index: number) => setItems((prev) => prev.filter((_, i) => i !== index));
 
   const handleSave = async (e: React.SubmitEvent<HTMLFormElement>) => {

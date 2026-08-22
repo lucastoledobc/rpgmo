@@ -84,7 +84,6 @@ export async function POST(request: Request) {
         room,
         system: master?.system ?? null,
         model: master?.model ?? null,
-        modelImg: master?.modelImg ?? null,
         apiKey: null,
         url: master?.url ?? null,
         contextSize: master?.contextSize ?? null,

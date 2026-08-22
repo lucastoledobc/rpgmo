@@ -103,7 +103,7 @@ export async function DELETE(request: Request, {params}: {params: Promise<{room:
       deleteGeminiChat({master, previousInteractionId: status.interactionId})
     }
     status.id = false;
-    status.interactionId = null
+    status.interactionId = ''
 
     await db.update(campaigns).set({status: JSON.stringify(status)}).where(eq(campaigns.room, room));
 

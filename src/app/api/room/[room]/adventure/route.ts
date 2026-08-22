@@ -57,11 +57,8 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
     // importações e verificadores
     const {room} = await params;
     let payload: ActionPayload = await request.json();
-    // if (!(payload?.action && payload?.playerName)) {
-    //   return NextResponse.json({error: 'Ação ou nome do jogador inválido.'}, {status: 400});
-    // }
 
-    // pega no db: campanha, mundo e mestre
+    // pega campanha do db
     const campaign = await getCampaign(room);
     if (!campaign) {
       return NextResponse.json({error: 'Campanha não encontrada.'}, {status: 404});
@@ -83,10 +80,11 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
       const [logRow] = await db.select().from(campaignLogs)
       .where(and(eq(campaignLogs.room, room), eq(campaignLogs.type, 'ic')))
       .orderBy(desc(campaignLogs.sentAt)).limit(1);
+      const selectedChar = campaign.chars?.find((char) => char.id === logRow.charId) ?? null;
       payload = {
         action: logRow.text, 
         playerName: logRow.sender, 
-        char: payload.char,
+        char: selectedChar ?? ({} as Character),
         dice: payload.dice,
         response: '',
         type: 'ic'
