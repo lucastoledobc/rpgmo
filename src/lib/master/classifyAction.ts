@@ -43,7 +43,7 @@ export async function classifyAction(master: Master, payload: ActionPayload): Pr
       objectType: {type: "string"},
     }
   }
-  const res = await narrate({type: '', master, chatHistory, instruction: CLASSIFICATION_PROMPT, format: format})
+  const res = await narrate({type: 'text', master, chatHistory, instruction: CLASSIFICATION_PROMPT, format: format})
 
   if (res.error) {
     payload.type = 'error'

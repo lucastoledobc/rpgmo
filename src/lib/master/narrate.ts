@@ -12,7 +12,7 @@ import { error } from 'node:console';
 export async function narrate({type, master, chatHistory, instruction, format, interactionId}: {type: string, master: Master, chatHistory: ChatMessage[], instruction?: string, format?: object, interactionId?: string}): Promise<{text: string; interactionId?: string; error?: boolean}> {
   let res;
   try {
-    if (master.system === 'ollama') {
+    if (master.system === 'ollama' || master.system === 'ollamaL') {
       if (type === 'text') {
         res = await callOllama({
           master: master,
@@ -31,7 +31,7 @@ export async function narrate({type, master, chatHistory, instruction, format, i
       else if (type === 'img') {
         res = await callOllamaImg({
           master: master,
-          prompt: chatHistory[0].text,
+          prompt: chatHistory[-1].text,
           format: format ? format : null,
         });
       }
@@ -46,12 +46,14 @@ export async function narrate({type, master, chatHistory, instruction, format, i
         });
       }
       else if (type === 'chat') {
+        let lastMessage = chatHistory.at(-1);
+        if (lastMessage){
         res = await callGeminiChat({
           master: master,
           systemPrompt: instruction ?? undefined,
-          message: chatHistory[0],
+          message: lastMessage,
           previousInteractionId: interactionId ?? undefined,
-        });
+        });}
       }
       else if (type === 'img') {
         res = await callGeminiImg({
@@ -82,12 +84,12 @@ export async function narrate({type, master, chatHistory, instruction, format, i
       }
     }
     else {
-      res = {text: `Master system "${master.system}" ainda não implementado.`, error: true};
+      res = {text: `Sistema "${master.system}" ainda não implementado.`, error: true};
     }
     if (!res) {res = {text: `Sistema ${master.system} não impementado para o tipo ${type}.`, error: true}}
   }
   catch(error) {
-    res = {text: 'error', interactionId: interactionId ?? undefined, error: true}
+    res = {text: `Error narrate: ${error}`, interactionId: interactionId ?? undefined, error: true}
   }
   return res;
 }

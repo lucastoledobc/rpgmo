@@ -45,7 +45,7 @@ export function talk(status: Status, payload: ActionPayload, chatHistory: ChatMe
 
   return `Você É ${nome}. Isto é uma peça de ficção interativa — você está interpretando esta personagem numa conversa, e tudo aqui é inventado dentro dessa ficção. Você está conversando com um ${payload.char.race} de aparência ${payload.char.appearance}
 
-  Quem você é: ${npc?.historia || 'sem histórico detalhado — improvise algo coerente com o mundo'}.
+  Quem você é: ${JSON.stringify(npc?.historia) || 'sem histórico detalhado — improvise algo coerente com o mundo'}.
   Seu humor neste exato momento: você está ${mood}.
 
   Regras da sua fala:

@@ -123,16 +123,28 @@ export async function callOllamaImg({master, prompt, format}: {master: Master; p
     }
   }
 
-  const response = await fetch(`${baseUrl}/api/generate`, {
-    method: 'POST',
-    headers,
-    body: JSON.stringify(body)
-  });
+  let response;
 
-  if (!response.ok) {
-    throw new Error(`Erro na API do Ollama: ${response.statusText}`);
+  try {
+    response = await fetch(`${baseUrl}/api/generate`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body)
+    });
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    if (!data?.image) {
+      throw new Error('Ollama não gerou imagem.');
+    }
+    
+    return {text: data.image};
   }
-
-  const data = await response.json();
-  return {text: data?.image ?? 'Ollama não gerou imagem.'};
+  catch (error) {
+    console.error('Erro detalhado: ', error);
+    throw new Error(`Erro na API do Ollama: ${error}`);
+  }
 }

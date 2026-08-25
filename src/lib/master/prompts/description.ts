@@ -7,8 +7,8 @@ import type {ChatMessage} from '@/types/master';
 
 export function description(status: Status, payload: ActionPayload, chatHistory: ChatMessage[], world: any): string {
   return `Você é um narrador de RPG. O personagem ${payload.char?.name} fez uma pergunta de algo e você precisa descrever.
-  \nHISTÓRICO DAS ÚLTIMAS JOGADAS: ${history}.
-  \nCONXTEXTO DA CENA ${world}
+  \nHISTÓRICO DAS ÚLTIMAS JOGADAS: ${JSON.stringify(chatHistory)}.
+  \nCONXTEXTO DA CENA ${JSON.stringify(world)}
   \nO jogador acabou de encontrar ${status.object}.
   \nDescrição dele: ${JSON.stringify(world.excerpt ?? world)}
   \n De 0 a 20, ele tirou ${payload.dice}. Responda a pergunta dele baseado no quanto ele tirou no dado.

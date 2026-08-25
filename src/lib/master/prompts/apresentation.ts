@@ -7,8 +7,8 @@ import type {ChatMessage} from '@/types/master';
 
 export function apresentation(status: Status, payload: ActionPayload, chatHistory: ChatMessage[], world: any): string {
   const head = `Você é um narrador de RPG. O jogador ${payload.char?.name} encontrou algo novo e precisa de uma apresentação.
-  \nHISTÓRICO DAS ÚLTIMAS JOGADAS: ${history}.
-  \nCONXTEXTO DA CENA ${world}.
+  \nHISTÓRICO DAS ÚLTIMAS JOGADAS: ${JSON.stringify(chatHistory)}.
+  \nCONXTEXTO DA CENA ${JSON.stringify(world)}.
   `;
   let inst;
   switch (status.objectType) {

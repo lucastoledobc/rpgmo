@@ -37,7 +37,7 @@ const PROMPT_BUILDERS: Record<string, (status: Status, payload: ActionPayload, c
 
 export async function callMaster({payload, campaign}: {payload: ActionPayload, campaign: Campaign}): Promise<string> {
 
-  let type = '';
+  let type = 'text';
   let instruction = '';
   let res: {text: string, interactionId?: string, error?: boolean}
 
@@ -45,7 +45,7 @@ export async function callMaster({payload, campaign}: {payload: ActionPayload, c
   campaign.master = campaign.master ?? ({} as Master)
 
   const chatHistory = campaign.log ? buildHistory({logRows: campaign.log, types: ['ic'], charBudget: 2000, contiguousOnly: false}) : [];
-  
+  chatHistory.push({type: 'player', text: `${payload.char.name ?? ''}: ${payload.action}`})
   console.log("\nchatHistory: "+JSON.stringify(chatHistory)+"\n")
 
   if (campaign.status.category === 'AÇÃO_COMPLEXA' && !payload.dice) {
@@ -70,7 +70,7 @@ export async function callMaster({payload, campaign}: {payload: ActionPayload, c
     ? builder(campaign.status, payload, chatHistory, {...campaign.world, excerpt})
     : 'O sistema não entendeu a ação do jogador, peça para ele enviar novamente com outras palavras.';
 
-  console.log(`Chamando Mestre ${campaign.master.system} \ntipo ${campaign.status.category}\n${instruction} `)
+  console.log(`callMaster: Chamando Mestre ${campaign.master.system} \ntipo ${campaign.status.category}\ninstrução: ${instruction} `)
   if (campaign.status.category === 'CONVERSA' || campaign.status.category === 'COMBATE') {
     type = 'chat';
     campaign.status.instruction = instruction;

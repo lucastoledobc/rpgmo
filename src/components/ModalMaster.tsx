@@ -27,7 +27,7 @@ export default function ModalMaster({campaign, onClose}: MasterProps) {
     numPredict: campaign.master?.numPredict ?? 400,
   });
 
-  const isOllama = formData.system === 'ollamaLocal' || formData.system === 'ollamaOnline';
+  const isOllama = formData.system === 'ollama' || formData.system === 'ollamaL';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const {name, value, type} = e.target;
@@ -58,14 +58,6 @@ export default function ModalMaster({campaign, onClose}: MasterProps) {
       setError('Escolha um sistema de IA.');
       return;
     }
-    if (formData.system === 'gemini' && !formData.apiKey?.trim()) {
-      setError('Configure uma chave de API do Gemini.');
-      return;
-    }
-    // if (formData.system === 'ollamaLocal' && !formData.url?.trim()) {
-    //   setError('Configure a URL do túnel do Ollama.');
-    //   return;
-    // }
 
     setSaving(true);
     setError('');
@@ -87,7 +79,7 @@ export default function ModalMaster({campaign, onClose}: MasterProps) {
       router.refresh();
       onClose();
     }
-    catch (err) {
+    catch (error) {
       setError('Erro ao salvar o mestre.');
     }
     finally {
@@ -106,8 +98,10 @@ export default function ModalMaster({campaign, onClose}: MasterProps) {
             <select name="system" className="input" value={formData.system ?? ''} onChange={handleChange}>
               <option value="" disabled>-- Escolha --</option>
               <option value="gemini">Gemini</option>
-              <option value="ollamaLocal">Ollama (local)</option>
-              <option value="ollamaOnline">Ollama (online)</option>
+              <option value="gemini">Groq</option>
+              <option value="gemini">Mistral</option>
+              <option value="ollama">Ollama</option>
+              <option value="ollamaL">Ollama (Local)</option>
             </select>
           </div>
 
@@ -124,7 +118,7 @@ export default function ModalMaster({campaign, onClose}: MasterProps) {
             />
           </div>
 
-          {formData.system === 'gemini' && (
+          {formData.system !== 'ollamaL' && (
             <div className="formGroup">
               <label className="label">Chave de API</label>
               <input
@@ -138,7 +132,7 @@ export default function ModalMaster({campaign, onClose}: MasterProps) {
             </div>
           )}
 
-          {formData.system === 'ollamaLocal' && (
+          {formData.system === 'ollamaL' && (
             <div className="formGroup">
               <label className="label">URL do túnel</label>
               <input

@@ -56,6 +56,7 @@ export async function POST(request: Request, {params}: {params: Promise<{room: s
 
     // otimiza para o mestre
     const chatHistory = buildHistory({logRows, types: ['npc'], charBudget: 2000, contiguousOnly: true});
+    console.log("\n chatHistory: "+JSON.stringify(chatHistory)+"\n")
 
     // chama o mestre
     const res = await narrate({type: 'chat', master, chatHistory, instruction: status?.instruction ?? undefined, interactionId: status?.interactionId ?? undefined});

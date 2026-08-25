@@ -10,7 +10,7 @@ import * as fs from "node:fs";
 export async function callGemini({master, systemPrompt, messages, format}: {master: Master; systemPrompt: string; messages: ChatMessage[]; format?: object}): Promise<{text: string}> {
   if (!master?.apiKey) {throw new Error("ApiKey incorreta.");}
 
-  const ai = new GoogleGenAI({apiKey: master.apiKey});
+  const ai = new GoogleGenAI({apiKey: master?.apiKey || ''});
 
   // Organiza as mensagens no formato correto
   const inputSteps: Array<{type: 'user_input' | 'model_output'; content: {type: 'text'; text: string}[]}> = messages.map((m) => ({

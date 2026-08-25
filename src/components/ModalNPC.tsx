@@ -78,7 +78,9 @@ export default function ModalNPC({campaign, npcName, playerName, onClose}: Modal
 
         <div className="adventureLog" style={{maxHeight: '300px', overflowY: 'auto'}}>
           {messages.map((m, i) => (
-            <p key={i}><strong>{m.from === 'player' ? 'Você' : npcName}:</strong> {m.text}</p>
+            <div className='messageRow' key={i}>
+              <p key={i}><strong>{m.from === 'player' ? 'Você' : npcName}:</strong> {m.text}</p>
+            </div>
           ))}
           {loading && <p style={{color: '#888'}}>{npcName} está pensando...</p>}
           <div ref={endRef} />

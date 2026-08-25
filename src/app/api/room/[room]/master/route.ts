@@ -6,13 +6,14 @@ import {eq} from 'drizzle-orm';
 import {db} from '@/db';
 import {masters} from '@/db/schema';
 import {encrypt} from '@/lib/crypto';
+import { stringify } from 'node:querystring';
 
 export async function PUT(request: Request, {params}: {params: Promise<{room: string}>}) {
   try {
     const {room} = await params;
-    const {system, model, modelImg, apiKey, url, contextSize, temperature, repeatPenalty, numPredict, personality} = await request.json();
+    const {system, model, apiKey, url, contextSize, temperature, repeatPenalty, numPredict, personality} = await request.json();
 
-    if (system && !['gemini', 'ollamaLocal', 'ollamaOnline'].includes(system)) {
+    if (system && !['gemini', 'groq', 'mistral', 'ollama', 'ollamaL'].includes(system)) {
       return NextResponse.json({error: 'Sistema de IA inválido.'}, {status: 400});
     }
 
@@ -21,7 +22,7 @@ export async function PUT(request: Request, {params}: {params: Promise<{room: st
       return NextResponse.json({error: 'Mestre não encontrado para esta sala.'}, {status: 404});
     }
 
-    if (system !== 'ollamaLocal' && !master.apiKey && !apiKey) {
+    if (system !== 'ollamaL' && !master.apiKey && !apiKey) {
       return NextResponse.json({error: 'Configure uma chave de API antes de salvar.'}, {status: 400});
     }
 
@@ -29,7 +30,6 @@ export async function PUT(request: Request, {params}: {params: Promise<{room: st
       .set({
         system: system?.trim() ?? master.system,
         model: model?.trim() ?? master.model,
-        modelImg: modelImg?.trim() ?? master.modelImg,
         apiKey: apiKey ? encrypt(apiKey) : master.apiKey,
         url: url?.trim() ?? master.url,
         personality: personality?.trim() ?? master.personality,

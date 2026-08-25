@@ -4,6 +4,7 @@
 'use client';
 import {useState, useEffect, useRef} from 'react';
 import type {Campaign, Character, Log} from '@/types/campaign';
+import {pusherClient} from '@/lib/pusherClient';
 import ModalMaster from '@/components/ModalMaster';
 import ModalDice from '@/components/ModalDice';
 import ModalNPC from '@/components/ModalNPC';
@@ -35,28 +36,43 @@ export default function RoomAdventure({campaign, disabled}: RoomAdventureProps) 
   useEffect(() => {
     if (disabled) return;
 
+    let fallbackTimer: ReturnType<typeof setTimeout>;
+
     const fetchLog = async () => {
       try {
-        const res = await fetch(`/api/room/${campaign.room}/adventure?type=ic`);
+        const res = await fetch(`/api/room/${campaign.room}/adventure?type=ic`, {
+          cache: 'no-store'
+        });
         const data = await res.json();
         if (data.log) setLog(data.log);
-        setLoading(data.loading ?? 0);
-        
-        const status = data.status;
-        setModalDice(status?.dice && typeof status.dice === 'string' ? {dice: status.dice} : null);
-        setModalNPC(status?.category === 'CONVERSA' ? {npcName: status.object || 'NPC'} : null);
-        setModalCombat(status?.category === 'COMBATE')
 
+        setModalDice(data.status?.dice && typeof data.status.dice === 'string' ? {dice: data.status.dice} : null);
+        setModalNPC(data.status?.category === 'CONVERSA' ? {npcName: data.status.object || 'NPC'} : null);
+        setModalCombat(data.status?.category === 'COMBATE');
       }
       catch (error) {
-        console.error("Erro ao buscar aventura:", error);
+        console.error("Erro ao conectar com o servidor:", error);
+      }
+      finally {
+        clearTimeout(fallbackTimer);
+        fallbackTimer = setTimeout(fetchLog, 120000);
       }
     };
 
     fetchLog();
-    const interval = setInterval(fetchLog, 3000);
-    return () => clearInterval(interval);
+
+    const channel = pusherClient.subscribe(`room-${campaign.room}`);
+    channel.bind('update', () => {
+      setTimeout(fetchLog, 150); 
+    });
+
+    return () => {
+      clearTimeout(fallbackTimer);
+      channel.unbind('update', fetchLog);
+      pusherClient.unsubscribe(`room-${campaign.room}`);
+    };
   }, [campaign.room, disabled]);
+
 
   useEffect(() => {
     endRef.current?.scrollIntoView({behavior: 'smooth'});
@@ -69,7 +85,7 @@ export default function RoomAdventure({campaign, disabled}: RoomAdventureProps) 
 
     const playerAction = action.trim();
     setAction('');
-    setLoading('O Mestre está ouvindo...');
+    setLoading('O Mestre está digitando...');
 
     try {
       await fetch(`/api/room/${campaign.room}/adventure`, {
@@ -81,6 +97,7 @@ export default function RoomAdventure({campaign, disabled}: RoomAdventureProps) 
     catch (err) {
       console.error("Erro ao falar com o Mestre:", err);
     }
+    setLoading('');
   };
 
 
@@ -104,7 +121,7 @@ export default function RoomAdventure({campaign, disabled}: RoomAdventureProps) 
               </div>
             ))
           )}
-          {loading !== '' && <p style={{color: '#888'}}>{loading}</p>}
+          {loading && <p style={{color: '#888'}}>{loading}</p>}
           <div ref={endRef} />
         </div>
 
@@ -136,7 +153,7 @@ export default function RoomAdventure({campaign, disabled}: RoomAdventureProps) 
           <button type="submit" className="enter" disabled={disabled}></button>
         </form>
       </div>
-      
+
       {modalMaster && <ModalMaster campaign={campaign} onClose={() => setModalMaster(false)} />}
       {modalDice && <ModalDice campaign={campaign} diceNotation={modalDice.dice} onClose={() => setModalDice(null)} />}
       {modalNPC && <ModalNPC campaign={campaign} npcName={modalNPC.npcName} playerName={playerName} onClose={() => setModalNPC(null)} />}
